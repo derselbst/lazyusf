@@ -1612,10 +1612,10 @@ void InitExceptionHandler(void) {
 
 	sigset_t blockset;
 
-    sigemptyset(&blockset);
-    sigaddset(&blockset, SIGSEGV);
+	sigemptyset(&blockset);
+	sigaddset(&blockset, SIGSEGV);
 
-    sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+	sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 
 	sigemptyset(&sset);
 	sigaddset(&sset, SIGSEGV);
