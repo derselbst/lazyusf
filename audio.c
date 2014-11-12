@@ -4,9 +4,15 @@
 #include <math.h>
 #include <unistd.h>
 #include <byteswap.h>
+
+#ifdef FLAC_SUPPORT
 #include <FLAC/stream_encoder.h>
 #include <FLAC/metadata.h>
+#endif
+
+#ifdef PLAYBACK_SUPPORT
 #include <ao/ao.h>
+#endif
 
 #include "usf.h"
 #include "memory.h"
