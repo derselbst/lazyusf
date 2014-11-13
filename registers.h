@@ -24,8 +24,6 @@
  *
  */
 
-#include "recompiler_cpu.h"
-
 #ifndef REGISTERS_H
 #define REGISTERS_H
 
@@ -373,29 +371,14 @@ enum FPU_RoundingModel {
 	RoundUnknown, RoundDefault, RoundTruncate, RoundNearest, RoundDown, RoundUp
 };
 
-void ChangeFPURegFormat       ( BLOCK_SECTION * Section, int32_t Reg, int32_t OldFormat, int32_t NewFormat, int32_t RoundingModel );
+
 void ChangeMiIntrMask         ( void );
 void ChangeMiModeReg          ( void );
 void ChangeSpStatus           ( void );
 void InitalizeR4300iRegisters ( void );
 uint32_t Is8BitReg                ( int32_t x86Reg);
-void Load_FPR_ToTop           ( BLOCK_SECTION * Section, int32_t Reg, int32_t RegToLoad, int32_t Format);
-void Map_GPR_32bit            ( BLOCK_SECTION * Section, int32_t Reg, uint32_t SignValue, int32_t MipsRegToLoad );
-void Map_GPR_64bit            ( BLOCK_SECTION * Section, int32_t Reg, int32_t MipsRegToLoad );
-int32_t  Map_TempReg              ( BLOCK_SECTION * Section, int32_t x86Reg, int32_t MipsReg, uint32_t LoadHiWord );
-uint32_t RegInStack               ( BLOCK_SECTION * Section, int32_t Reg, int32_t Format );
-void ProtectGPR               ( BLOCK_SECTION * Section, uint32_t Reg );
 void SetFpuLocations          ( void );
-int32_t  StackPosition            ( BLOCK_SECTION * Section, int32_t Reg );
-int UnMap_8BitTempReg (BLOCK_SECTION * Section);
-void UnMap_AllFPRs            ( BLOCK_SECTION * Section );
-void UnMap_FPR                ( BLOCK_SECTION * Section, int32_t Reg, int32_t WriteBackValue );
-void UnMap_GPR                ( BLOCK_SECTION * Section, uint32_t Reg, int32_t WriteBackValue );
-uint32_t UnMap_X86reg             ( BLOCK_SECTION * Section, uint32_t x86Reg );
-void UnProtectGPR             ( BLOCK_SECTION * Section, uint32_t Reg );
 void UpdateCurrentHalfLine    ( void );
-void WriteBackRegisters       ( BLOCK_SECTION * Section );
-
 
 void SetupRegisters(N64_REGISTERS * n64_Registers);
 

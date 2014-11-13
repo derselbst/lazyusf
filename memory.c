@@ -1571,33 +1571,6 @@ uint32_t r4300i_SW_VAddr ( uint32_t VAddr, uint32_t Value ) {
 	return 1;
 }
 
-void ResetRecompCode (void) {
-	uint32_t count;
-	RecompPos = RecompCode;
-	TargetIndex = 0;
-
-	//Jump Table
-	for (count = 0; count < (RdramSize >> 12); count ++ ) {
-		if (N64_Blocks.NoOfRDRamBlocks[count] > 0) {
-			N64_Blocks.NoOfRDRamBlocks[count] = 0;
-			memset(JumpTable + (count << 10),0,0x1000);
-			*(DelaySlotTable + count) = NULL;
-
-		}
-	}
-
-	if (N64_Blocks.NoOfDMEMBlocks > 0) {
-		N64_Blocks.NoOfDMEMBlocks = 0;
-		memset(JumpTable + (0x04000000 >> 2),0,0x1000);
-		*(DelaySlotTable + (0x04000000 >> 12)) = NULL;
-	}
-	if (N64_Blocks.NoOfIMEMBlocks > 0) {
-		N64_Blocks.NoOfIMEMBlocks = 0;
-		memset(JumpTable + (0x04001000 >> 2),0,0x1000);
-		*(DelaySlotTable + (0x04001000 >> 12)) = NULL;
-	}
-}
-
 #ifndef  __USE_GNU
 #define __USE_GNU
 #endif

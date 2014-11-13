@@ -29,7 +29,6 @@
 #include <fpu_control.h>
 #include "main.h"
 #include "audio.h"
-#include "audio_hle.h"
 #include "interpreter_cpu.h"
 #include "rsp.h"
 #include "tlb.h"
@@ -730,8 +729,6 @@ void RunRsp (void)
 
                 if(use_audiohle)
                 {
-                    OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
-                    if(audio_ucode(task))
                         break;
 
                 }
