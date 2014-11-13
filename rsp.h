@@ -1,6 +1,7 @@
 #ifndef _RSP_H_
 #define _RSP_H_
 
+#include <stdint.h>
 #include "types.h"
 
 #define CPU_Message(...)
@@ -8,57 +9,50 @@
 
 #pragma pack(push,1)
 
-typedef struct tagOPCODE
-{
-    union
-    {
+typedef struct tagOPCODE {
+	union {
 
-        uint32_t Hex;
-        uint8_t Ascii[4];
+		uint32_t Hex;
+		uint8_t Ascii[4];
 
-        struct
-        {
-            unsigned offset : 16;
-            unsigned rt : 5;
-            unsigned rs : 5;
-            unsigned op : 6;
-        };
+		struct {
+			unsigned offset : 16;
+			unsigned rt : 5;
+			unsigned rs : 5;
+			unsigned op : 6;
+		};
 
-        struct
-        {
-            unsigned immediate : 16;
-            unsigned : 5;
-            unsigned base : 5;
-            unsigned : 6;
-        };
+		struct {
+			unsigned immediate : 16;
+			unsigned : 5;
+			unsigned base : 5;
+			unsigned : 6;
+		};
 
-        struct
-        {
-            unsigned target : 26;
-            unsigned : 6;
-        };
+		struct {
+			unsigned target : 26;
+			unsigned : 6;
+		};
 
-        struct
-        {
-            unsigned funct : 6;
-            unsigned sa : 5;
-            unsigned rd : 5;
-            unsigned : 5;
-            unsigned : 5;
-            unsigned : 6;
-        };
+		struct {
+			unsigned funct : 6;
+			unsigned sa : 5;
+			unsigned rd : 5;
+			unsigned : 5;
+			unsigned : 5;
+			unsigned : 6;
+		};
 
-        struct
-        {
-            signed   voffset : 7;
-            unsigned del    : 4;
-            unsigned : 5;
-            unsigned dest   : 5;
-            unsigned : 5;
-            unsigned : 6;
-        };
+		struct {
+			signed   voffset : 7;
+			unsigned del    : 4;
+			unsigned : 5;
+			unsigned dest   : 5;
+			unsigned : 5;
+			unsigned : 6;
+		};
 
-    };
+	};
 } RSPOPCODE;
 
 #pragma pack(pop)
@@ -328,38 +322,6 @@ void RSP_Opcode_SWV     ( void );
 /************************** Other functions **************************/
 void rsp_UnknownOpcode  ( void );
 
-void RSP_LB_DMEM ( uint32_t Addr, uint8_t * Value );
-void RSP_LH_DMEM ( uint32_t Addr, uint16_t * Value );
-void RSP_LW_DMEM ( uint32_t Addr, uint32_t * Value );
-void RSP_SB_DMEM ( uint32_t Addr, uint8_t Value );
-void RSP_SH_DMEM ( uint32_t Addr, uint16_t Value );
-void RSP_SW_DMEM ( uint32_t Addr, uint32_t Value );
-void RSP_LSV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LLV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LBV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LDV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LQV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LRV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LPV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LUV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LHV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LFV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_LTV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SBV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SSV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SLV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SDV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SQV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SRV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SPV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SUV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SHV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SFV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_STV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-void RSP_SWV_DMEM ( uint32_t Addr, int32_t vect, int32_t element );
-
-
-
 extern void (*RSP_Opcode[64])();
 extern void (*RSP_RegImm[32])();
 extern void (*RSP_Special[64])();
@@ -369,13 +331,9 @@ extern void (*RSP_Vector[64])();
 extern void (*RSP_Lc2[32])();
 extern void (*RSP_Sc2[32])();
 
-void RSPSetJumpTable (void);
 
 void RSP_SP_DMA_READ (void);
 void RSP_SP_DMA_WRITE(void);
-
-void RSP_LW_IMEM ( uint32_t Addr, uint32_t * Value );
-
 
 extern REGISTER32 *RSP_GPR, RSP_Flags[4];
 extern REGISTER *RSP_ACCUM;
@@ -392,15 +350,10 @@ extern uint32_t RSP_NextInstruction, RSP_JumpTo;
 
 extern uint32_t RSP_Running;
 
-extern int8_t RSP_Cpu;
 
-//extern uint8_t * RSPRecompPos, * RSPRecompCode, * RSPRecompCodeSecondary;
-//extern uint8_t * RSPJumpTable;
 #define MaxMaps	32
 
 extern uint32_t NoOfMaps, MapsCRC[MaxMaps], Table, ConditionalMove;
-extern uint8_t * RSPRecompCode, * RSPRecompCodeSecondary, * RSPRecompPos, *RSPJumpTables;
-extern void ** RSPJumpTable;
 
 
 #define NORMAL					0
@@ -417,7 +370,7 @@ extern void ** RSPJumpTable;
 #define FINISH_SUB_BLOCK		11 // from RSP Recompiler CPU
 
 void real_run_rsp(uint32_t cycles);
-void init_rsp(void);
+int32_t init_rsp(void);
 
 
 #endif

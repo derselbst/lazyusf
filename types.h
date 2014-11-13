@@ -32,7 +32,6 @@
 #endif
 
 #include <stdint.h>
-
 typedef uint64_t QWORD;
 
 typedef union tagVect {

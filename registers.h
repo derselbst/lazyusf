@@ -27,6 +27,8 @@
 #ifndef REGISTERS_H
 #define REGISTERS_H
 
+#include "types.h"
+
 #define INDEX_REGISTER			CP0[0]
 #define RANDOM_REGISTER			CP0[1]
 #define ENTRYLO0_REGISTER		CP0[2]
@@ -371,14 +373,12 @@ enum FPU_RoundingModel {
 	RoundUnknown, RoundDefault, RoundTruncate, RoundNearest, RoundDown, RoundUp
 };
 
-
 void ChangeMiIntrMask         ( void );
 void ChangeMiModeReg          ( void );
 void ChangeSpStatus           ( void );
 void InitalizeR4300iRegisters ( void );
-uint32_t Is8BitReg                ( int32_t x86Reg);
-void SetFpuLocations          ( void );
 void UpdateCurrentHalfLine    ( void );
+void SetFpuLocations          ( void );
 
 void SetupRegisters(N64_REGISTERS * n64_Registers);
 

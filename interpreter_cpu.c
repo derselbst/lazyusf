@@ -24,15 +24,12 @@
  *
  */
 #include <float.h>
-#include <fpu_control.h>
-#include <stdio.h>
 #include "main.h"
 #include "cpu.h"
 #include "usf.h"
 #include "memory.h"
-#include "exception.h"
-#include "interpreter_ops.h"
-#include "registers.h"
+
+#include <stdio.h>
 
 void (* R4300i_Opcode[64])();
 void (* R4300i_Special[64])();
@@ -71,12 +68,12 @@ void R4300i_opcode_COP1_BC (void) {
 }
 
 void R4300i_opcode_COP1_S (void) {
-	 controlfp(RoundingModel);
+	// controlfp(RoundingModel);
 	((void (*)()) R4300i_CoP1_S[ Opcode.funct ])();
 }
 
 void R4300i_opcode_COP1_D (void) {
-	 controlfp(RoundingModel);
+	// controlfp(RoundingModel);
 	((void (*)()) R4300i_CoP1_D[ Opcode.funct ])();
 }
 
@@ -715,10 +712,8 @@ void ExecuteInterpreterOpCode (void) {
 	case JUMP:
 		PROGRAM_COUNTER  = JumpToLocation;
 		NextInstruction = NORMAL;
-		if ((int32_t)Timers->Timer < 0)
-		{  TimerDone(); }
-		if (CPU_Action->DoSomething)
-        { DoSomething(); }
+		if ((int32_t)Timers->Timer < 0) {  TimerDone(); }
+		if (CPU_Action->DoSomething) { DoSomething(); }
 
 	}
 }
@@ -737,6 +732,5 @@ void StartInterpreterCPU (void ) {
 void TestInterpreterJump (uint32_t PC, uint32_t TargetPC, int32_t Reg1, int32_t Reg2) {
 	if (PC != TargetPC) { return; }
 	if (DelaySlotEffectsCompare(PC,Reg1,Reg2)) { return; }
-	if (CPU_Type != CPU_Interpreter) { return; }
 	InPermLoop();
 }

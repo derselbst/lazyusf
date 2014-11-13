@@ -22,29 +22,32 @@ else()
     set(LD_FLAGS ${LD_FLAGS} ${FLAC_LIBRARIES})
 endif(UNIX AND NOT FLAC_LIBRARIES)
 
-set(LD_FLAGS ${LD_FLAGS} -lm)
+set(LD_FLAGS ${LD_FLAGS})
 
 set(LAZYUSF_SRC
-    audio.c
-    cpu.c
-    dma.c
-    exception.c
-    interpreter_cpu.c
-    interpreter_ops.c
-    main.c
-    memory.c
-    pif.c
-    psftag.c
-    registers.c
-    rsp.c
-    rsp_interpreter_cpu.c
-    rsp_mmx.c
-    rsp_sse.c
-    rsp_x86.c
-    tlb.c
-    usf.c
-    x86.c
-    x86_fpu.c
+	audio.c
+	audio_hle_main.c
+	audio_ucode1.c
+	audio_ucode2.cpp
+	audio_ucode3.cpp
+	audio_ucode3mp3.cpp
+	cpu.c
+	dma.c
+	exception.c
+	exception.h
+	interpreter_cpu.c
+	interpreter_cpu.h
+	interpreter_ops.c
+	main.c
+	memory.c
+	opcode.h
+	pif.c
+	psftag.c
+	registers.c
+	rsp.c
+	rsp_interpreter_cpu.c
+	tlb.c
+	usf.c
 )
 
 add_executable(lazyusf ${LAZYUSF_SRC})

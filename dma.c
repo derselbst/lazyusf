@@ -23,14 +23,8 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include <string.h>
-#include <stdio.h>
 #include "main.h"
 #include "cpu.h"
-#include "exception.h"
-#include "memory.h"
-#include "pif.h"
-#include "registers.h"
 
 void PI_DMA_READ (void) {
 
@@ -40,6 +34,7 @@ void PI_DMA_READ (void) {
 	return;
 }
 
+#include <stdio.h>
 extern FILE *fil;
 void PI_DMA_WRITE (void) {
 	uint32_t i;

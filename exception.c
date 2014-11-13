@@ -24,10 +24,8 @@
  *
  */
 
+#include "main.h"
 #include "cpu.h"
-#include "exception.h"
-#include "tlb.h"
-#include "registers.h"
 
 void CheckInterrupts ( void ) {
 
@@ -108,87 +106,6 @@ void DoIntrException ( uint32_t DelaySlot ) {
 	STATUS_REGISTER |= STATUS_EXL;
 	PROGRAM_COUNTER = 0x80000180;
 }
-
-/*
-#ifdef USEX64
-void CompileDoIntrException(void) {
-	uint8_t * Jump, * Jump2;
-
-	MoveVariableToX86reg(&STATUS_REGISTER, x86_TEMPD);
-	AndConstToX86Reg(x86_TEMPD,7);
-	CompConstToX86reg(x86_TEMPD,1);
-	JneLabel8(0);
-	Jump = RecompPos - 1;
-	Push(x86_RAX);
-
-	MoveVariableToX86reg(&FAKE_CAUSE_REGISTER, x86_EAX);
-	OrConstToX86Reg(EXC_INT, x86_EAX);
-
-	CompConstToX86reg(x86_ECX,0);
-	MoveVariableToX86reg(&PROGRAM_COUNTER, x86_ECX);
-	JeLabel8(0);
-	Jump2 = RecompPos - 1;
-	OrConstToX86Reg(CAUSE_BD, x86_EAX);
-	SubConstFromX86Reg(x86_ECX,4);
-
-	SetJump8(Jump2, RecompPos);
-
-	MoveX86regToVariable(x86_ECX, &EPC_REGISTER);
-	MoveX86regToVariable(x86_EAX, &CAUSE_REGISTER);
-
-	OrConstToVariable(STATUS_EXL, &STATUS_REGISTER);
-	MoveConstToVariable(0x80000180, &PROGRAM_COUNTER);
-    Pop(x86_RAX);
-    SetJump8(Jump, RecompPos);
-
-}
-#endif
-
-#ifdef USEX64
-void CompileCheckInterrupts(void) {
-	uint8_t * Jump, * Jump2, * Jump3;
-
-	BreakPoint();
-	Push(x86_EAX);
-	Push(x86_EDX);
-
-	MoveVariableToX86reg(&MI_INTR_REG, x86_EAX);
-	MoveVariableToX86reg(&FAKE_CAUSE_REGISTER, x86_EDX);
-	AndConstToX86Reg(x86_EAX, ~MI_INTR_AI);
-	OrConstToX86Reg(CAUSE_IP2, x86_EDX);
-	TestVariableToX86Reg(x86_EAX, &MI_INTR_MASK_REG);
-	JnzLabel8(0);
-	Jump = RecompPos - 1;
-	AndConstToX86Reg(x86_EDX, ~CAUSE_IP2);
-    SetJump8(Jump, RecompPos);
-
-   	MoveVariableToX86reg(&STATUS_REGISTER, x86_TEMPD);
-	AndConstToX86Reg(x86_TEMPD,7);
-	CompConstToX86reg(x86_TEMPD,1);
-	JneLabel8(0);
-	Jump2 = RecompPos - 1;
-
-	MoveVariableToX86reg(&STATUS_REGISTER, x86_TEMPD);
-	AddX86RegToX86Reg(x86_TEMPD, x86_EDX);
-	AndConstToX86Reg(x86_TEMPD,0xFF00);
-
-	CompConstToVariable(0, &CPU_Action->DoInterrupt);
-	JneLabel8(0);
-	Jump = RecompPos - 1;
-
-	MoveConstToVariable(1, &CPU_Action->DoInterrupt);
-	MoveConstToVariable(1, &CPU_Action->DoSomething);
-
-	SetJump8(Jump, RecompPos);
-	SetJump8(Jump2, RecompPos);
-
-	MoveX86regToVariable(x86_EAX, &MI_INTR_REG);
-	MoveX86regToVariable(x86_EDX, &FAKE_CAUSE_REGISTER);
-	Pop(x86_EDX);
-	Pop(x86_EAX);
-}
-#endif
-*/
 
 void DoTLBMiss ( uint32_t DelaySlot, uint32_t BadVaddr ) {
 

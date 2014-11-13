@@ -36,8 +36,6 @@ extern uintptr_t *TLB_Map;
 extern uint8_t * MemChunk;
 
 extern uint8_t *N64MEM, *RDRAM, *DMEM, *IMEM, * ROMPages[0x400], *savestatespace, * NOMEM;
-extern void ** JumpTable, ** DelaySlotTable;
-extern uint8_t *RecompCode, *RecompPos;
 extern uint32_t WrittenToRom, MemoryState;
 
 /* Memory Control */
@@ -79,6 +77,5 @@ void Compile_SH_Register         ( int32_t x86Reg, uint32_t Addr );
 void Compile_SW_Const            ( uint32_t Value, uint32_t Addr );
 void Compile_SW_Register         ( int32_t x86Reg, uint32_t Addr );
 void ResetRecompCode             ( void );
-void InitExceptionHandler        ( void );
 
 uint8_t * PageROM(uint32_t addr);

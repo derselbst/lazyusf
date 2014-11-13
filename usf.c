@@ -41,7 +41,8 @@ char copyright[100];
 char game[100];
 char year[25];
 
-extern int32_t RSP_Cpu;
+uint32_t CPU_Type;
+int32_t RSP_Cpu;
 
 uint32_t get_length_from_string(uint8_t * str_length)
 {

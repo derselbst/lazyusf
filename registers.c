@@ -25,13 +25,10 @@
  */
 
 // #ifdef EXT_REGS
-#include <stdio.h>
-#include "cpu.h"
-#include "x86.h"
-#include "exception.h"
-#include "pif.h"
-#include "registers.h"
 
+#include "main.h"
+#include "cpu.h"
+#include "types.h"
 
 uint32_t PROGRAM_COUNTER, * CP0,*FPCR,*RegRDRAM,*RegSP,*RegDPC,*RegMI,*RegVI,*RegAI,*RegPI,
 	*RegRI,*RegSI, HalfLine, RegModValue, ViFieldNumber, LLBit, LLAddr;
@@ -121,39 +118,6 @@ void ChangeSpStatus (void) {
 
 }
 
-uint32_t Is8BitReg (int32_t x86Reg) {
-	if (x86Reg == x86_EAX) { return 1; }
-	if (x86Reg == x86_EBX) { return 1; }
-	if (x86Reg == x86_ECX) { return 1; }
-	if (x86Reg == x86_EDX) { return 1; }
-#ifdef EXT_REGS
-	if (x86Reg == x86_R9D) { return 1; }
-	if (x86Reg == x86_R10D) { return 1; }
-	if (x86Reg == x86_R11D) { return 1; }
-	if (x86Reg == x86_R14D) { return 1; }
-#endif
-	return 0;
-}
-
-void SetFpuLocations (void) {
-	int count;
-
-	if ((STATUS_REGISTER & STATUS_FR) == 0) {
-		for (count = 0; count < 32; count ++) {
-			FPRFloatLocation[count] = (void *)(&FPR[count >> 1].W[count & 1]);
-			//FPRDoubleLocation[count] = FPRFloatLocation[count];
-			FPRDoubleLocation[count] = (void *)(&FPR[count >> 1].DW);
-		}
-	} else {
-		for (count = 0; count < 32; count ++) {
-			FPRFloatLocation[count] = (void *)(&FPR[count].W[1]);
-			//FPRFloatLocation[count] = (void *)(&FPR[count].W[1]);
-			//FPRDoubleLocation[count] = FPRFloatLocation[count];
-			FPRDoubleLocation[count] = (void *)(&FPR[count].DW);
-		}
-	}
-}
-
 void UpdateCurrentHalfLine (void) {
 	if (Timers->Timer < 0) {
 		HalfLine = 0;
@@ -163,4 +127,23 @@ void UpdateCurrentHalfLine (void) {
 	HalfLine &= ~1;
 	HalfLine += ViFieldNumber;
 
+}
+
+void SetFpuLocations (void) {
+    int count;
+    
+    if ((STATUS_REGISTER & STATUS_FR) == 0) {
+        for (count = 0; count < 32; count ++) {
+            FPRFloatLocation[count] = (void *)(&FPR[count >> 1].W[count & 1]);
+            //FPRDoubleLocation[count] = FPRFloatLocation[count];
+            FPRDoubleLocation[count] = (void *)(&FPR[count >> 1].DW);
+        }
+    } else {
+        for (count = 0; count < 32; count ++) {
+            FPRFloatLocation[count] = (void *)(&FPR[count].W[1]);
+            //FPRFloatLocation[count] = (void *)(&FPR[count].W[1]);
+            //FPRDoubleLocation[count] = FPRFloatLocation[count];
+            FPRDoubleLocation[count] = (void *)(&FPR[count].DW);
+        }
+    }
 }

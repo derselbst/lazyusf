@@ -23,11 +23,15 @@
  * should be forwarded to them so if they want them.
  *
  */
+#include <stdint.h>
 
 void BuildInterpreter         ( void );
 void ExecuteInterpreterOpCode ( void );
 void StartInterpreterCPU      ( void );
 void TestInterpreterJump      ( uint32_t PC, uint32_t TargetPC, int32_t Reg1, int32_t Reg2 );
+
+
+
 
 
 extern void (* R4300i_Opcode[64])();

@@ -26,7 +26,16 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
+#include "interpreter_cpu.h"
+#include "interpreter_ops.h"
+#include "registers.h"
+#include "tlb.h"
+#include "memory.h"
+#include "dma.h"
+#include "exception.h"
+#include "pif.h"
 #include "opcode.h"
+#include "usf.h"
 
 #ifdef __LP64__
 #define USEX86
@@ -67,7 +76,6 @@ void StartEmulation     ( void );
 void TimerDone          ( void );
 void RecompileTimerDone ( void );
 void controlfp			(uint32_t mask);
-void StartEmulationFromSave ( void * savestate );
 
 #define NORMAL					0
 #define DO_DELAY_SLOT			1
@@ -88,8 +96,8 @@ enum SaveType {
 	FlashRam
 };
 
-extern uint32_t CPU_Type;
-extern uint32_t NextInstruction, JumpToLocation, ManualPaused, CPU_Paused, CountPerOp, AudioIntrReg, * WaitMode, CPU_Type;
+
+extern uint32_t NextInstruction, JumpToLocation, ManualPaused, CPU_Paused, CountPerOp, AudioIntrReg, * WaitMode;
 extern CPU_ACTION * CPU_Action;
 extern SYSTEM_TIMERS * Timers;
 extern OPCODE Opcode;
