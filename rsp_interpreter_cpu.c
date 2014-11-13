@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 #include "usf.h"
 #include "cpu.h"
 #include "memory.h"
 #include "audio.h"
 #include "rsp.h"
-
 
 void (*RSP_Opcode[64])();
 void (*RSP_RegImm[32])();
@@ -811,7 +811,7 @@ void RSP_Vector_VMADM (void) {
 	int32_t count, el, del;
 	REGISTER32 temp, temp2;
 
-	int32_t last = -1;
+//	int32_t last = -1;
 
 	for (count = 0; count < 8; count ++ ) {
 		el = Indx[RSPOpC.rs].B[count];

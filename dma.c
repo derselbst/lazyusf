@@ -23,6 +23,8 @@
  * should be forwarded to them so if they want them.
  *
  */
+
+#include <string.h>
 #include "main.h"
 #include "cpu.h"
 

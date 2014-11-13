@@ -67,12 +67,10 @@ void *malloc_exec(uint32_t bytes)
 
 
 int32_t Allocate_Memory ( void ) {
-	uint32_t i = 0;
 	//RdramSize = 0x800000;
 
 	// Allocate the N64MEM and TLB_Map so that they are in each others 4GB range
 	// Also put the registers there :)
-
 
 	// the mmap technique works craptacular when the regions don't overlay
 
@@ -103,7 +101,7 @@ int32_t Allocate_Memory ( void ) {
 	Registers = (N64_REGISTERS *)((uintptr_t)MemChunk + 0x100000 * sizeof(uintptr_t));
 	//TLBLoadAddress = (uint32_t *)((uintptr_t)Registers + 0x500);
 	//Timers = (SYSTEM_TIMERS*)(TLBLoadAddress + 4);
-    Timers = (SYSTEM_TIMERS*)((uintptr_t)Registers + 0x500);
+	Timers = (SYSTEM_TIMERS*)((uintptr_t)Registers + 0x500);
 	WaitMode = (uint32_t *)(Timers + sizeof(SYSTEM_TIMERS));
 	CPU_Action = (CPU_ACTION *)(WaitMode + 4);
 	RSP_GPR = (REGISTER32 *)(CPU_Action + sizeof(CPU_ACTION));
@@ -120,9 +118,7 @@ int32_t Allocate_Memory ( void ) {
 	return 1;
 }
 
-int PreAllocate_Memory(void) {
-	int i = 0;
-	
+int PreAllocate_Memory(void) {	
 	// Moved the savestate allocation here :)  (for better management later)
 	savestatespace = malloc(0x80275C);
 	
@@ -130,7 +126,8 @@ int PreAllocate_Memory(void) {
 		return 0;
 	
 	memset(savestatespace, 0, 0x80275C);
-	
+
+	uint16_t i;
 	for (i = 0; i < 0x400; i++) {
 		ROMPages[i] = 0;
 	}
@@ -139,7 +136,7 @@ int PreAllocate_Memory(void) {
 }
 
 void Release_Memory ( void ) {
-	uint32_t i;
+	uint16_t i;
 
 	for (i = 0; i < 0x400; i++) {
 		if (ROMPages[i]) {
@@ -150,12 +147,26 @@ void Release_Memory ( void ) {
 
 	MemoryState = 0;
 
-	if (MemChunk != 0) {munmap(MemChunk, 0x100000 * sizeof(uintptr_t)) + 0x1D000 + RdramSize; MemChunk=0;}
-	if (N64MEM != 0) {munmap(N64MEM, RdramSize); N64MEM=0;}
-	if (NOMEM != 0) {munmap(NOMEM, 0xD000); NOMEM=0;}
+	if (MemChunk != 0)
+	{
+		munmap(MemChunk, 0x100000 * sizeof(uintptr_t)) + 0x1D000 + RdramSize;
+		MemChunk=0;
+	}
+	if (N64MEM != 0)
+	{
+		munmap(N64MEM, RdramSize);
+		N64MEM=0;
+	}
+	if (NOMEM != 0)
+	{
+		munmap(NOMEM, 0xD000);
+		NOMEM=0;
+	}
 
 	if(savestatespace)
+	{
 		free(savestatespace);
+	}
 	savestatespace = NULL;
 
 }

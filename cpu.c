@@ -25,6 +25,8 @@
  */
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "main.h"
 #include "cpu.h"
 #include "usf.h"
@@ -32,8 +34,6 @@
 #include "audio_hle.h"
 #include "registers.h"
 #include "rsp.h"
-
-#include <stdlib.h>
 
 uint32_t NextInstruction = 0, JumpToLocation = 0, AudioIntrReg = 0;
 CPU_ACTION * CPU_Action = 0;
@@ -62,7 +62,7 @@ void ChangeTimer(int32_t Type, int32_t Value) {
 }
 
 void CheckTimer (void) {
-	int32_t count;
+	int8_t count;
 
 	for (count = 0; count < MaxTimers; count++) {
 		if (!Timers->Active[count]) { continue; }

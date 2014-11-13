@@ -1,4 +1,4 @@
-
+#include <string.h>
 #include "usf.h"
 #include "audio_hle.h"
 #include "memory.h"

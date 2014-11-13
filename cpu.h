@@ -76,6 +76,7 @@ void StartEmulation     ( void );
 void TimerDone          ( void );
 void RecompileTimerDone ( void );
 void controlfp			(uint32_t mask);
+void StartEmulationFromSave ( void * savestate );
 
 #define NORMAL					0
 #define DO_DELAY_SLOT			1
