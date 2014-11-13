@@ -40,6 +40,7 @@
 #include "tlb.h"
 #include "pif.h"
 #include "registers.h"
+#include "recompiler_cpu.h"
 
 uintptr_t *TLB_Map = 0;
 uint8_t * MemChunk = 0;

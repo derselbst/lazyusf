@@ -545,7 +545,7 @@ uint32_t Machine_LoadStateFromRAM(void * savestatespace)
 
     if (CPU_Type != CPU_Interpreter)
     {
-        ResetRecompCode();
+//         ResetRecompCode();
     }
 
     Timers->CurrentTimerType = -1;
@@ -681,7 +681,7 @@ void StartEmulationFromSave ( void * savestate )
         StartInterpreterCPU();
         break;
     case CPU_Recompiler:
-        StartRecompilerCPU();
+//         StartRecompilerCPU();
         break;
     default:
         DisplayError("Unhandled CPU %d",CPU_Type);

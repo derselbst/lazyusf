@@ -22,14 +22,10 @@ else()
     set(LD_FLAGS ${LD_FLAGS} ${FLAC_LIBRARIES})
 endif(UNIX AND NOT FLAC_LIBRARIES)
 
+set(LD_FLAGS ${LD_FLAGS} -lm)
 
 set(LAZYUSF_SRC
     audio.c
-    audio_hle_main.c
-    audio_ucode1.c
-    audio_ucode2.cpp
-    audio_ucode3.cpp
-    audio_ucode3mp3.cpp
     cpu.c
     dma.c
     exception.c
@@ -40,15 +36,10 @@ set(LAZYUSF_SRC
     pif.c
     psftag.c
     recompiler_cpu.c
-    recompiler_fpu_ops.c
-    recompiler_ops.c
     registers.c
     rsp.c
     rsp_interpreter_cpu.c
     rsp_mmx.c
-    rsp_recompiler_analysis.c
-    rsp_recompiler_cpu.c
-    rsp_recompiler_ops.c
     rsp_sse.c
     rsp_x86.c
     tlb.c

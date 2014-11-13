@@ -5,7 +5,6 @@
 #include "memory.h"
 #include "rsp.h"
 #include "main.h"
-#include "rsp_recompiler_cpu.h"
 #include "registers.h"
 
 
@@ -14,7 +13,6 @@ uint8_t * RSPRecompCode = 0, * RSPRecompCodeSecondary, * RSPRecompPos, *RSPJumpT
 void ** RSPJumpTable;
 
 
-RSP_COMPILER Compiler;
 //REGISTER32 RSP_GPR[32], RSP_Flags[4];
 REGISTER32 *RSP_GPR, RSP_Flags[4];
 REGISTER * RSP_ACCUM;
@@ -174,7 +172,7 @@ void real_run_rsp(uint32_t cycles)
     }
     else
     {
-        RunRecompilerCPU(cycles);
+        //RunRecompilerCPU(cycles);
     }
 
 }
@@ -854,11 +852,11 @@ void init_rsp(void)
     RSP_NextInstruction = 0;
     RSP_JumpTo = 0;
 
-    dwBuffer = MainBuffer;
+//     dwBuffer = MainBuffer;
 
-    pLastSecondary = NULL;
-    pLastPrimary = NULL;
-    RSPBlockID = 1;
+//     pLastSecondary = NULL;
+//     pLastPrimary = NULL;
+//     RSPBlockID = 1;
 
     memset(RSP_GPR,0,sizeof(RSP_GPR));
     memset(RSP_Vect,0,sizeof(RSP_Vect));
@@ -1110,17 +1108,6 @@ void init_rsp(void)
 
     PrgCount = &SP_PC_REG;
 
-    memset(&Compiler, 0, sizeof(Compiler));
-
-    Compiler.bAlignGPR = 1;
-    Compiler.bAlignVector = 1;
-    Compiler.bFlags = 1;
-    Compiler.bReOrdering = 1;
-    Compiler.bSections = 0; //do i really need to do this?
-    Compiler.bDest = 1;
-    Compiler.bAccum = 1;
-    Compiler.bGPRConstants = 1;
-
     if(!fake_seek_stopping)
     {
         RSPAllocateMemory();
@@ -1140,14 +1127,10 @@ void init_rsp(void)
 #endif
 
 
-    Compiler.mmx2 = CpuFeatures & 0x4000000;
-    Compiler.sse = CpuFeatures & 0x2000000;
-    Compiler.mmx = CpuFeatures & 0x800000;
+//     if(!RSP_Cpu)
+//         BuildRecompilerCPU();
 
-    if(!RSP_Cpu)
-        BuildRecompilerCPU();
-
-    ClearAllx86Code();
+//     ClearAllx86Code();
 
 }
 

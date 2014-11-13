@@ -968,7 +968,7 @@ void RSPCondMoveGreaterEqual(int32_t Destination, int32_t Source) {
 		Jump = RSPRecompPos - 1;
 		RSPMoveX86RegToX86Reg(Source, Destination);
 		// CPU_Message("     label:");
-		RSPx86_SetBranch8b(Jump, RSPRecompPos);
+// 		RSPx86_SetBranch8b(Jump, RSPRecompPos);
 	} else {
 		uint8_t x86Command;
 		// CPU_Message("      cmovge %s, %s",x86_Name(Destination),x86_Name(Source));
@@ -1063,7 +1063,7 @@ void RSPCondMoveNotEqual(int32_t Destination, int32_t Source) {
 		Jump = RSPRecompPos - 1;
 		RSPMoveX86RegToX86Reg(Source, Destination);
 		// CPU_Message("     label:");
-		RSPx86_SetBranch8b(Jump, RSPRecompPos);
+// 		RSPx86_SetBranch8b(Jump, RSPRecompPos);
 	} else {
 		uint8_t x86Command;
 		// CPU_Message("      cmovne %s, %s",x86_Name(Destination),x86_Name(Source));
@@ -1159,7 +1159,7 @@ void RSPCondMoveGreater(int32_t Destination, int32_t Source) {
 		Jump = RSPRecompPos - 1;
 		RSPMoveX86RegToX86Reg(Source, Destination);
 		// CPU_Message("     label:");
-		RSPx86_SetBranch8b(Jump, RSPRecompPos);
+// 		RSPx86_SetBranch8b(Jump, RSPRecompPos);
 	} else {
 		uint8_t x86Command;
 		// CPU_Message("      cmovg %s, %s",x86_Name(Destination),x86_Name(Source));
@@ -1201,7 +1201,7 @@ void RSPCondMoveLess(int32_t Destination, int32_t Source) {
 		Jump = RSPRecompPos - 1;
 		RSPMoveX86RegToX86Reg(Source, Destination);
 		// CPU_Message("     label:");
-		RSPx86_SetBranch8b(Jump, RSPRecompPos);
+// 		RSPx86_SetBranch8b(Jump, RSPRecompPos);
 	} else {
 		uint8_t x86Command;
 		// CPU_Message("      cmovl %s, %s",x86_Name(Destination),x86_Name(Source));
@@ -1288,7 +1288,7 @@ void RSPCondMoveEqual(int32_t Destination, int32_t Source) {
 		Jump = RSPRecompPos - 1;
 		RSPMoveX86RegToX86Reg(Source, Destination);
 		// CPU_Message("     label:");
-		RSPx86_SetBranch8b(Jump, RSPRecompPos);
+// 		RSPx86_SetBranch8b(Jump, RSPRecompPos);
 	} else {
 		uint8_t x86Command;
 		// CPU_Message("      cmove %s, %s",x86_Name(Destination),x86_Name(Source));
