@@ -40,7 +40,6 @@
 #include "tlb.h"
 #include "pif.h"
 #include "registers.h"
-#include "recompiler_cpu.h"
 
 uintptr_t *TLB_Map = 0;
 uint8_t * MemChunk = 0;
@@ -108,7 +107,7 @@ int32_t Allocate_Memory ( void ) {
 	}
 
 	Registers = (N64_REGISTERS *)((uintptr_t)MemChunk + 0x100000 * sizeof(uintptr_t));
-	TLBLoadAddress = (uint32_t *)((uintptr_t)Registers + 0x500);
+	uint32_t * TLBLoadAddress = (uint32_t *)((uintptr_t)Registers + 0x500);
 	Timers = (SYSTEM_TIMERS*)(TLBLoadAddress + 4);
 	WaitMode = (uint32_t *)(Timers + sizeof(SYSTEM_TIMERS));
 	CPU_Action = (CPU_ACTION *)(WaitMode + 4);
@@ -1176,8 +1175,8 @@ int32_t r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value ) {
 		if (PAddr < RdramSize) {
 
 			*(uint8_t *)(N64MEM+PAddr) = Value;
-			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
-			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
+// 			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
+// 			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
 			memset(JumpTable+((PAddr & 0xFFFFF000) >> 2),0,0x1000);
 			*(DelaySlotTable + ((PAddr & 0xFFFFF000) >> 12)) = NULL;
 		}
@@ -1208,8 +1207,8 @@ int32_t r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
 	case 0x00700000:
 		if (PAddr < RdramSize) {
 			*(uint16_t *)(N64MEM+PAddr) = Value;
-			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
-			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
+// 			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
+// 			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
 			memset(JumpTable+((PAddr & 0xFFFFF000) >> 2),0,0x1000);
 			*(DelaySlotTable + ((PAddr & 0xFFFFF000) >> 12)) = NULL;
 		}
@@ -1255,8 +1254,8 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 	case 0x00700000:
 		if (PAddr < RdramSize) {
 			*(uint32_t *)(N64MEM+PAddr) = Value;
-			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
-			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
+// 			if (N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] == 0) { break; }
+// 			N64_Blocks.NoOfRDRamBlocks[(PAddr & 0x00FFFFF0) >> 12] = 0;
 			memset(JumpTable+((PAddr & 0xFFFFF000) >> 2),0,0x1000);
 			*(DelaySlotTable + ((PAddr & 0xFFFFF000) >> 12)) = NULL;
 		}
@@ -1287,11 +1286,11 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 		if (PAddr < 0x04002000) {
 			*(uint32_t *)(N64MEM+PAddr) = Value;
 			if (PAddr < 0x04001000) {
-				if (N64_Blocks.NoOfDMEMBlocks == 0) { break; }
-				N64_Blocks.NoOfDMEMBlocks = 0;
+// 				if (N64_Blocks.NoOfDMEMBlocks == 0) { break; }
+// 				N64_Blocks.NoOfDMEMBlocks = 0;
 			} else {
-				if (N64_Blocks.NoOfIMEMBlocks == 0) { break; }
-				N64_Blocks.NoOfIMEMBlocks = 0;
+// 				if (N64_Blocks.NoOfIMEMBlocks == 0) { break; }
+// 				N64_Blocks.NoOfIMEMBlocks = 0;
 			}
 			memset(JumpTable+((PAddr & 0xFFFFF000) >> 2),0,0x1000);
 			*(DelaySlotTable + ((PAddr & 0xFFFFF000) >> 12)) = NULL;

@@ -35,7 +35,6 @@ set(LAZYUSF_SRC
     memory.c
     pif.c
     psftag.c
-    recompiler_cpu.c
     registers.c
     rsp.c
     rsp_interpreter_cpu.c
