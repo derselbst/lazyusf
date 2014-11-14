@@ -589,7 +589,5 @@ void _Emms() {
 	asm("emms");
 }
 
-
-
 void controlfp(uint32_t control) {
 }

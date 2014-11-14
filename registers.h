@@ -340,12 +340,12 @@
 
 typedef struct {
 	uint32_t      PROGRAM_COUNTER;
-    MIPS_DWORD    GPR[32];
+	MIPS_DWORD    GPR[32];
 	MIPS_DWORD    FPR[32];
 	uint32_t      CP0[33];
 	uint32_t      FPCR[32];
-	MIPS_DWORD	  HI;
-	MIPS_DWORD 	  LO;
+	MIPS_DWORD    HI;
+	MIPS_DWORD    LO;
 	uint32_t      RDRAM[10];
 	uint32_t      SP[10];
 	uint32_t      DPC[10];

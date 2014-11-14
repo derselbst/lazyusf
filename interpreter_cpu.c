@@ -86,7 +86,8 @@ void R4300i_opcode_COP1_L (void) {
 }
 
 
-void BuildInterpreter (void ) {
+void BuildInterpreter (void )
+{
 	R4300i_Opcode[ 0] = R4300i_opcode_SPECIAL;
 	R4300i_Opcode[ 1] = R4300i_opcode_REGIMM;
 	R4300i_Opcode[ 2] = r4300i_J;
@@ -675,13 +676,15 @@ void BuildInterpreter (void ) {
 	R4300i_CoP1_L[63] = R4300i_UnknownOpcode;
 }
 
+void ExecuteInterpreterOpCode (void)
+{
+	if (*WaitMode)
+	{
+		Timers->Timer = -1;
+	}
 
-void ExecuteInterpreterOpCode (void) {
-
-
-	if (*WaitMode) Timers->Timer = -1;
-
-	if (!r4300i_LW_VAddr(PROGRAM_COUNTER, &Opcode.Hex)) {
+	if (!r4300i_LW_VAddr(PROGRAM_COUNTER, &Opcode.Hex))
+	{
 		DoTLBMiss(NextInstruction == JUMP,PROGRAM_COUNTER);
 		NextInstruction = NORMAL;
 		return;
@@ -691,7 +694,8 @@ void ExecuteInterpreterOpCode (void) {
 	Timers->Timer -= 2;
 
 	RANDOM_REGISTER -= 1;
-	if ((int32_t)RANDOM_REGISTER < (int32_t)WIRED_REGISTER) {
+	if ((int32_t)RANDOM_REGISTER < (int32_t)WIRED_REGISTER)
+	{
 		RANDOM_REGISTER = 31;
 	}
 
@@ -701,7 +705,8 @@ void ExecuteInterpreterOpCode (void) {
 		GPR[0].DW = 0;
 	}
 
-	switch (NextInstruction) {
+	switch (NextInstruction)
+	{
 	case NORMAL:
 		PROGRAM_COUNTER += 4;
 		break;
@@ -712,13 +717,20 @@ void ExecuteInterpreterOpCode (void) {
 	case JUMP:
 		PROGRAM_COUNTER  = JumpToLocation;
 		NextInstruction = NORMAL;
-		if ((int32_t)Timers->Timer < 0) {  TimerDone(); }
-		if (CPU_Action->DoSomething) { DoSomething(); }
+		if ((int32_t)Timers->Timer < 0)
+		{
+			TimerDone();
+		}
+		if (CPU_Action->DoSomething)
+		{
+			DoSomething();
+		}
 
 	}
 }
 
-void StartInterpreterCPU (void ) {
+void StartInterpreterCPU (void)
+{
 	NextInstruction = NORMAL;
 
 	while(cpu_running) {
@@ -726,7 +738,6 @@ void StartInterpreterCPU (void ) {
 	}
 
 	cpu_stopped = 1;
-
 }
 
 void TestInterpreterJump (uint32_t PC, uint32_t TargetPC, int32_t Reg1, int32_t Reg2) {
