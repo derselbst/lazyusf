@@ -29,8 +29,6 @@
 #include <string.h>
 #include <memory.h>
 #include <sys/mman.h>
-
-
 #include "main.h"
 #include "cpu.h"
 #include "audio.h"
@@ -66,7 +64,7 @@ void *malloc_exec(uint32_t bytes)
 }
 
 
-int32_t Allocate_Memory ( void ) {
+bool Allocate_Memory ( void ) {
 	//RdramSize = 0x800000;
 
 	// Allocate the N64MEM and TLB_Map so that they are in each others 4GB range
@@ -118,7 +116,7 @@ int32_t Allocate_Memory ( void ) {
 	return 1;
 }
 
-int PreAllocate_Memory(void) {	
+bool PreAllocate_Memory(void) {	
 	// Moved the savestate allocation here :)  (for better management later)
 	savestatespace = malloc(0x80275C);
 	
@@ -172,7 +170,7 @@ void Release_Memory ( void ) {
 }
 
 
-int32_t r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend ) {
+bool r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend ) {
 	if (PAddr >= 0x10000000 && PAddr < 0x16000000) {
 		if (WrittenToRom) { return 0; }
 		if ((PAddr & 2) == 0) { PAddr = (PAddr + 4) ^ 2; }
@@ -199,20 +197,20 @@ int32_t r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExt
 	return 1;
 }
 
-uint32_t r4300i_LB_VAddr ( uint32_t VAddr, uint8_t * Value ) {
+bool r4300i_LB_VAddr ( uint32_t VAddr, uint8_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*Value = *(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3));
 	return 1;
 }
 
-uint32_t r4300i_LD_VAddr ( uint32_t VAddr, uint64_t * Value ) {
+bool r4300i_LD_VAddr ( uint32_t VAddr, uint64_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*((uint32_t *)(Value) + 1) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr);
 	*((uint32_t *)(Value)) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4);
 	return 1;
 }
 
-int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend ) {
+bool r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend ) {
 	switch (PAddr & 0xFFF00000) {
 	default:
 		* Value = 0;
@@ -222,13 +220,13 @@ int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExte
 	return 1;
 }
 
-uint32_t r4300i_LH_VAddr ( uint32_t VAddr, uint16_t * Value ) {
+bool r4300i_LH_VAddr ( uint32_t VAddr, uint16_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*Value = *(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2));
 	return 1;
 }
 
-int32_t r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value ) {
+bool r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value ) {
 	if (PAddr >= 0x10000000 && PAddr < 0x16000000) {
 		if (WrittenToRom) {
 			*Value = WroteToRom;
@@ -389,7 +387,7 @@ void r4300i_LW_PAddr ( uint32_t PAddr, uint32_t * Value ) {
 	*Value = *(uint32_t *)(N64MEM+PAddr);
 }
 
-uint32_t r4300i_LW_VAddr ( uint32_t VAddr, uint32_t * Value ) {
+bool r4300i_LW_VAddr ( uint32_t VAddr, uint32_t * Value ) {
 	uintptr_t address = (TLB_Map[VAddr >> 12] + VAddr);
 
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
@@ -402,7 +400,7 @@ uint32_t r4300i_LW_VAddr ( uint32_t VAddr, uint32_t * Value ) {
 	return 1;
 }
 
-int32_t r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value ) {
+bool r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value ) {
 	switch (PAddr & 0xFFF00000) {
 	case 0x00000000:
 	case 0x00100000:
@@ -423,14 +421,14 @@ int32_t r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value ) {
 	return 1;
 }
 
-uint32_t r4300i_SB_VAddr ( uint32_t VAddr, uint8_t Value ) {
+bool r4300i_SB_VAddr ( uint32_t VAddr, uint8_t Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3)) = Value;
 
 	return 1;
 }
 
-int32_t r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
+bool r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
 	switch (PAddr & 0xFFF00000) {
 	case 0x00000000:
 	case 0x00100000:
@@ -451,20 +449,20 @@ int32_t r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
 	return 1;
 }
 
-uint32_t r4300i_SD_VAddr ( uint32_t VAddr, uint64_t Value ) {
+bool r4300i_SD_VAddr ( uint32_t VAddr, uint64_t Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr) = *((uint32_t *)(&Value) + 1);
 	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4) = *((uint32_t *)(&Value));
 	return 1;
 }
 
-uint32_t r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value ) {
+bool r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2)) = Value;
 	return 1;
 }
 
-int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
+bool r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 	if (PAddr >= 0x10000000 && PAddr < 0x16000000) {
 		if ((PAddr - 0x10000000) < RomFileSize) {
 			WrittenToRom = 1;
@@ -774,7 +772,7 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 	return 1;
 }
 
-uint32_t r4300i_SW_VAddr ( uint32_t VAddr, uint32_t Value ) {
+bool r4300i_SW_VAddr ( uint32_t VAddr, uint32_t Value ) {
 	uintptr_t address = (TLB_Map[VAddr >> 12] + VAddr);
 
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }

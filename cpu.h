@@ -26,6 +26,7 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
+#include <stdbool.h>
 #include "interpreter_cpu.h"
 #include "interpreter_ops.h"
 #include "registers.h"
@@ -36,6 +37,7 @@
 #include "pif.h"
 #include "opcode.h"
 #include "usf.h"
+#include "types.h"
 
 #ifdef __LP64__
 #define USEX86
@@ -65,7 +67,7 @@ void ChangeCompareTimer ( void );
 void ChangeTimer        ( int32_t Type, int32_t Value );
 void CheckTimer         ( void );
 void CloseCpu           ( void );
-int32_t  DelaySlotEffectsCompare ( uint32_t PC, uint32_t Reg1, uint32_t Reg2 );
+bool  DelaySlotEffectsCompare ( uint32_t PC, uint32_t Reg1, uint32_t Reg2 );
 int32_t  DelaySlotEffectsJump (uint32_t JumpPC);
 void DoSomething        ( void );
 void InPermLoop         ( void );

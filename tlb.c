@@ -32,13 +32,13 @@ void SetupTLB_Entry (int32_t Entry);
 FASTTLB FastTlb[64];
 TLB tlb[32];
 
-uint32_t AddressDefined ( uintptr_t VAddr) {
-	uint32_t i;
-
+bool AddressDefined ( uintptr_t VAddr)
+{
 	if (VAddr >= 0x80000000 && VAddr <= 0xBFFFFFFF) {
 		return 1;
 	}
 
+	uint16_t i;
 	for (i = 0; i < 64; i++) {
 		if (FastTlb[i].ValidEntry == 0) { continue; }
 		if (VAddr >= FastTlb[i].VSTART && VAddr <= FastTlb[i].VEND) {
@@ -49,7 +49,7 @@ uint32_t AddressDefined ( uintptr_t VAddr) {
 }
 
 void InitilizeTLB (void) {
-	uint32_t count;
+	uint16_t count;
 
 	for (count = 0; count < 32; count++) { tlb[count].EntryDefined = 0; }
 	for (count = 0; count < 64; count++) { FastTlb[count].ValidEntry = 0; }
@@ -65,13 +65,6 @@ void SetupTLB (void) {
 	}
 	for (count = 0; count < 32; count ++) { SetupTLB_Entry(count); }
 }
-/*
-test=(BYTE *) VirtualAlloc( 0x10, 0x70000, MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-	if(test == 0) {
-		//printf("FAIL!\n");
-		exit(0);
-	}
-*/
 
 void SetupTLB_Entry (int Entry) {
 	uint32_t FastIndx;
@@ -127,11 +120,11 @@ void SetupTLB_Entry (int Entry) {
 	}
 }
 
-void TLB_Probe (void) {
-	uint32_t Counter;
-
-
+void TLB_Probe (void)
+{
 	INDEX_REGISTER |= 0x80000000;
+	
+	uint16_t Counter;
 	for (Counter = 0; Counter < 32; Counter ++) {
 		uint32_t TlbValue = tlb[Counter].EntryHi.Value & (~tlb[Counter].PageMask.Mask << 13);
 		uint32_t EntryHi = ENTRYHI_REGISTER & (~tlb[Counter].PageMask.Mask << 13);
@@ -148,7 +141,8 @@ void TLB_Probe (void) {
 	}
 }
 
-void TLB_Read (void) {
+void TLB_Read (void)
+{
 	uint32_t index = INDEX_REGISTER & 0x1F;
 
 	PAGE_MASK_REGISTER = tlb[index].PageMask.Value ;
@@ -157,13 +151,15 @@ void TLB_Read (void) {
 	ENTRYLO1_REGISTER = tlb[index].EntryLo1.Value;
 }
 
-uint32_t TranslateVaddr ( uintptr_t * Addr) {
+bool TranslateVaddr ( uintptr_t * Addr)
+{
 	if (TLB_Map[((*Addr) & 0xffffffff) >> 12] == 0) { return 0; }
 	*Addr = (uintptr_t)((uint8_t *)(TLB_Map[((*Addr) & 0xffffffff) >> 12] + ((*Addr) & 0xffffffff)) - (uintptr_t)N64MEM);
 	return 1;
 }
 
-void WriteTLBEntry (int32_t index) {
+void WriteTLBEntry (int32_t index)
+{
 	uint32_t FastIndx;
 
 	FastIndx = index << 1;
@@ -194,7 +190,6 @@ void WriteTLBEntry (int32_t index) {
 	tlb[index].EntryLo0.Value = ENTRYLO0_REGISTER;
 	tlb[index].EntryLo1.Value = ENTRYLO1_REGISTER;
 	tlb[index].EntryDefined = 1;
-
 
 	SetupTLB_Entry(index);
 }

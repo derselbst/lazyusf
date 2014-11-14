@@ -115,7 +115,7 @@ void CloseCpu (void) {
 	CPURunning = 0;
 }
 
-int32_t DelaySlotEffectsCompare (uint32_t PC, uint32_t Reg1, uint32_t Reg2) {
+bool DelaySlotEffectsCompare (uint32_t PC, uint32_t Reg1, uint32_t Reg2) {
 	OPCODE Command;
 
 	if (!r4300i_LW_VAddr(PC + 4, (uint32_t*)&Command.Hex)) {
@@ -378,7 +378,7 @@ void ReadFromMem(const void * source, void * target, uint32_t length, uint32_t *
 }
 
 
-uint32_t Machine_LoadStateFromRAM(void * savestatespace) {
+bool Machine_LoadStateFromRAM(void * savestatespace) {
 	uint8_t LoadHeader[0x40];
 	uint32_t Value, count, SaveRDRAMSize, offset=0;
 

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
 #include "usf.h"
 #include "cpu.h"
 #include "memory.h"
@@ -9,10 +10,7 @@
 #include "rsp.h"
 #include "types.h"
 
-
-
 uint32_t NoOfMaps, MapsCRC[MaxMaps], Table,ConditionalMove=0;
-
 
 //REGISTER32 RSP_GPR[32], RSP_Flags[4];
 REGISTER32 *RSP_GPR, RSP_Flags[4];
@@ -620,11 +618,11 @@ void RSP_SWV_DMEM ( uint32_t Addr, int32_t vect, int32_t element ) {
 	}
 }
 
-int runcount = 0;
+// int runcount = 0;
 
 void init_rsp(void)
 {
-	runcount++;
+// 	runcount++;
 
 	RSP_Running = 0;
 

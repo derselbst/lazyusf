@@ -387,6 +387,7 @@ void AiLenChanged(void)
 
 }
 
+// TODO
 unsigned int AiReadLength(void)
 {
     AI_LEN_REG = 0;

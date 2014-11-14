@@ -81,7 +81,7 @@ uint32_t get_length_from_string(uint8_t * str_length)
     return ttime;
 }
 
-int LoadUSF(const char * fn)
+bool LoadUSF(const char * fn)
 {
     FILE * fil = NULL;
     uint32_t reservedsize = 0, codesize = 0, crc = 0, tagstart = 0, reservestart = 0;
@@ -361,7 +361,7 @@ void usf_destroy()
 //	context->output->flush(millisecond/1000);
 //}
 
-int usf_play(char * fn)
+bool usf_play(char * fn)
 {
     if(!fn)
     {
@@ -430,7 +430,7 @@ int usf_play(char * fn)
 //
 //}
 
-unsigned int usf_is_our_file(char *pFile)
+bool usf_is_our_file(char *pFile)
 {
     const char *pExt;
 

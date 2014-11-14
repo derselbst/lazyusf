@@ -40,9 +40,9 @@ extern uint32_t WrittenToRom, MemoryState;
 
 /* Memory Control */
 int  Allocate_ROM                ( void );
-int  Allocate_Memory             ( void );
+bool  Allocate_Memory             ( void );
 void Release_Memory              ( void );
-int PreAllocate_Memory(void);
+bool PreAllocate_Memory(void);
 
 void *malloc_exec(uint32_t bytes);
 void *jmalloc(uint32_t bytes);
@@ -50,21 +50,21 @@ void *jmalloc(uint32_t bytes);
 /* CPU memory functions */
 //int  r4300i_Command_MemoryFilter ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
 //int  r4300i_CPU_MemoryFilter     ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
-int32_t  r4300i_LB_NonMemory         ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend );
-uint32_t r4300i_LB_VAddr             ( uint32_t VAddr, uint8_t * Value );
-uint32_t r4300i_LD_VAddr             ( uint32_t VAddr, uint64_t * Value );
-int32_t  r4300i_LH_NonMemory         ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend );
-uint32_t r4300i_LH_VAddr             ( uint32_t VAddr, uint16_t * Value );
-int32_t  r4300i_LW_NonMemory         ( uint32_t PAddr, uint32_t * Value );
+bool  r4300i_LB_NonMemory         ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend );
+bool r4300i_LB_VAddr             ( uint32_t VAddr, uint8_t * Value );
+bool r4300i_LD_VAddr             ( uint32_t VAddr, uint64_t * Value );
+bool  r4300i_LH_NonMemory         ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend );
+bool r4300i_LH_VAddr             ( uint32_t VAddr, uint16_t * Value );
+bool  r4300i_LW_NonMemory         ( uint32_t PAddr, uint32_t * Value );
 void r4300i_LW_PAddr             ( uint32_t PAddr, uint32_t * Value );
-uint32_t r4300i_LW_VAddr             ( uint32_t VAddr, uint32_t * Value );
-int32_t  r4300i_SB_NonMemory         ( uint32_t PAddr, uint8_t Value );
-uint32_t r4300i_SB_VAddr             ( uint32_t VAddr, uint8_t Value );
-uint32_t r4300i_SD_VAddr            ( uint32_t VAddr, uint64_t Value );
-int32_t  r4300i_SH_NonMemory         ( uint32_t PAddr, uint16_t Value );
-uint32_t r4300i_SH_VAddr             ( uint32_t VAddr, uint16_t Value );
-int32_t  r4300i_SW_NonMemory         ( uint32_t PAddr, uint32_t Value );
-uint32_t r4300i_SW_VAddr             ( uint32_t VAddr, uint32_t Value );
+bool r4300i_LW_VAddr             ( uint32_t VAddr, uint32_t * Value );
+bool  r4300i_SB_NonMemory         ( uint32_t PAddr, uint8_t Value );
+bool r4300i_SB_VAddr             ( uint32_t VAddr, uint8_t Value );
+bool r4300i_SD_VAddr            ( uint32_t VAddr, uint64_t Value );
+bool  r4300i_SH_NonMemory         ( uint32_t PAddr, uint16_t Value );
+bool r4300i_SH_VAddr             ( uint32_t VAddr, uint16_t Value );
+bool  r4300i_SW_NonMemory         ( uint32_t PAddr, uint32_t Value );
+bool r4300i_SW_VAddr             ( uint32_t VAddr, uint32_t Value );
 
 /* Recompiler Memory Functions */
 void Compile_LB                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );

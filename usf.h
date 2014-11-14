@@ -3,6 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdint.h>
+#include <stdbool.h>
 
 extern char filename[512];
 extern int8_t round_frequency;
@@ -21,7 +22,7 @@ extern char game[100];
 extern char year[25];
 
 void usf_init();
-int usf_play(char * fn);
+bool usf_play(char * fn);
 
 #endif
 
