@@ -20,7 +20,6 @@ const char toFLAC[]="--flac";
 const char playback[]="--playback";
 #endif // PLAYBACK_SUPPORT
 const char useAudioHle[]="--hle";
-const char useInterpreterCPU[]="--interpreter";
 
 int InitalizeApplication ( void )
 {
@@ -56,7 +55,7 @@ void DisplayError (char * Message, ...)
 void usage()
 {
     printf(
-        "\tUseage: usf filename [OPTIONS]\n"
+        "\tUseage: lazyusf filename [OPTIONS]\n"
         "\tfilename: A USF or miniUSF file\n"
         "\tThe output is written to filename.au\n\n"
 
@@ -69,8 +68,7 @@ void usage()
         #ifdef PLAYBACK_SUPPORT
         "\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n"
         #endif // PLAYBACK_SUPPORT
-        "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
-        "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
+        "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n",
         RoundFrequ,
         RoundFrequ_LONG,
         FadeType,
@@ -129,11 +127,6 @@ int main(int argc, char** argv)
         else if (((strcmp(argv[i],useAudioHle))==0))
         {
             use_audiohle=1;
-        }
-        else if (((strcmp(argv[i],useInterpreterCPU))==0))
-        {
-            CPU_Type = CPU_Interpreter;
-            RSP_Cpu = CPU_Interpreter;
         }
         else
         {

@@ -323,8 +323,8 @@ int LoadUSF(const char * fn)
 void usf_init()
 {
     use_audiohle = 0;
-    CPU_Type = CPU_Recompiler;
-    RSP_Cpu = CPU_Recompiler;
+    CPU_Type = CPU_Interpreter;
+    RSP_Cpu = CPU_Interpreter;
 }
 
 void usf_destroy()
