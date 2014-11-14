@@ -79,8 +79,7 @@ void usage()
         #ifdef PLAYBACK_SUPPORT
         playback,
         #endif
-        useAudioHle,
-        useInterpreterCPU);
+        useAudioHle);
 }
 
 extern uint32_t CPU_Type;
