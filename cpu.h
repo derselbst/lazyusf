@@ -44,11 +44,12 @@
 #define EXTREGS
 #endif
 
-typedef struct {
-	int32_t DoSomething;
-	int32_t CloseCPU;
-	int32_t CheckInterrupts;
-	int32_t DoInterrupt;
+typedef struct
+{
+    int32_t DoSomething;
+    int32_t CloseCPU;
+    int32_t CheckInterrupts;
+    int32_t DoInterrupt;
 } CPU_ACTION;
 
 #define MaxTimers				3
@@ -56,11 +57,12 @@ typedef struct {
 #define ViTimer					1
 #define AiTimer					2
 
-typedef struct {
-	int32_t NextTimer[MaxTimers];
-	int32_t Active[MaxTimers];
-	int32_t CurrentTimerType;
-	int32_t Timer;
+typedef struct
+{
+    int32_t NextTimer[MaxTimers];
+    int32_t Active[MaxTimers];
+    int32_t CurrentTimerType;
+    int32_t Timer;
 } SYSTEM_TIMERS;
 
 void ChangeCompareTimer ( void );
@@ -91,12 +93,13 @@ void StartEmulationFromSave ( void * savestate );
 #define LIKELY_DELAY_SLOT_DONE	8
 #define END_BLOCK 				9
 
-enum SaveType {
-	Auto,
-	Eeprom_4K,
-	Eeprom_16K,
-	Sram,
-	FlashRam
+enum SaveType
+{
+    Auto,
+    Eeprom_4K,
+    Eeprom_16K,
+    Sram,
+    FlashRam
 };
 
 

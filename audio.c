@@ -243,14 +243,6 @@ void CloseSound(void)
 
 void AddBuffer(unsigned char *buf, unsigned int length)
 {
-    int32_t i = 0;
-
-    #ifdef FLAC_SUPPORT
-    int32_t out = 0;
-    #endif // FLAC_SUPPORT
-
-    double vol = 1.0;
-
     if(!cpu_running)
         return;
 
@@ -265,6 +257,9 @@ void AddBuffer(unsigned char *buf, unsigned int length)
 //    }
 
     // fading
+
+    double vol = 1.0;
+
     if(play_time > track_time)
     {
         switch (fade_type)
@@ -291,6 +286,7 @@ void AddBuffer(unsigned char *buf, unsigned int length)
         }
     }
 
+    int32_t i;
     for(i = 0; i<length; i+=2)
     {
         uint8_t byte0 = buf[i];
@@ -315,13 +311,16 @@ void AddBuffer(unsigned char *buf, unsigned int length)
         buf[i] = byte0;
         buf[i+1] = byte1;
     }
+
 #ifdef PLAYBACK_SUPPORT
     if(playingback)
     {
         ao_play(device, (char*)buf, length);
     }
 #endif // PLAYBACK_SUPPORT
+
 #ifdef FLAC_SUPPORT
+    int32_t out = 0;
     if(useFlac)
     {
         for(i = 0; i < length; i=i+2)
@@ -355,15 +354,12 @@ void AddBuffer(unsigned char *buf, unsigned int length)
 
 void AiLenChanged(void)
 {
-    int32_t length = 0;
-    uint32_t address = (AI_DRAM_ADDR_REG & 0x00FFFFF8);
-
-    length = AI_LEN_REG & 0x3FFF8;
+    int32_t length = AI_LEN_REG & 0x3FFF8;
 
     while(is_paused && cpu_running)
         usleep(10000);
 
-
+    uint32_t address = (AI_DRAM_ADDR_REG & 0x00FFFFF8);
     AddBuffer(RDRAM+address, length);
 
     if(length && !(AI_STATUS_REG&0x80000000))
@@ -387,7 +383,6 @@ void AiLenChanged(void)
 
 }
 
-// TODO
 unsigned int AiReadLength(void)
 {
     AI_LEN_REG = 0;

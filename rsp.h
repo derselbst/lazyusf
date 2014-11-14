@@ -9,50 +9,56 @@
 
 #pragma pack(push,1)
 
-typedef struct tagOPCODE {
-	union {
+typedef struct tagOPCODE
+{
+    union
+    {
+        uint32_t Hex;
+        uint8_t Ascii[4];
 
-		uint32_t Hex;
-		uint8_t Ascii[4];
+        struct
+        {
+            unsigned offset : 16;
+            unsigned rt : 5;
+            unsigned rs : 5;
+            unsigned op : 6;
+        };
 
-		struct {
-			unsigned offset : 16;
-			unsigned rt : 5;
-			unsigned rs : 5;
-			unsigned op : 6;
-		};
+        struct
+        {
+            unsigned immediate : 16;
+            unsigned : 5;
+            unsigned base : 5;
+            unsigned : 6;
+        };
 
-		struct {
-			unsigned immediate : 16;
-			unsigned : 5;
-			unsigned base : 5;
-			unsigned : 6;
-		};
+        struct
+        {
+            unsigned target : 26;
+            unsigned : 6;
+        };
 
-		struct {
-			unsigned target : 26;
-			unsigned : 6;
-		};
+        struct
+        {
+            unsigned funct : 6;
+            unsigned sa : 5;
+            unsigned rd : 5;
+            unsigned : 5;
+            unsigned : 5;
+            unsigned : 6;
+        };
 
-		struct {
-			unsigned funct : 6;
-			unsigned sa : 5;
-			unsigned rd : 5;
-			unsigned : 5;
-			unsigned : 5;
-			unsigned : 6;
-		};
+        struct
+        {
+            signed   voffset : 7;
+            unsigned del    : 4;
+            unsigned : 5;
+            unsigned dest   : 5;
+            unsigned : 5;
+            unsigned : 6;
+        };
 
-		struct {
-			signed   voffset : 7;
-			unsigned del    : 4;
-			unsigned : 5;
-			unsigned dest   : 5;
-			unsigned : 5;
-			unsigned : 6;
-		};
-
-	};
+    };
 } RSPOPCODE;
 
 #pragma pack(pop)
@@ -376,15 +382,11 @@ extern uint32_t RSP_NextInstruction;
 extern REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 
 extern uint32_t RSP_NextInstruction, RSP_JumpTo;
-
-
 extern uint32_t RSP_Running;
-
 
 #define MaxMaps	32
 
 extern uint32_t NoOfMaps, MapsCRC[MaxMaps], Table, ConditionalMove;
-
 
 #define NORMAL					0
 #define DO_DELAY_SLOT			1
@@ -401,6 +403,5 @@ extern uint32_t NoOfMaps, MapsCRC[MaxMaps], Table, ConditionalMove;
 
 void real_run_rsp(uint32_t cycles);
 void init_rsp(void);
-
 
 #endif

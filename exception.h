@@ -71,5 +71,5 @@ void DoBreakException       ( uint32_t DelaySlot );
 void DoCopUnusableException ( uint32_t DelaySlot, uint32_t Coprocessor );
 void DoIntrException        ( uint32_t DelaySlot );
 void DoTLBMiss              ( uint32_t DelaySlot, uint32_t BadVaddr );
-void DoSysCallException ( uint32_t DelaySlot);
+void DoSysCallException     ( uint32_t DelaySlot);
 

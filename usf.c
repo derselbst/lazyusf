@@ -286,8 +286,6 @@ bool LoadUSF(const char * fn)
 
     }
 
-
-
     fread(&temp, 4, 1, fil);
     if(temp == 0x34365253)
     {
@@ -327,40 +325,6 @@ void usf_init()
     RSP_Cpu = CPU_Interpreter;
 }
 
-void usf_destroy()
-{
-
-}
-
-//void usf_seek(InputPlayback * context, gint time)
-//{
-//	usf_mseek(time * 1000);
-//}
-
-
-//void usf_mseek(InputPlayback * context, gulong millisecond)
-//{
-//	if(millisecond < play_time) {
-//		is_paused = 0;
-//
-//		fake_seek_stopping = 1;
-//		CloseCpu();
-//
-//		while(!cpu_stopped)
-//			usleep(1);
-//
-//		is_seeking = 1;
-//		seek_time = (double)millisecond;
-//
-//		fake_seek_stopping = 2;
-//	} else {
-//		is_seeking = 1;
-//		seek_time = (double)millisecond;
-//	}
-//
-//	context->output->flush(millisecond/1000);
-//}
-
 bool usf_play(char * fn)
 {
     if(!fn)
@@ -375,7 +339,7 @@ bool usf_play(char * fn)
     is_fading = 0;
     play_time = 0.0;
 
-    // Allocate main memory after usf loads  (to determine ram size)
+    // Allocate main memory after usf loads (to determine ram size)
 
     if (PreAllocate_Memory())
     {
@@ -412,56 +376,6 @@ bool usf_play(char * fn)
 
     return 1;
 }
-
-//void usf_stop(InputPlayback *context)
-//{
-//
-//	is_paused = 0;
-//
-//	if(!cpu_running)
-//		return;
-//
-//	CloseCpu();
-//	g_thread_join(decode_thread);
-//
-//	Release_Memory();
-//
-//	context->output->close_audio();
-//
-//}
-
-bool usf_is_our_file(char *pFile)
-{
-    const char *pExt;
-
-    if (!pFile)
-        return 0;
-
-    /* get extension */
-    pExt = strrchr(pFile,'.');
-    if (!pExt)
-        return 0;
-    /* skip past period */
-    ++pExt;
-
-    if ((strcasecmp(pExt,"usf") == 0) ||
-            (strcasecmp(pExt,"miniusf") == 0))
-        return 1;
-
-    return 0;
-}
-
-//void usf_pause(InputPlayback *context, gshort paused)
-//{
-//	is_paused = paused;//is_paused?0:1;
-//}
-
-const char *usf_exts [] =
-{
-    "usf",
-    "miniusf",
-    NULL
-};
 
 int usf_get_time()
 {

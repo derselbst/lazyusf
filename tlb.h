@@ -26,72 +26,82 @@
 #ifndef _TLB_H_
 #define _TLB_H_
 
-typedef struct {
-	uint32_t EntryDefined;
-	union {
-		uint32_t Value;
-		uint8_t A[4];
+typedef struct
+{
+    uint32_t EntryDefined;
+    union
+    {
+        uint32_t Value;
+        uint8_t A[4];
 
-		struct {
-			unsigned zero : 13;
-			unsigned Mask : 12;
-			unsigned zero2 : 7;
-		} ;
+        struct
+        {
+            unsigned zero : 13;
+            unsigned Mask : 12;
+            unsigned zero2 : 7;
+        } ;
 
-	} PageMask;
+    } PageMask;
 
-	union {
-		uint32_t Value;
-		uint8_t A[4];
+    union
+    {
+        uint32_t Value;
+        uint8_t A[4];
 
-		struct {
-			unsigned ASID : 8;
-			unsigned Zero : 4;
-			unsigned G : 1;
-			unsigned VPN2 : 19;
-		};
+        struct
+        {
+            unsigned ASID : 8;
+            unsigned Zero : 4;
+            unsigned G : 1;
+            unsigned VPN2 : 19;
+        };
 
-	} EntryHi;
+    } EntryHi;
 
-	union {
-		uint32_t Value;
-		uint8_t A[4];
+    union
+    {
+        uint32_t Value;
+        uint8_t A[4];
 
-		struct {
-			unsigned GLOBAL: 1;
-			unsigned V : 1;
-			unsigned D : 1;
-			unsigned C : 3;
-			unsigned PFN : 20;
-			unsigned ZERO: 6;
-		};
+        struct
+        {
+            unsigned GLOBAL: 1;
+            unsigned V : 1;
+            unsigned D : 1;
+            unsigned C : 3;
+            unsigned PFN : 20;
+            unsigned ZERO: 6;
+        };
 
-	} EntryLo0;
+    } EntryLo0;
 
-	union {
-		uint32_t Value;
-		uint8_t A[4];
+    union
+    {
+        uint32_t Value;
+        uint8_t A[4];
 
-		struct {
-			unsigned GLOBAL: 1;
-			unsigned V : 1;
-			unsigned D : 1;
-			unsigned C : 3;
-			unsigned PFN : 20;
-			unsigned ZERO: 6;
-		} ;
+        struct
+        {
+            unsigned GLOBAL: 1;
+            unsigned V : 1;
+            unsigned D : 1;
+            unsigned C : 3;
+            unsigned PFN : 20;
+            unsigned ZERO: 6;
+        } ;
 
-	} EntryLo1;
+    } EntryLo1;
 } TLB;
 
-typedef struct {
-   uint32_t VSTART;
-   uint32_t VEND;
-   uint32_t PHYSSTART;
-   uint32_t VALID;
-   uint32_t DIRTY;
-   uint32_t GLOBAL;
-   uint32_t ValidEntry;
+typedef struct
+{
+    uint32_t VSTART;
+    uint32_t VEND;
+    uint32_t PHYSSTART;
+    uint32_t VALID;
+    uint32_t DIRTY;
+    uint32_t GLOBAL;
+    uint32_t ValidEntry;
 } FASTTLB;
 
 extern FASTTLB FastTlb[64];

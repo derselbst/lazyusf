@@ -338,39 +338,42 @@
 #define FPR_Type(Reg)	(Reg) == R4300i_COP1_S ? "S" : (Reg) == R4300i_COP1_D ? "D" :\
 						(Reg) == R4300i_COP1_W ? "W" : "L"
 
-typedef struct {
-	uint32_t      PROGRAM_COUNTER;
-	MIPS_DWORD    GPR[32];
-	MIPS_DWORD    FPR[32];
-	uint32_t      CP0[33];
-	uint32_t      FPCR[32];
-	MIPS_DWORD    HI;
-	MIPS_DWORD    LO;
-	uint32_t      RDRAM[10];
-	uint32_t      SP[10];
-	uint32_t      DPC[10];
-	uint32_t      MI[4];
-	uint32_t      VI[14];
-	uint32_t      AI[6];
-	uint32_t      PI[13];
-	uint32_t      RI[8];
-	uint32_t      SI[4];
-	int8_t       PIF_Ram[0x40];
+typedef struct
+{
+    uint32_t      PROGRAM_COUNTER;
+    MIPS_DWORD    GPR[32];
+    MIPS_DWORD    FPR[32];
+    uint32_t      CP0[33];
+    uint32_t      FPCR[32];
+    MIPS_DWORD    HI;
+    MIPS_DWORD    LO;
+    uint32_t      RDRAM[10];
+    uint32_t      SP[10];
+    uint32_t      DPC[10];
+    uint32_t      MI[4];
+    uint32_t      VI[14];
+    uint32_t      AI[6];
+    uint32_t      PI[13];
+    uint32_t      RI[8];
+    uint32_t      SI[4];
+    int8_t       PIF_Ram[0x40];
 } N64_REGISTERS;
 
 
 extern uint32_t PROGRAM_COUNTER, * CP0,*FPCR,*RegRDRAM,*RegSP,*RegDPC,*RegMI,*RegVI,*RegAI,*RegPI,
-	*RegRI,*RegSI, HalfLine, RegModValue, ViFieldNumber, LLBit, LLAddr;
+       *RegRI,*RegSI, HalfLine, RegModValue, ViFieldNumber, LLBit, LLAddr;
 extern void * FPRDoubleLocation[32], * FPRFloatLocation[32];
 extern MIPS_DWORD *GPR, *FPR, HI, LO;
 extern N64_REGISTERS * Registers;
 
-enum FPU_Format {
-	FPU_Unkown,FPU_Dword, FPU_Qword, FPU_Float, FPU_Double
+enum FPU_Format
+{
+    FPU_Unkown,FPU_Dword, FPU_Qword, FPU_Float, FPU_Double
 };
 
-enum FPU_RoundingModel {
-	RoundUnknown, RoundDefault, RoundTruncate, RoundNearest, RoundDown, RoundUp
+enum FPU_RoundingModel
+{
+    RoundUnknown, RoundDefault, RoundTruncate, RoundNearest, RoundDown, RoundUp
 };
 
 void ChangeMiIntrMask         ( void );
