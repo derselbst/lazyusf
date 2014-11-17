@@ -4,9 +4,6 @@
 #include <stdint.h>
 #include "types.h"
 
-#define CPU_Message(...)
-//#define DisplayError printf
-
 #pragma pack(push,1)
 
 typedef struct tagOPCODE
@@ -68,34 +65,34 @@ typedef struct tagOPCODE
 
 
 //RSP OpCodes
-#define	RSP_SPECIAL				 0
-#define	RSP_REGIMM				 1
-#define RSP_J					 2
-#define RSP_JAL					 3
-#define RSP_BEQ					 4
-#define RSP_BNE					 5
-#define RSP_BLEZ				 6
-#define RSP_BGTZ				 7
-#define RSP_ADDI				 8
-#define RSP_ADDIU				 9
-#define RSP_SLTI				10
-#define RSP_SLTIU				11
-#define RSP_ANDI				12
-#define RSP_ORI					13
-#define RSP_XORI				14
-#define RSP_LUI					15
-#define	RSP_CP0					16
-#define	RSP_CP2					18
-#define RSP_LB					32
-#define RSP_LH					33
-#define RSP_LW					35
-#define RSP_LBU					36
-#define RSP_LHU					37
-#define RSP_SB					40
-#define RSP_SH					41
-#define RSP_SW					43
-#define RSP_LC2					50
-#define RSP_SC2					58
+#define	RSP_SPECIAL			 0
+#define	RSP_REGIMM			 1
+#define RSP_J				 2
+#define RSP_JAL				 3
+#define RSP_BEQ				 4
+#define RSP_BNE				 5
+#define RSP_BLEZ			 6
+#define RSP_BGTZ			 7
+#define RSP_ADDI			 8
+#define RSP_ADDIU			 9
+#define RSP_SLTI			10
+#define RSP_SLTIU			11
+#define RSP_ANDI			12
+#define RSP_ORI				13
+#define RSP_XORI			14
+#define RSP_LUI				15
+#define	RSP_CP0				16
+#define	RSP_CP2				18
+#define RSP_LB				32
+#define RSP_LH				33
+#define RSP_LW				35
+#define RSP_LBU				36
+#define RSP_LHU				37
+#define RSP_SB				40
+#define RSP_SH				41
+#define RSP_SW				43
+#define RSP_LC2				50
+#define RSP_SC2				58
 
 /* RSP Special opcodes */
 #define RSP_SPECIAL_SLL			 0
@@ -125,14 +122,14 @@ typedef struct tagOPCODE
 #define RSP_REGIMM_BGEZAL		17
 
 /* RSP COP0 opcodes */
-#define	RSP_COP0_MF				 0
-#define	RSP_COP0_MT				 4
+#define	RSP_COP0_MF			 0
+#define	RSP_COP0_MT			 4
 
 /* RSP COP2 opcodes */
-#define	RSP_COP2_MF				 0
-#define	RSP_COP2_CF				 2
-#define	RSP_COP2_MT				 4
-#define	RSP_COP2_CT				 6
+#define	RSP_COP2_MF			 0
+#define	RSP_COP2_CF			 2
+#define	RSP_COP2_MT			 4
+#define	RSP_COP2_CT			 6
 
 /* RSP Vector opcodes */
 #define	RSP_VECTOR_VMULF		 0
@@ -181,18 +178,18 @@ typedef struct tagOPCODE
 #define	RSP_VECTOR_VNOOP		55
 
 /* RSP LSC2 opcodes */
-#define RSP_LSC2_BV				 0
-#define RSP_LSC2_SV				 1
-#define RSP_LSC2_LV				 2
-#define RSP_LSC2_DV				 3
-#define RSP_LSC2_QV				 4
-#define RSP_LSC2_RV				 5
-#define RSP_LSC2_PV				 6
-#define RSP_LSC2_UV				 7
-#define RSP_LSC2_HV				 8
-#define RSP_LSC2_FV				 9
-#define RSP_LSC2_WV				10
-#define	RSP_LSC2_TV				11
+#define RSP_LSC2_BV			 0
+#define RSP_LSC2_SV			 1
+#define RSP_LSC2_LV			 2
+#define RSP_LSC2_DV			 3
+#define RSP_LSC2_QV			 4
+#define RSP_LSC2_RV			 5
+#define RSP_LSC2_PV			 6
+#define RSP_LSC2_UV			 7
+#define RSP_LSC2_HV			 8
+#define RSP_LSC2_FV			 9
+#define RSP_LSC2_WV			10
+#define	RSP_LSC2_TV			11
 
 
 /************************* OpCode functions *************************/
@@ -377,7 +374,7 @@ extern VECTOR *RSP_Vect;
 
 extern REGISTER EleSpec[32], Indx[32];
 extern RSPOPCODE RSPOpC;
-extern uint32_t *PrgCount, RSPNextInstruction;
+extern uint32_t *PrgCount;
 extern uint32_t RSP_NextInstruction;
 extern REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 
@@ -386,20 +383,20 @@ extern uint32_t RSP_Running;
 
 #define MaxMaps	32
 
-extern uint32_t NoOfMaps, MapsCRC[MaxMaps], Table, ConditionalMove;
+extern uint32_t Table;
 
 #define NORMAL					0
-#define DO_DELAY_SLOT			1
-#define DO_END_DELAY_SLOT		2
+#define DO_DELAY_SLOT				1
+#define DO_END_DELAY_SLOT			2
 #define DELAY_SLOT				3
-#define END_DELAY_SLOT			4
-#define LIKELY_DELAY_SLOT		5
+#define END_DELAY_SLOT				4
+#define LIKELY_DELAY_SLOT			5
 #define JUMP	 				6
-#define DELAY_SLOT_DONE			7
-#define LIKELY_DELAY_SLOT_DONE	8
+#define DELAY_SLOT_DONE				7
+#define LIKELY_DELAY_SLOT_DONE			8
 #define END_BLOCK 				9
-#define FINISH_BLOCK			10 // from RSP Recompiler CPU
-#define FINISH_SUB_BLOCK		11 // from RSP Recompiler CPU
+#define FINISH_BLOCK				10 // from RSP Recompiler CPU
+#define FINISH_SUB_BLOCK			11 // from RSP Recompiler CPU
 
 void real_run_rsp(uint32_t cycles);
 void init_rsp(void);

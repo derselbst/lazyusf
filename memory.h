@@ -23,14 +23,6 @@
  * should be forwarded to them so if they want them.
  *
  */
-#define LargeCompileBufferSize	0x03200000
-#define NormalCompileBufferSize	0x01500000
-
-#define RSP_RECOMPMEM_SIZE		0x400000
-#define RSP_SECRECOMPMEM_SIZE	0x200000
-
-#define ROM_IN_MAPSPACE
-
 extern uint32_t RdramSize, SystemRdramSize, RomFileSize;
 extern uintptr_t *TLB_Map;
 extern uint8_t * MemChunk;
@@ -39,13 +31,11 @@ extern uint8_t *N64MEM, *RDRAM, *DMEM, *IMEM, * ROMPages[0x400], *savestatespace
 extern uint32_t WrittenToRom, MemoryState;
 
 /* Memory Control */
-int  Allocate_ROM                ( void );
 bool Allocate_Memory             ( void );
 void Release_Memory              ( void );
 bool PreAllocate_Memory(void);
 
 void *malloc_exec(uint32_t bytes);
-void *jmalloc(uint32_t bytes);
 
 /* CPU memory functions */
 //int  r4300i_Command_MemoryFilter ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );

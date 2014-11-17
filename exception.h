@@ -64,7 +64,6 @@
 	(Except) == EXC_VCED    ? "Virt. Coherency on data read" :\
 	"Unkown"
 
-void AiCheckInterrupts      ( void );
 void CheckInterrupts        ( void );
 void DoAddressError         ( uint32_t DelaySlot, uint32_t BadVaddr, uint32_t FromRead );
 void DoBreakException       ( uint32_t DelaySlot );

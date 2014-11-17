@@ -21,7 +21,6 @@ extern char copyright[100];
 extern char game[100];
 extern char year[25];
 
-void usf_init();
 bool usf_play(char * fn);
 
 #endif

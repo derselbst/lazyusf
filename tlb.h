@@ -104,7 +104,6 @@ typedef struct
     uint32_t ValidEntry;
 } FASTTLB;
 
-extern FASTTLB FastTlb[64];
 extern TLB tlb[32];
 
 bool AddressDefined ( uintptr_t VAddr);

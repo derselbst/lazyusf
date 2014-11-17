@@ -21,11 +21,6 @@ const char playback[]="--playback";
 #endif // PLAYBACK_SUPPORT
 const char useAudioHle[]="--hle";
 
-int InitalizeApplication ( void )
-{
-    return 1;
-}
-
 void StopEmulation(void)
 {
     //asm("int $3");

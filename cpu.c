@@ -39,7 +39,8 @@ uint32_t NextInstruction = 0, JumpToLocation = 0, AudioIntrReg = 0;
 CPU_ACTION * CPU_Action = 0;
 SYSTEM_TIMERS * Timers = 0;
 OPCODE Opcode;
-uint32_t CPURunning = 0, SPHack = 0;
+uint32_t CPURunning = 0; //TODO: cpu_running??
+uint32_t SPHack = 0;
 uint32_t * WaitMode = 0;
 
 
