@@ -1,6 +1,7 @@
 extern "C" {
 	#include <stdio.h>
 	#include <string.h>
+	#include "types.h"
 	#include "usf.h"
 	#include "audio_hle.h"
 	#include "memory.h"

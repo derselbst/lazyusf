@@ -1,14 +1,11 @@
-#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "types.h"
 #include "main.h"
-#include "audio.h"
 #include "psftag.h"
-#include "cpu.h"
 #include "memory.h"
-#include "usf.h"
 
 char filename[512];
 uint32_t cpu_running = 0;
@@ -43,6 +40,9 @@ char year[25];
 
 uint32_t CPU_Type;
 int32_t RSP_Cpu;
+
+
+void StartEmulationFromSave ( void * savestate );
 
 uint32_t get_length_from_string(uint8_t * str_length)
 {

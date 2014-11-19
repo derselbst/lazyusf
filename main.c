@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-
+#include "types.h"
 #include "main.h"
 #include "usf.h"
 #include "audio.h"

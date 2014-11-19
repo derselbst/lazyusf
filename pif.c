@@ -23,8 +23,7 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include "main.h"
-#include "cpu.h"
+#include <stdint.h>
 
 // Skeletal support so USFs that read the controller won't fail (bad practice, though)
 

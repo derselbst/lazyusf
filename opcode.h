@@ -26,8 +26,6 @@
 #ifndef __OpCode
 #define __OpCode
 
-#include "types.h"
-
 typedef struct
 {
     union

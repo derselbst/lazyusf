@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-
-#include "usf.h"
-#include "cpu.h"
-#include "memory.h"
-#include "audio.h"
-#include "rsp.h"
 #include "types.h"
+#include "memory.h"
+#include "rsp.h"
+#include "registers.h"
+
 
 uint32_t NoOfMaps, MapsCRC[MaxMaps], Table,ConditionalMove=0;
 

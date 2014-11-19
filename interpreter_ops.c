@@ -23,11 +23,16 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include <stdio.h>
 #include <math.h>
-#include <float.h>
+#include "types.h"
+#include "exception.h"
+#include "interpreter_cpu.h"
+#include "interpreter_ops.h"
 #include "main.h"
+#include "tlb.h"
+#include "memory.h"
 #include "cpu.h"
+#include "registers.h"
 
 #define ADDRESS_ERROR_EXCEPTION(Address,FromRead) \
 	DoAddressError(NextInstruction == JUMP,Address,FromRead);\

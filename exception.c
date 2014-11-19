@@ -23,8 +23,11 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include "main.h"
+#include "types.h"
+#include "tlb.h"
 #include "cpu.h"
+#include "registers.h"
+#include "exception.h"
 
 void CheckInterrupts ( void )
 {

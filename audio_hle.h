@@ -130,11 +130,5 @@ extern int firstHLE, goldeneye;
 extern int audio_ucode(OSTask_t *task);
 //extern unsigned char *RDRAM,*DMEM, *IMEM, *ROM;
 //extern unsigned int N64MEM_Pages[0x80];
-#include "usf.h"
-#include "memory.h"
-#include "cpu.h"
-
-
-
 
 #endif

@@ -25,8 +25,12 @@
  */
 
 #include <string.h>
-#include "main.h"
+#include "types.h"
+#include "memory.h"
+#include "exception.h"
 #include "cpu.h"
+#include "pif.h"
+#include "registers.h"
 
 void PI_DMA_READ (void)
 {

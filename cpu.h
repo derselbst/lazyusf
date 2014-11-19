@@ -27,17 +27,7 @@
 #define _CPU_H_
 
 #include <stdbool.h>
-#include "interpreter_cpu.h"
-#include "interpreter_ops.h"
-#include "registers.h"
-#include "tlb.h"
-#include "memory.h"
-#include "dma.h"
-#include "exception.h"
-#include "pif.h"
 #include "opcode.h"
-#include "usf.h"
-#include "types.h"
 
 #ifdef __LP64__
 #define USEX86

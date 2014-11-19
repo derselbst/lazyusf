@@ -2,9 +2,6 @@
 #define _USF_H_
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stdint.h>
-#include <stdbool.h>
-
 extern char filename[512];
 extern int8_t round_frequency;
 extern uint32_t cpu_running, use_audiohle, is_paused, cpu_stopped, fake_seek_stopping;

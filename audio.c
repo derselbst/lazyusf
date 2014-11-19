@@ -14,6 +14,7 @@
 #include <ao/ao.h>
 #endif
 
+#include "types.h"
 #include "usf.h"
 #include "memory.h"
 #include "main.h"

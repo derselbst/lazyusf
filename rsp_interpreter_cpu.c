@@ -1,11 +1,9 @@
 #include <stdlib.h>
-#include <stdint.h>
 #include <math.h>
-#include "usf.h"
-#include "cpu.h"
-#include "memory.h"
-#include "audio.h"
+#include "types.h"
+#include "exception.h"
 #include "rsp.h"
+#include "registers.h"
 
 void (*RSP_Opcode[64])();
 void (*RSP_RegImm[32])();

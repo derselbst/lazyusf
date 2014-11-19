@@ -27,8 +27,6 @@
 #ifndef REGISTERS_H
 #define REGISTERS_H
 
-#include "types.h"
-
 #define INDEX_REGISTER			CP0[0]
 #define RANDOM_REGISTER			CP0[1]
 #define ENTRYLO0_REGISTER		CP0[2]

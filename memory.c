@@ -23,17 +23,18 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <memory.h>
 #include <sys/mman.h>
+#include "types.h"
+#include "exception.h"
+#include "dma.h"
 #include "main.h"
+#include "registers.h"
 #include "cpu.h"
 #include "audio.h"
 #include "rsp.h"
-#include "usf.h"
+#include "pif.h"
 
 uintptr_t *TLB_Map = 0;
 uint8_t * MemChunk = 0;

@@ -1,5 +1,3 @@
-#include <stdint.h>
-
 #define CPU_Interpreter		1
 #define CPU_Recompiler		0
 

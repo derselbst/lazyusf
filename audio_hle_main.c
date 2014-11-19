@@ -1,8 +1,7 @@
 #include <string.h>
-#include "usf.h"
+#include "types.h"
 #include "audio_hle.h"
 #include "memory.h"
-#include "audio.h"
 // "Mupen64 HLE RSP plugin v0.2 with Azimers code by Hacktarux"
 
 
@@ -41,7 +40,7 @@ u32 inst1, inst2;
 int audio_ucode ( OSTask_t *task )
 {
 
-	unsigned int *p_alist = ( u32* )( task->data_ptr + N64MEM );
+// 	unsigned int *p_alist = ( u32* )( task->data_ptr + N64MEM );
 	unsigned int i;
 
 	goldeneye = 0;

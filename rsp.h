@@ -1,9 +1,6 @@
 #ifndef _RSP_H_
 #define _RSP_H_
 
-#include <stdint.h>
-#include "types.h"
-
 #pragma pack(push,1)
 
 typedef struct tagOPCODE
@@ -381,7 +378,7 @@ extern REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 extern uint32_t RSP_NextInstruction, RSP_JumpTo;
 extern uint32_t RSP_Running;
 
-#define MaxMaps	32
+#define MaxMaps		32
 
 extern uint32_t Table;
 

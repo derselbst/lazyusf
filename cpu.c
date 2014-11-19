@@ -23,17 +23,20 @@
  * should be forwarded to them so if they want them.
  *
  */
-
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-#include "main.h"
-#include "cpu.h"
+#include "types.h"
 #include "usf.h"
+#include "memory.h"
+#include "cpu.h"
 #include "audio.h"
 #include "audio_hle.h"
 #include "registers.h"
 #include "rsp.h"
+#include "interpreter_cpu.h"
+#include "tlb.h"
+#include "pif.h"
+#include "exception.h"
+#include "main.h"
 
 uint32_t NextInstruction = 0, JumpToLocation = 0, AudioIntrReg = 0;
 CPU_ACTION * CPU_Action = 0;

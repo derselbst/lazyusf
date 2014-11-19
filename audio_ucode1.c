@@ -1,4 +1,6 @@
 #include <string.h>
+#include "types.h"
+#include "memory.h"
 #include "usf.h"
 #include "audio_hle.h"
 

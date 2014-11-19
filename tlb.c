@@ -24,8 +24,10 @@
  *
  */
 #include <string.h>
-#include "main.h"
-#include "cpu.h"
+#include "types.h"
+#include "registers.h"
+#include "tlb.h"
+#include "memory.h"
 
 void SetupTLB_Entry (int32_t Entry);
 

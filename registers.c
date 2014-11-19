@@ -25,10 +25,11 @@
  */
 
 // #ifdef EXT_REGS
-
-#include "main.h"
-#include "cpu.h"
 #include "types.h"
+#include "exception.h"
+#include "registers.h"
+#include "cpu.h"
+#include "pif.h"
 
 uint32_t PROGRAM_COUNTER, * CP0,*FPCR,*RegRDRAM,*RegSP,*RegDPC,*RegMI,*RegVI,*RegAI,*RegPI,
          *RegRI,*RegSI, HalfLine, RegModValue, ViFieldNumber, LLBit, LLAddr;

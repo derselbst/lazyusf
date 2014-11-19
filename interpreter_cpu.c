@@ -23,13 +23,13 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include <float.h>
-#include "main.h"
+#include "types.h"
+#include "exception.h"
 #include "cpu.h"
 #include "usf.h"
 #include "memory.h"
-
-#include <stdio.h>
+#include "registers.h"
+#include "interpreter_ops.h"
 
 void (* R4300i_Opcode[64])();
 void (* R4300i_Special[64])();

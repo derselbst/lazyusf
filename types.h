@@ -32,6 +32,8 @@
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
+
 typedef uint64_t QWORD;
 
 typedef union tagVect {
