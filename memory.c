@@ -1,1249 +1,704 @@
-/*
- * Project 64 - A Nintendo 64 emulator.
- *
- * (c) Copyright 2001 zilmar (zilmar@emulation64.com) and
- * Jabo (jabo@emulation64.com).
- *
- * pj64 homepage: www.pj64.net
- *
- * Permission to use, copy, modify and distribute Project64 in both binary and
- * source form, for non-commercial purposes, is hereby granted without fee,
- * providing that this license information and copyright notice appear with
- * all copies and any derived work.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event shall the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Project64 is freeware for PERSONAL USE only. Commercial users should
- * seek permission of the copyright holders first. Commercial use includes
- * charging money for Project64 or software derived from Project64.
- *
- * The copyright holders request that bug fixes and improvements to the code
- * should be forwarded to them so if they want them.
- *
- */
-#include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
-#include "types.h"
-#include "exception.h"
-#include "dma.h"
-#include "main.h"
-#include "registers.h"
+#include "usf.h"
 #include "cpu.h"
+#include "memory.h"
 #include "audio.h"
-#include "rsp.h"
-#include "pif.h"
 
-uintptr_t *TLB_Map = 0;
-uint8_t * MemChunk = 0;
-uint32_t RdramSize = 0x800000, SystemRdramSize = 0x800000, RomFileSize = 0x4000000;
-uint8_t * N64MEM = 0, * RDRAM = 0, * DMEM = 0, * IMEM = 0, * ROMPages[0x400], * savestatespace = 0, * NOMEM = 0;
+char *RAM_Pages[0x81];
+char *ROM_Pages[0x400];
+char *IMEM, *DMEM;
+int RamSize, RomSize;
+int *TLB_Map;
 
-uint32_t WrittenToRom = 0;
-uint32_t WroteToRom = 0;
-uint32_t TempValue = 0;
-uint32_t MemoryState = 0;
-
-uint8_t EmptySpace = 0;
-
-uint8_t * PageROM(uint32_t addr)
-{
-    return (ROMPages[addr/0x10000])?ROMPages[addr/0x10000]+(addr%0x10000):&EmptySpace;
+int RamBytes = 0, RomBytes = 0;
+unsigned long PageVRAM(unsigned long x) {
+	int paddr = ((unsigned long) (TLB_Map[x >> TLB_GRAN] + x + 0x75c) );
+	return (unsigned long) (RAM_Pages[paddr >> 16]+(paddr & 0xffff));
 }
 
 
-#define PAGE_SIZE	4096
-void *malloc_exec(uint32_t bytes)
-{
-    void *ptr = NULL;
+int InitMemory() {
+	int i = 0;
+	RamSize = 0x400000;
+	RomSize = 0;
 
-    ptr = mmap(0,bytes,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANON, 0, 0);
+	for(i = 0; i < 0x81; i++)
+		RAM_Pages[i] = 0;
 
-    return ptr;
+	for(i = 0; i < 0x400; i++)
+		ROM_Pages[i] = 0;
 
-}
+	TLB_Map = (int*) malloc(TLB_SIZE * sizeof(int*));
 
-
-bool Allocate_Memory ( void )
-{
-    //RdramSize = 0x800000;
-
-    // Allocate the N64MEM and TLB_Map so that they are in each others 4GB range
-    // Also put the registers there :)
-
-    // the mmap technique works craptacular when the regions don't overlay
-
-    MemChunk = mmap(NULL, 0x100000 * sizeof(uintptr_t) + 0x1D000 + RdramSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, 0, 0);
-
-    TLB_Map = (uintptr_t*)MemChunk;
-    if (TLB_Map == NULL)
-    {
-        return 0;
-    }
-
-    memset(TLB_Map, 0, 0x100000 * sizeof(uintptr_t) + 0x10000);
-
-    N64MEM = mmap((uintptr_t)MemChunk + 0x100000 * sizeof(uintptr_t) + 0x10000, 0xD000 + RdramSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, 0, 0);
-    if(N64MEM == NULL)
-    {
-        DisplayError("Failed to allocate N64MEM");
-        return 0;
-    }
-
-    memset(N64MEM, 0, RdramSize);
-
-    NOMEM = mmap((uintptr_t)N64MEM + RdramSize, 0xD000, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, 0, 0);
-
-    if(RdramSize == 0x400000)
-    {
-        //	munmap(N64MEM + 0x400000, 0x400000);
-    }
-
-    Registers = (N64_REGISTERS *)((uintptr_t)MemChunk + 0x100000 * sizeof(uintptr_t));
-    //TLBLoadAddress = (uint32_t *)((uintptr_t)Registers + 0x500);
-    //Timers = (SYSTEM_TIMERS*)(TLBLoadAddress + 4);
-    Timers = (SYSTEM_TIMERS*)((uintptr_t)Registers + 0x500);
-    WaitMode = (uint32_t *)(Timers + sizeof(SYSTEM_TIMERS));
-    CPU_Action = (CPU_ACTION *)(WaitMode + 4);
-    RSP_GPR = (REGISTER32 *)(CPU_Action + sizeof(CPU_ACTION));
-    DMEM = (uint8_t *)(RSP_GPR + (32 * 8));
-    RSP_ACCUM = (REGISTER *)(DMEM + 0x2000);
-    RSP_Vect = (VECTOR *)((char*)RSP_ACCUM + (sizeof(REGISTER)*32));
-
-
-    RDRAM = (uint8_t *)(N64MEM);
-    IMEM  = DMEM + 0x1000;
-
-    MemoryState = 1;
+	memset(TLB_Map, 0, (TLB_SIZE * sizeof(int*)));
 
     return 1;
 }
 
-bool PreAllocate_Memory(void)
-{
-    // Moved the savestate allocation here :)  (for better management later)
-    savestatespace = malloc(0x80275C);
 
-    if(savestatespace == 0)
-        return 0;
+int FreeMemory() {
+	int i = 0;
+	RamSize = 0x400000;
+	RomSize = 0;
 
-    memset(savestatespace, 0, 0x80275C);
+	for(i = 0; i < 0x81; i++) {
+		if(RAM_Pages[i])
+			free(RAM_Pages[i]);
+		RAM_Pages[i] = 0;
+	}
 
-    uint16_t i;
-    for (i = 0; i < 0x400; i++)
-    {
-        ROMPages[i] = 0;
-    }
+	for(i = 0; i < 0x400; i++) {
+		if(ROM_Pages[i])
+			free(ROM_Pages[i]);
+		ROM_Pages[i] = 0;
+	}
+
+	if(TLB_Map) {
+		free(TLB_Map);
+		TLB_Map = 0;
+	}
+
 
     return 1;
 }
 
-void Release_Memory ( void )
-{
-    uint16_t i;
 
-    for (i = 0; i < 0x400; i++)
-    {
-        if (ROMPages[i])
-        {
-            free(ROMPages[i]);
-            ROMPages[i] = 0;
-        }
-    }
-    //printf("Freeing memory\n");
+int SetupTLB(int start) {
+	unsigned long i = 0;
 
-    MemoryState = 0;
+	if(start) {
+		for (i = 0x80000000; i < 0xC0000000; i += TLB_GRAN2)
+			TLB_Map[i >> TLB_GRAN] = (i & 0x1FFFFFFF) - i;
+	}
 
-    if (MemChunk != 0)
-    {
-        munmap(MemChunk, 0x100000 * sizeof(uintptr_t)) + 0x1D000 + RdramSize;
-        MemChunk=0;
-    }
-    if (N64MEM != 0)
-    {
-        munmap(N64MEM, RdramSize);
-        N64MEM=0;
-    }
-    if (NOMEM != 0)
-    {
-        munmap(NOMEM, 0xD000);
-        NOMEM=0;
-    }
+	for(i = 0; i < 32; i++) {
+		unsigned long VirtualStart = 0, PhysicalStart = 0, VirtualEnd = 0, PhysicalEnd = 0, j = 0, add = 0;
+		if(state->tlb[i].EntryDefined==0)
+			continue;
 
-    if(savestatespace)
-    {
-        free(savestatespace);
-    }
-    savestatespace = NULL;
+		VirtualStart = state->tlb[i].EntryHi.VPN2 << 13;
+		PhysicalStart = state->tlb[i].EntryLo0.PFN << 12;
+		VirtualEnd = VirtualStart + (state->tlb[i].PageMask.Mask << 12) + 0xFFF;
+
+		if (state->tlb[i].EntryLo0.V)
+			add = 1;
+
+		if((VirtualStart >= 0x80000000) && (VirtualEnd < 0xC0000000) || (PhysicalStart >= 0x20000000))
+			add = 0;
+
+		if(add) {
+			for(j = VirtualStart; j < VirtualEnd; j += TLB_GRAN2)
+				TLB_Map[j >> TLB_GRAN] = ((j - VirtualStart) + PhysicalStart) - j;
+		}
+
+		add = 0;
+
+		VirtualStart = VirtualEnd + 1;
+		PhysicalStart = state->tlb[i].EntryLo1.PFN << 12;
+		VirtualEnd = VirtualStart + (state->tlb[i].PageMask.Mask << 12) + 0xFFF;
+
+		if (state->tlb[i].EntryLo1.V)
+			add = 1;
+
+		if((VirtualStart >= 0x80000000) && (VirtualEnd < 0xC0000000) || (PhysicalStart >= 0x20000000))
+			add = 0;
+
+		if(add) {
+			for(j = VirtualStart; j < VirtualEnd; j += TLB_GRAN2)
+				TLB_Map[j >> TLB_GRAN] = ((j - VirtualStart) + PhysicalStart) - j;
+		}
+	}
+
+	return 1;
+}
+
+int LD_VAddr(unsigned long addr, long long *value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + addr + 0x75c;
+	long long temp= 0;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			value = 0;
+			return 1;
+		}
+
+		*((unsigned long *)(value) + 1) = *(unsigned long *)(RAM_Pages[(address) >> 16] + ((address) & 0xffff));
+
+		*((unsigned long *)(value)) = *(unsigned long *)(RAM_Pages[(address+4) >> 16] + ((address+4) & 0xffff));
+
+	}
+	return 1;
+}
+
+
+int SD_VAddr(unsigned long addr, long long value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + addr + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			RAM_Pages[address >> 16] = malloc(0x10000);
+			RamBytes += 0x10000;
+		}
+
+		*(unsigned long *)(RAM_Pages[(address) >> 16] + ((address) & 0xffff)) = *((unsigned long *)(&value) + 1);
+		*(unsigned long *)(RAM_Pages[(address+4) >> 16] + ((address+4) & 0xffff)) = *((unsigned long *)(&value));
+
+	}
+	return 1;
+}
+
+
+int LW_VAddr(unsigned long addr, unsigned long *value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + addr + 0x75c;
+
+	if(addr < 0x400000) {
+		//address = addr&0x7fffff;
+		//*value = *(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff));
+		//
+		return 1;
+	}
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return LW_Register(address-0x75c, value);
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+				value = 0;
+			return 1;
+		}
+
+		*value = *(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff));
+	}
+	return 1;
+}
+
+
+int SW_VAddr(unsigned long addr, unsigned long value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + addr + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return SW_Register(address-0x75c, value);
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			RAM_Pages[address >> 16] = malloc(0x10000);
+			RamBytes += 0x10000;
+		}
+
+		*(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+	}
+	return 1;
+}
+
+
+int LH_VAddr(unsigned long addr, unsigned short *value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + (addr ^ 2) + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			*value = 0;
+			return 1;
+		}
+
+		*value = *(unsigned short *)(RAM_Pages[address >> 16] + (address & 0xffff));
+	}
+	return 1;
+}
+
+
+int SH_VAddr(unsigned long addr, unsigned short value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + (addr ^ 2) + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			RAM_Pages[address >> 16] = malloc(0x10000);
+			RamBytes += 0x10000;
+		}
+
+		*(unsigned short *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+	}
+	return 1;
+}
+
+
+int LB_VAddr(unsigned long addr, unsigned char *value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + (addr ^ 3) + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+			RAM_Pages[address >> 16] = malloc(0x10000);
+			RamBytes += 0x10000;
+		}
+
+		*value = *(unsigned char *)(RAM_Pages[address >> 16] + (address & 0xffff));
+	}
+	return 1;
+}
+
+int SB_VAddr(unsigned long addr, unsigned char value) {
+
+	unsigned long address = TLB_Map[addr >> TLB_GRAN] + (addr ^ 3) + 0x75c;
+
+	if (TLB_Map[addr >> TLB_GRAN] == 0)
+		return 0;
+
+	if((address - 0x75c) > state->RamSize) {
+		return 0;
+	} else {
+		if(RAM_Pages[address >> 16] == 0) {
+
+			return 1;
+		}
+
+		*(unsigned char *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+	}
+	return 1;
+}
+
+#define ASSERT_REG(reg,max,mask)	((reg>max)?max:reg)
+
+int LW_Register(unsigned long addr, unsigned long *value) {
+
+	unsigned long addrcalc = 0, regnum = 0;
+	//ROM area
+	if ((addr >= 0x10000000) && (addr < 0x16000000)) {
+		if ((addr - 0x10000000) < 0x4000000) {
+			*value = *(unsigned long*)PageROM(addr - 0x10000000);
+			return 1;
+		} else {
+			*value = addr & 0xFFFF;
+			*value = (*value << 16) | *value;
+			return 0;
+		}
+	}
+
+	regnum = (addr&0xFFFF) >> 2;
+
+	switch(addr & 0x0FFF0000) {
+		case 0x03F00000: *value = state->RegRDRAM[ASSERT_REG(regnum,10,0x3FF)]; break;
+		case 0x04040000: *value = state->RegSP[ASSERT_REG(regnum,4,0x70)]; break;
+		case 0x04080000: *value = state->RegSP[ASSERT_REG(regnum,1,1)]; break;
+		case 0x04100000: *value = state->RegDP[ASSERT_REG(regnum,5,0xF8)]; break;
+		case 0x04300000: *value = state->RegMI[ASSERT_REG(regnum,4,0xf)]; break;
+		case 0x04400000:
+			*value = state->RegVI[ASSERT_REG(regnum,13,0x3FFF)];
+			if(regnum==4) {
+				if (Timers.Timer < 0)
+					HalfLine = 0;
+				else {
+					HalfLine = (Timers.Timer / 1500);
+					HalfLine &= ~1;
+					HalfLine += ViFieldNumber;
+				}
+				*value = HalfLine;
+			}
+			break;
+		case 0x4500000:
+			*value = state->RegAI[ASSERT_REG(regnum,3,0xa)];
+			if(regnum==1) {
+				*value = AiReadLength();
+				return 1;
+			}
+			//printf("AiReg : %08x\t%08x\n", addr , state->PC);
+			break;
+		case 0x4600000: *value = state->RegPI[ASSERT_REG(regnum,9,0x1FF0)]; break;
+		case 0x4700000: *value = state->RegRI[ASSERT_REG(regnum,7,0xff)]; break;
+		case 0x4800000: if(regnum==6) *value = state->RegSI[3]; break;
+		case 0x8000000: *value = 0; break;
+		default: {
+			unsigned long address = TLB_Map[state->PC >> 16] + (state->PC & 0xffff);
+			printf("Reading from unhandled register %08x from %08x (%08x)!\n",addr, state->PC, address);
+			*value = 0;
+			return 1;
+			}
+			break;
+	}
+
+	return 1;
+
+}
+
+int SW_Register(unsigned long addr, unsigned long value) {
+	unsigned long addrcalc = 0, regnum = 0;
+	regnum = (addr&0xFFFF) >> 2;
+
+	switch(addr & 0xFFFF0000) {
+		case 0x3F00000: state->RegRDRAM[ASSERT_REG(regnum,10,0x3FF)] = value; break;
+		case 0x4040000:
+
+			if(regnum==4) {
+                if ( ( value & SP_CLR_HALT ) != 0) { SP_STATUS_REG &= ~SP_STATUS_HALT; }
+				if ( ( value & SP_SET_HALT ) != 0) { SP_STATUS_REG |= SP_STATUS_HALT;  }
+				if ( ( value & SP_CLR_BROKE ) != 0) { SP_STATUS_REG &= ~SP_STATUS_BROKE; }
+				if ( ( value & SP_CLR_INTR ) != 0) {
+					MI_INTR_REG &= ~MI_INTR_SP;
+					CheckInterrupts();
+				}
+				if ( ( value & SP_CLR_SSTEP ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SSTEP; }
+				if ( ( value & SP_SET_SSTEP ) != 0) { SP_STATUS_REG |= SP_STATUS_SSTEP;  }
+				if ( ( value & SP_CLR_INTR_BREAK ) != 0) { SP_STATUS_REG &= ~SP_STATUS_INTR_BREAK; }
+				if ( ( value & SP_SET_INTR_BREAK ) != 0) { SP_STATUS_REG |= SP_STATUS_INTR_BREAK;  }
+				if ( ( value & SP_CLR_SIG0 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG0; }
+				if ( ( value & SP_SET_SIG0 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG0;  }
+				if ( ( value & SP_CLR_SIG1 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG1; }
+				if ( ( value & SP_SET_SIG1 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG1;  }
+				if ( ( value & SP_CLR_SIG2 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG2; }
+				if ( ( value & SP_SET_SIG2 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG2;  }
+				if ( ( value & SP_CLR_SIG3 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG3; }
+				if ( ( value & SP_SET_SIG3 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG3;  }
+				if ( ( value & SP_CLR_SIG4 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG4; }
+				if ( ( value & SP_SET_SIG4 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG4;  }
+				if ( ( value & SP_CLR_SIG5 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG5; }
+				if ( ( value & SP_SET_SIG5 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG5;  }
+				if ( ( value & SP_CLR_SIG6 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG6; }
+				if ( ( value & SP_SET_SIG6 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG6;  }
+				if ( ( value & SP_CLR_SIG7 ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SIG7; }
+				if ( ( value & SP_SET_SIG7 ) != 0) { SP_STATUS_REG |= SP_STATUS_SIG7;  }
+
+				RunRsp();
+				CheckInterrupts();
+				return 1;
+			}
+			state->RegSP[ASSERT_REG(regnum,4,0x70)] = value;
+
+			if(regnum==2) { SP_DMA_READ(); return 1; }//printf("SP_DMA_READ\n");
+			if(regnum==3) { printf("SP_DMA_WRITE\n"); return 0;}
+			//printf("SP Value %08x > %08x\n", value, addr);
+
+			break;
+		case 0x4080000: state->RegSP[ASSERT_REG(regnum,1,1)] = value; break;
+		case 0x4100000:
+			if(regnum==3)  {
+				//printf("SW DPC_STATUS_REG\n");
+				if ( ( value & DPC_CLR_XBUS_DMEM_DMA ) != 0) { DPC_STATUS_REG &= ~DPC_STATUS_XBUS_DMEM_DMA; }
+				if ( ( value & DPC_SET_XBUS_DMEM_DMA ) != 0) { DPC_STATUS_REG |= DPC_STATUS_XBUS_DMEM_DMA;  }
+				if ( ( value & DPC_CLR_FREEZE ) != 0) { DPC_STATUS_REG &= ~DPC_STATUS_FREEZE; }
+				if ( ( value & DPC_SET_FREEZE ) != 0) { DPC_STATUS_REG |= DPC_STATUS_FREEZE;  }
+				if ( ( value & DPC_CLR_FLUSH ) != 0) { DPC_STATUS_REG &= ~DPC_STATUS_FLUSH; }
+				if ( ( value & DPC_SET_FLUSH ) != 0) { DPC_STATUS_REG |= DPC_STATUS_FLUSH;  }
+				if ( ( value & DPC_CLR_FREEZE ) != 0) {
+					if ( ( SP_STATUS_REG & SP_STATUS_HALT ) == 0) {
+						if ( ( SP_STATUS_REG & SP_STATUS_BROKE ) == 0 ) {
+							RunRsp();
+						}
+					}
+				}
+				return 1;
+			}
+			state->RegDP[ASSERT_REG(regnum,5,0xF8)] = value;
+			break;
+		case 0x4300000:
+			if(regnum==0) {
+				//printf("SW MI_MODE_REG\n");
+				MI_MODE_REG &= ~0x7F;
+				MI_MODE_REG |= (value & 0x7F);
+				if ( ( value & MI_CLR_INIT ) != 0 ) { MI_MODE_REG &= ~MI_MODE_INIT; }
+				if ( ( value & MI_SET_INIT ) != 0 ) { MI_MODE_REG |= MI_MODE_INIT; }
+				if ( ( value & MI_CLR_EBUS ) != 0 ) { MI_MODE_REG &= ~MI_MODE_EBUS; }
+				if ( ( value & MI_SET_EBUS ) != 0 ) { MI_MODE_REG |= MI_MODE_EBUS; }
+				if ( ( value & MI_CLR_DP_INTR ) != 0 ) {
+					MI_INTR_REG &= ~MI_INTR_DP;
+					CheckInterrupts();
+				}
+				if ( ( value & MI_CLR_RDRAM ) != 0 ) { MI_MODE_REG &= ~MI_MODE_RDRAM; }
+				if ( ( value & MI_SET_RDRAM ) != 0 ) { MI_MODE_REG |= MI_MODE_RDRAM; }
+				return 1;
+			}
+			if(regnum==3) {
+
+
+				if ( ( value & MI_INTR_MASK_CLR_SP ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_SP; }
+				if ( ( value & MI_INTR_MASK_SET_SP ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_SP; }
+				if ( ( value & MI_INTR_MASK_CLR_SI ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_SI; }
+				if ( ( value & MI_INTR_MASK_SET_SI ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_SI; }
+				if ( ( value & MI_INTR_MASK_CLR_AI ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_AI; }
+				if ( ( value & MI_INTR_MASK_SET_AI ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_AI; }
+				if ( ( value & MI_INTR_MASK_CLR_VI ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_VI; }
+				if ( ( value & MI_INTR_MASK_SET_VI ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_VI; }
+				if ( ( value & MI_INTR_MASK_CLR_PI ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_PI; }
+				if ( ( value & MI_INTR_MASK_SET_PI ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_PI; }
+				if ( ( value & MI_INTR_MASK_CLR_DP ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_DP; }
+				if ( ( value & MI_INTR_MASK_SET_DP ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_DP; }
+                return 1;
+			}
+
+			state->RegMI[ASSERT_REG(regnum,4,0xf)] = value;
+			break;
+		case 0x4400000:
+			//if(regnum==3) printf("SW VI Interrupt\n");
+			if(regnum==4) { MI_INTR_REG &= ~MI_INTR_VI; CheckInterrupts(); return 1; }
+			state->RegVI[ASSERT_REG(regnum,13,0x3FFF)] = value;
+
+			break;
+		case 0x4500000:
+			if(regnum==1) { AiLenChanged(value); return 1; }
+			state->RegAI[ASSERT_REG(regnum,3,0xa)] = value;
+			if(regnum==3) {
+				//printf("Clear AI Interrupt\n");
+				MI_INTR_REG &= ~MI_INTR_AI;
+				AudioIntrReg &= ~MI_INTR_AI;
+				CheckInterrupts();
+			}
+			if(regnum==4) printf("AiDacrateChanged\n");
+			break;
+		case 0x4600000:
+			if(regnum==4) { if(value&2) state->RegMI[2]&=0xFFFFFFEF; return 1; }
+			state->RegPI[ASSERT_REG(regnum,9,0x1FF)] = value;
+			if(regnum==2) printf("PI_DMA_READ (%08x)\n", PROGRAM_COUNTER);
+			if(regnum==3) PI_DMA_WRITE();
+			break;
+		case 0x4700000: state->RegRI[ASSERT_REG(regnum,7,0xff)] = value; break;
+		case 0x4800000:
+			state->RegSI[ASSERT_REG(regnum,7,0x53)] = value;
+
+			if(regnum==1) {
+                if(!enablecompare) {
+					MI_INTR_REG |= MI_INTR_SI;
+					SI_STATUS_REG |= SI_STATUS_INTERRUPT;
+					CheckInterrupts();
+				}
+			}
+
+
+			if(regnum==4) {
+
+				if(enablecompare) {
+					MI_INTR_REG |= MI_INTR_SI;
+					SI_STATUS_REG |= SI_STATUS_INTERRUPT;
+					CheckInterrupts();
+				}
+			}
+
+			if(regnum==6) {
+				MI_INTR_REG &= ~MI_INTR_SI;
+				SI_STATUS_REG &= ~SI_STATUS_INTERRUPT;
+				CheckInterrupts();
+				return 1;
+			}
+			break;
+		case 0x1FC00000: printf("PifRamWrite\n"); break;
+		default:
+			printf("writing2 to unhandled register %08x from %08x!\n",addr, state->PC);
+			return 0;
+			break;
+	}
+	return 1;
+}
+
+
+int LW_PAddr(unsigned long addr, unsigned long *value) {
+
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		return 0;
+	}
+
+	*value = *(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff));
+
+	return 1;
 
 }
 
 
-bool r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend )
-{
-    if (PAddr >= 0x10000000 && PAddr < 0x16000000)
-    {
-        if (WrittenToRom)
-        {
-            return 0;
-        }
-        if ((PAddr & 2) == 0)
-        {
-            PAddr = (PAddr + 4) ^ 2;
-        }
-        if ((PAddr - 0x10000000) < RomFileSize)
-        {
-            if (SignExtend)
-            {
-                *Value = (char)*PageROM((PAddr - 0x10000000)^3);
+int LW_PAddr_Imm(unsigned long addr) {
 
-            }
-            else
-            {
-                *Value = *PageROM((PAddr - 0x10000000)^3);
-            }
-            return 1;
-        }
-        else
-        {
-            *Value = 0;
-            return 0;
-        }
-    }
+	unsigned long address = addr + 0x75c, value = 0;
 
-    switch (PAddr & 0xFFF00000)
-    {
-    default:
-        * Value = 0;
-        return 0;
-        break;
-    }
-    return 1;
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 0;
+	}
+
+	value = *(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff));
+
+	return value;
+
 }
 
-bool r4300i_LB_VAddr ( uint32_t VAddr, uint8_t * Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *Value = *(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3));
-    return 1;
+unsigned char LB_PAddr_Imm(unsigned long addr) {
+
+	unsigned long address = (addr^3) + 0x75c;
+	unsigned char value = 0;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 0;
+	}
+
+	value = *(unsigned char *)(RAM_Pages[address >> 16] + (address & 0xffff));
+
+	return value;
+
 }
 
-bool r4300i_LD_VAddr ( uint32_t VAddr, uint64_t * Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *((uint32_t *)(Value) + 1) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr);
-    *((uint32_t *)(Value)) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4);
-    return 1;
+
+int SW_PAddr(unsigned long addr, unsigned long value) {
+
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 1;
+	}
+
+	*(unsigned long *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+
+	return 1;
 }
 
-bool r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend )
-{
-    switch (PAddr & 0xFFF00000)
-    {
-    default:
-        * Value = 0;
-        return 0;
-        break;
-    }
-    return 1;
+
+int LH_PAddr(unsigned long addr, unsigned short *value) {
+
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 1;
+	}
+
+	*value = *(unsigned short *)(RAM_Pages[address >> 16] + (address & 0xffff));
+
+	return 1;
+
 }
 
-bool r4300i_LH_VAddr ( uint32_t VAddr, uint16_t * Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *Value = *(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2));
-    return 1;
+
+int SH_PAddr(unsigned long addr, unsigned short value) {
+
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 1;
+	}
+
+	*(unsigned short *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+
+	return 1;
 }
 
-bool r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value )
-{
-    if (PAddr >= 0x10000000 && PAddr < 0x16000000)
-    {
-        if (WrittenToRom)
-        {
-            *Value = WroteToRom;
-            //LogMessage("%X: Read crap from Rom %X from %X",PROGRAM_COUNTER,*Value,PAddr);
-            WrittenToRom = 0;
-            return 1;
-        }
-        if ((PAddr - 0x10000000) < RomFileSize)
-        {
-            *Value = *(uint32_t *)PageROM((PAddr - 0x10000000));
-            return 1;
-        }
-        else
-        {
-            *Value = PAddr & 0xFFFF;
-            *Value = (*Value << 16) | *Value;
-            return 0;
-        }
-    }
+int LB_PAddr(unsigned long addr, unsigned char *value) {
 
-    switch (PAddr & 0xFFF00000)
-    {
-    case 0x03F00000:
-        switch (PAddr)
-        {
-        case 0x03F00000:
-            * Value = RDRAM_CONFIG_REG;
-            break;
-        case 0x03F00004:
-            * Value = RDRAM_DEVICE_ID_REG;
-            break;
-        case 0x03F00008:
-            * Value = RDRAM_DELAY_REG;
-            break;
-        case 0x03F0000C:
-            * Value = RDRAM_MODE_REG;
-            break;
-        case 0x03F00010:
-            * Value = RDRAM_REF_INTERVAL_REG;
-            break;
-        case 0x03F00014:
-            * Value = RDRAM_REF_ROW_REG;
-            break;
-        case 0x03F00018:
-            * Value = RDRAM_RAS_INTERVAL_REG;
-            break;
-        case 0x03F0001C:
-            * Value = RDRAM_MIN_INTERVAL_REG;
-            break;
-        case 0x03F00020:
-            * Value = RDRAM_ADDR_SELECT_REG;
-            break;
-        case 0x03F00024:
-            * Value = RDRAM_DEVICE_MANUF_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04000000:
-        switch (PAddr)
-        {
-        case 0x04040010:
-            *Value = SP_STATUS_REG;
-            break;
-        case 0x04040014:
-            *Value = SP_DMA_FULL_REG;
-            break;
-        case 0x04040018:
-            *Value = SP_DMA_BUSY_REG;
-            break;
-        case 0x04080000:
-            *Value = SP_PC_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04100000:
-        switch (PAddr)
-        {
-        case 0x0410000C:
-            *Value = DPC_STATUS_REG;
-            break;
-        case 0x04100010:
-            *Value = DPC_CLOCK_REG;
-            break;
-        case 0x04100014:
-            *Value = DPC_BUFBUSY_REG;
-            break;
-        case 0x04100018:
-            *Value = DPC_PIPEBUSY_REG;
-            break;
-        case 0x0410001C:
-            *Value = DPC_TMEM_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04300000:
-        switch (PAddr)
-        {
-        case 0x04300000:
-            * Value = MI_MODE_REG;
-            break;
-        case 0x04300004:
-            * Value = MI_VERSION_REG;
-            break;
-        case 0x04300008:
-            * Value = MI_INTR_REG;
-            break;
-        case 0x0430000C:
-            * Value = MI_INTR_MASK_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04400000:
-        switch (PAddr)
-        {
-        case 0x04400000:
-            *Value = VI_STATUS_REG;
-            break;
-        case 0x04400004:
-            *Value = VI_ORIGIN_REG;
-            break;
-        case 0x04400008:
-            *Value = VI_WIDTH_REG;
-            break;
-        case 0x0440000C:
-            *Value = VI_INTR_REG;
-            break;
-        case 0x04400010:
-            *Value = 0;
-            break;
-        case 0x04400014:
-            *Value = VI_BURST_REG;
-            break;
-        case 0x04400018:
-            *Value = VI_V_SYNC_REG;
-            break;
-        case 0x0440001C:
-            *Value = VI_H_SYNC_REG;
-            break;
-        case 0x04400020:
-            *Value = VI_LEAP_REG;
-            break;
-        case 0x04400024:
-            *Value = VI_H_START_REG;
-            break;
-        case 0x04400028:
-            *Value = VI_V_START_REG ;
-            break;
-        case 0x0440002C:
-            *Value = VI_V_BURST_REG;
-            break;
-        case 0x04400030:
-            *Value = VI_X_SCALE_REG;
-            break;
-        case 0x04400034:
-            *Value = VI_Y_SCALE_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04500000:
-        switch (PAddr)
-        {
-        case 0x04500004:
-            *Value = AiReadLength();
-            break;
-        case 0x0450000C:
-            *Value = AI_STATUS_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04600000:
-        switch (PAddr)
-        {
-        case 0x04600010:
-            *Value = PI_STATUS_REG;
-            break;
-        case 0x04600014:
-            *Value = PI_DOMAIN1_REG;
-            break;
-        case 0x04600018:
-            *Value = PI_BSD_DOM1_PWD_REG;
-            break;
-        case 0x0460001C:
-            *Value = PI_BSD_DOM1_PGS_REG;
-            break;
-        case 0x04600020:
-            *Value = PI_BSD_DOM1_RLS_REG;
-            break;
-        case 0x04600024:
-            *Value = PI_DOMAIN2_REG;
-            break;
-        case 0x04600028:
-            *Value = PI_BSD_DOM2_PWD_REG;
-            break;
-        case 0x0460002C:
-            *Value = PI_BSD_DOM2_PGS_REG;
-            break;
-        case 0x04600030:
-            *Value = PI_BSD_DOM2_RLS_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04700000:
-        switch (PAddr)
-        {
-        case 0x04700000:
-            * Value = RI_MODE_REG;
-            break;
-        case 0x04700004:
-            * Value = RI_CONFIG_REG;
-            break;
-        case 0x04700008:
-            * Value = RI_CURRENT_LOAD_REG;
-            break;
-        case 0x0470000C:
-            * Value = RI_SELECT_REG;
-            break;
-        case 0x04700010:
-            * Value = RI_REFRESH_REG;
-            break;
-        case 0x04700014:
-            * Value = RI_LATENCY_REG;
-            break;
-        case 0x04700018:
-            * Value = RI_RERROR_REG;
-            break;
-        case 0x0470001C:
-            * Value = RI_WERROR_REG;
-            break;
-        default:
-            * Value = 0;
-            return 0;
-        }
-        break;
-    case 0x04800000:
-        switch (PAddr)
-        {
-        case 0x04800018:
-            *Value = SI_STATUS_REG;
-            break;
-        default:
-            *Value = 0;
-            return 0;
-        }
-        break;
-    case 0x05000000:
-        *Value = PAddr & 0xFFFF;
-        *Value = (*Value << 16) | *Value;
-        return 0;
-    case 0x08000000:
-        *Value = 0;
-        break;
-    default:
-        *Value = PAddr & 0xFFFF;
-        *Value = (*Value << 16) | *Value;
-        return 0;
-        break;
-    }
-    return 1;
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 1;
+	}
+
+	*value = *(unsigned char *)(RAM_Pages[address >> 16] + (address & 0xffff));
+
+	return 1;
+
 }
 
-void r4300i_LW_PAddr ( uint32_t PAddr, uint32_t * Value )
-{
-    *Value = *(uint32_t *)(N64MEM+PAddr);
+
+int SB_PAddr(unsigned long addr, unsigned char value) {
+
+	unsigned long address = addr + 0x75c;
+
+	if(RAM_Pages[address >> 16] == 0) {
+		value = 0;
+		return 1;
+	}
+
+	*(unsigned char *)(RAM_Pages[address >> 16] + (address & 0xffff)) = value;
+
+	return 1;
 }
 
-bool r4300i_LW_VAddr ( uint32_t VAddr, uint32_t * Value )
+void memcpy2n64(unsigned char *dest, unsigned char *src, int len)
 {
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-
-    uintptr_t address = (TLB_Map[VAddr >> 12] + VAddr);
-    if((address - (uintptr_t)RDRAM) > RdramSize)
-    {
-        address = address - (uintptr_t)RDRAM;
-        return r4300i_LW_NonMemory(address, Value);
-    }
-    *Value = *(uint32_t *)address;
-    return 1;
+	int i = 0;
+	for(i=0; i <len; i+=4) {
+		if(RAM_Pages[(unsigned long)(dest+i+0x75c) >> 16] ==0)
+			RAM_Pages[(unsigned long)(dest+i+0x75c) >> 16] = malloc(0x10000);
+		*(unsigned long *)(RAM_Pages[(unsigned long)(dest+i+0x75c) >> 16] + ((unsigned long)(dest+i+0x75c) & 0xffff)) = *(unsigned long*)((int)src+i);
+	}
 }
 
-bool r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value )
+void memcpyn642n64(char *dest, char *src, int len)
 {
-    switch (PAddr & 0xFFF00000)
-    {
-    case 0x00000000:
-    case 0x00100000:
-    case 0x00200000:
-    case 0x00300000:
-    case 0x00400000:
-    case 0x00500000:
-    case 0x00600000:
-    case 0x00700000:
-        if (PAddr < RdramSize)
-        {
-            *(uint8_t *)(N64MEM+PAddr) = Value;
-        }
-        break;
-    default:
-        return 0;
-        break;
-    }
-    return 1;
+	int i = 0;
+	int temp = 0;
+
+	for(i=0; i <len; i+=4) {
+        unsigned long dstAddr = PageVRAM((int)dest+i);
+        unsigned long srcAddr = PageVRAM((int)src+i);
+
+		if(dstAddr < 0x75c) {
+			RAM_Pages[(unsigned long)(dest+i+0x75c) >> 16] = malloc(0x10000);
+			dstAddr = PageVRAM((int)dest+i);
+		}
+
+		if(srcAddr < 0x75c) {
+			RAM_Pages[(unsigned long)(src+i+0x75c) >> 16] = malloc(0x10000);
+			srcAddr = PageVRAM((int)src+i);
+		}
+
+		temp = *(unsigned long *)srcAddr;
+		*(unsigned long *)dstAddr = temp;
+	}
+
 }
 
-bool r4300i_SB_VAddr ( uint32_t VAddr, uint8_t Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3)) = Value;
 
-    return 1;
+void memcpyfn64(unsigned char *dest, unsigned char *src, int len)
+{
+	int i = 0;
+	for(i=0; i <len; i+=4) {
+		if(RAM_Pages[(int)(src+i+0x75c) >> 16] ==0 )
+			RAM_Pages[(int)(src+i+0x75c) >> 16] = malloc(0x10000);
+			*(unsigned long*)((int)dest+i) = *(unsigned long*)(RAM_Pages[(unsigned long)(src+i+0x75c) >> 16] + ((unsigned long)(src+i+0x75c) & 0xffff));
+	}
 }
 
-bool r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value )
-{
-    switch (PAddr & 0xFFF00000)
-    {
-    case 0x00000000:
-    case 0x00100000:
-    case 0x00200000:
-    case 0x00300000:
-    case 0x00400000:
-    case 0x00500000:
-    case 0x00600000:
-    case 0x00700000:
-        if (PAddr < RdramSize)
-        {
-            *(uint16_t *)(N64MEM+PAddr) = Value;
-        }
-        break;
-    default:
-        return 0;
-        break;
-    }
-    return 1;
-}
 
-bool r4300i_SD_VAddr ( uint32_t VAddr, uint64_t Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr) = *((uint32_t *)(&Value) + 1);
-    *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4) = *((uint32_t *)(&Value));
-    return 1;
-}
+void WriteTlb(int index) {
 
-bool r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value )
-{
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-    *(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2)) = Value;
-    return 1;
-}
+	state->tlb[index].PageMask.Value = PAGE_MASK_REGISTER;
+	state->tlb[index].EntryHi.Value = ENTRYHI_REGISTER;
+	state->tlb[index].EntryLo0.Value = ENTRYLO0_REGISTER;
+	state->tlb[index].EntryLo1.Value = ENTRYLO1_REGISTER;
+	state->tlb[index].EntryDefined = 1;
 
-bool r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value )
-{
-    if (PAddr >= 0x10000000 && PAddr < 0x16000000)
-    {
-        if ((PAddr - 0x10000000) < RomFileSize)
-        {
-            WrittenToRom = 1;
-            WroteToRom = Value;
-        }
-        else
-        {
-            return 0;
-        }
-    }
+	SetupTLB(0);
 
-    switch (PAddr & 0xFFF00000)
-    {
-    case 0x00000000:
-    case 0x00100000:
-    case 0x00200000:
-    case 0x00300000:
-    case 0x00400000:
-    case 0x00500000:
-    case 0x00600000:
-    case 0x00700000:
-        if (PAddr < RdramSize)
-        {
-            *(uint32_t *)(N64MEM+PAddr) = Value;
-        }
-        break;
-    case 0x03F00000:
-        switch (PAddr)
-        {
-        case 0x03F00000:
-            RDRAM_CONFIG_REG = Value;
-            break;
-        case 0x03F00004:
-            RDRAM_DEVICE_ID_REG = Value;
-            break;
-        case 0x03F00008:
-            RDRAM_DELAY_REG = Value;
-            break;
-        case 0x03F0000C:
-            RDRAM_MODE_REG = Value;
-            break;
-        case 0x03F00010:
-            RDRAM_REF_INTERVAL_REG = Value;
-            break;
-        case 0x03F00014:
-            RDRAM_REF_ROW_REG = Value;
-            break;
-        case 0x03F00018:
-            RDRAM_RAS_INTERVAL_REG = Value;
-            break;
-        case 0x03F0001C:
-            RDRAM_MIN_INTERVAL_REG = Value;
-            break;
-        case 0x03F00020:
-            RDRAM_ADDR_SELECT_REG = Value;
-            break;
-        case 0x03F00024:
-            RDRAM_DEVICE_MANUF_REG = Value;
-            break;
-        case 0x03F04004:
-            break;
-        case 0x03F08004:
-            break;
-        case 0x03F80004:
-            break;
-        case 0x03F80008:
-            break;
-        case 0x03F8000C:
-            break;
-        case 0x03F80014:
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04000000:
-        if (PAddr < 0x04002000)
-        {
-            *(uint32_t *)(N64MEM+PAddr) = Value;
-            return 1;
-        }
-        switch (PAddr)
-        {
-        case 0x04040000:
-            SP_MEM_ADDR_REG = Value;
-            break;
-        case 0x04040004:
-            SP_DRAM_ADDR_REG = Value;
-            break;
-        case 0x04040008:
-            SP_RD_LEN_REG = Value;
-            SP_DMA_READ();
-            break;
-        case 0x0404000C:
-            SP_WR_LEN_REG = Value;
-            SP_DMA_WRITE();
-            break;
-        case 0x04040010:
-            if ( ( Value & SP_CLR_HALT ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_HALT;
-            }
-            if ( ( Value & SP_SET_HALT ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_HALT;
-            }
-            if ( ( Value & SP_CLR_BROKE ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_BROKE;
-            }
-            if ( ( Value & SP_CLR_INTR ) != 0)
-            {
-                MI_INTR_REG &= ~MI_INTR_SP;
-                CheckInterrupts();
-            }
-            if ( ( Value & SP_CLR_SSTEP ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SSTEP;
-            }
-            if ( ( Value & SP_SET_SSTEP ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SSTEP;
-            }
-            if ( ( Value & SP_CLR_INTR_BREAK ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_INTR_BREAK;
-            }
-            if ( ( Value & SP_SET_INTR_BREAK ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_INTR_BREAK;
-            }
-            if ( ( Value & SP_CLR_SIG0 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG0;
-            }
-            if ( ( Value & SP_SET_SIG0 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG0;
-            }
-            if ( ( Value & SP_CLR_SIG1 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG1;
-            }
-            if ( ( Value & SP_SET_SIG1 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG1;
-            }
-            if ( ( Value & SP_CLR_SIG2 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG2;
-            }
-            if ( ( Value & SP_SET_SIG2 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG2;
-            }
-            if ( ( Value & SP_CLR_SIG3 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG3;
-            }
-            if ( ( Value & SP_SET_SIG3 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG3;
-            }
-            if ( ( Value & SP_CLR_SIG4 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG4;
-            }
-            if ( ( Value & SP_SET_SIG4 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG4;
-            }
-            if ( ( Value & SP_CLR_SIG5 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG5;
-            }
-            if ( ( Value & SP_SET_SIG5 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG5;
-            }
-            if ( ( Value & SP_CLR_SIG6 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG6;
-            }
-            if ( ( Value & SP_SET_SIG6 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG6;
-            }
-            if ( ( Value & SP_CLR_SIG7 ) != 0)
-            {
-                SP_STATUS_REG &= ~SP_STATUS_SIG7;
-            }
-            if ( ( Value & SP_SET_SIG7 ) != 0)
-            {
-                SP_STATUS_REG |= SP_STATUS_SIG7;
-            }
-
-            RunRsp();
-
-            break;
-        case 0x0404001C:
-            SP_SEMAPHORE_REG = 0;
-            break;
-        case 0x04080000:
-            SP_PC_REG = Value & 0xFFC;
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04100000:
-        switch (PAddr)
-        {
-        case 0x04100000:
-            DPC_START_REG = Value;
-            DPC_CURRENT_REG = Value;
-            break;
-        case 0x04100004:
-            DPC_END_REG = Value;
-            //if (ProcessRDPList) { ProcessRDPList(); }
-            break;
-        case 0x04100008:
-            DPC_CURRENT_REG = Value;
-            break;
-        case 0x0410000C:
-            if ( ( Value & DPC_CLR_XBUS_DMEM_DMA ) != 0)
-            {
-                DPC_STATUS_REG &= ~DPC_STATUS_XBUS_DMEM_DMA;
-            }
-            if ( ( Value & DPC_SET_XBUS_DMEM_DMA ) != 0)
-            {
-                DPC_STATUS_REG |= DPC_STATUS_XBUS_DMEM_DMA;
-            }
-            if ( ( Value & DPC_CLR_FREEZE ) != 0)
-            {
-                DPC_STATUS_REG &= ~DPC_STATUS_FREEZE;
-            }
-            if ( ( Value & DPC_SET_FREEZE ) != 0)
-            {
-                DPC_STATUS_REG |= DPC_STATUS_FREEZE;
-            }
-            if ( ( Value & DPC_CLR_FLUSH ) != 0)
-            {
-                DPC_STATUS_REG &= ~DPC_STATUS_FLUSH;
-            }
-            if ( ( Value & DPC_SET_FLUSH ) != 0)
-            {
-                DPC_STATUS_REG |= DPC_STATUS_FLUSH;
-            }
-            if ( ( Value & DPC_CLR_FREEZE ) != 0)
-            {
-                if ( ( SP_STATUS_REG & SP_STATUS_HALT ) == 0)
-                {
-                    if ( ( SP_STATUS_REG & SP_STATUS_BROKE ) == 0 )
-                    {
-                        RunRsp();
-                    }
-                }
-            }
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04300000:
-        switch (PAddr)
-        {
-        case 0x04300000:
-            MI_MODE_REG &= ~0x7F;
-            MI_MODE_REG |= (Value & 0x7F);
-            if ( ( Value & MI_CLR_INIT ) != 0 )
-            {
-                MI_MODE_REG &= ~MI_MODE_INIT;
-            }
-            if ( ( Value & MI_SET_INIT ) != 0 )
-            {
-                MI_MODE_REG |= MI_MODE_INIT;
-            }
-            if ( ( Value & MI_CLR_EBUS ) != 0 )
-            {
-                MI_MODE_REG &= ~MI_MODE_EBUS;
-            }
-            if ( ( Value & MI_SET_EBUS ) != 0 )
-            {
-                MI_MODE_REG |= MI_MODE_EBUS;
-            }
-            if ( ( Value & MI_CLR_DP_INTR ) != 0 )
-            {
-                MI_INTR_REG &= ~MI_INTR_DP;
-                CheckInterrupts();
-            }
-            if ( ( Value & MI_CLR_RDRAM ) != 0 )
-            {
-                MI_MODE_REG &= ~MI_MODE_RDRAM;
-            }
-            if ( ( Value & MI_SET_RDRAM ) != 0 )
-            {
-                MI_MODE_REG |= MI_MODE_RDRAM;
-            }
-            break;
-        case 0x0430000C:
-            if ( ( Value & MI_INTR_MASK_CLR_SP ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_SP;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_SP ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_SP;
-            }
-            if ( ( Value & MI_INTR_MASK_CLR_SI ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_SI;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_SI ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_SI;
-            }
-            if ( ( Value & MI_INTR_MASK_CLR_AI ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_AI;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_AI ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_AI;
-            }
-            if ( ( Value & MI_INTR_MASK_CLR_VI ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_VI;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_VI ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_VI;
-            }
-            if ( ( Value & MI_INTR_MASK_CLR_PI ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_PI;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_PI ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_PI;
-            }
-            if ( ( Value & MI_INTR_MASK_CLR_DP ) != 0 )
-            {
-                MI_INTR_MASK_REG &= ~MI_INTR_MASK_DP;
-            }
-            if ( ( Value & MI_INTR_MASK_SET_DP ) != 0 )
-            {
-                MI_INTR_MASK_REG |= MI_INTR_MASK_DP;
-            }
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04400000:
-        switch (PAddr)
-        {
-        case 0x04400000:
-            //if (VI_STATUS_REG != Value) {
-            VI_STATUS_REG = Value;
-            //	if (ViStatusChanged != NULL ) { ViStatusChanged(); }
-            //}
-            break;
-        case 0x04400004:
-
-            VI_ORIGIN_REG = (Value & 0xFFFFFF);
-            //if (UpdateScreen != NULL ) { UpdateScreen(); }
-            break;
-        case 0x04400008:
-            //if (VI_WIDTH_REG != Value) {
-            VI_WIDTH_REG = Value;
-            //	if (ViWidthChanged != NULL ) { ViWidthChanged(); }
-            //}
-            break;
-        case 0x0440000C:
-            VI_INTR_REG = Value;
-            break;
-        case 0x04400010:
-            MI_INTR_REG &= ~MI_INTR_VI;
-            CheckInterrupts();
-            break;
-        case 0x04400014:
-            VI_BURST_REG = Value;
-            break;
-        case 0x04400018:
-            VI_V_SYNC_REG = Value;
-            break;
-        case 0x0440001C:
-            VI_H_SYNC_REG = Value;
-            break;
-        case 0x04400020:
-            VI_LEAP_REG = Value;
-            break;
-        case 0x04400024:
-            VI_H_START_REG = Value;
-            break;
-        case 0x04400028:
-            VI_V_START_REG = Value;
-            break;
-        case 0x0440002C:
-            VI_V_BURST_REG = Value;
-            break;
-        case 0x04400030:
-            VI_X_SCALE_REG = Value;
-            break;
-        case 0x04400034:
-            VI_Y_SCALE_REG = Value;
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04500000:
-        switch (PAddr)
-        {
-        case 0x04500000:
-            AI_DRAM_ADDR_REG = Value;
-            break;
-        case 0x04500004:
-            AI_LEN_REG = Value;
-            if (AiLenChanged != NULL)
-            {
-                AiLenChanged();
-            }
-            break;
-        case 0x04500008:
-            AI_CONTROL_REG = (Value & 0x1);
-            break;
-        case 0x0450000C:
-            /* Clear Interrupt */
-            ;
-            MI_INTR_REG &= ~MI_INTR_AI;
-            AudioIntrReg &= ~MI_INTR_AI;
-            CheckInterrupts();
-            break;
-        case 0x04500010:
-            AI_DACRATE_REG = Value;
-            //if (AiDacrateChanged != NULL) { AiDacrateChanged(SYSTEM_NTSC); }
-            break;
-        case 0x04500014:
-            AI_BITRATE_REG = Value;
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04600000:
-        switch (PAddr)
-        {
-        case 0x04600000:
-            PI_DRAM_ADDR_REG = Value;
-            break;
-        case 0x04600004:
-            PI_CART_ADDR_REG = Value;
-            break;
-        case 0x04600008:
-            PI_RD_LEN_REG = Value;
-            PI_DMA_READ();
-            break;
-        case 0x0460000C:
-            PI_WR_LEN_REG = Value;
-            PI_DMA_WRITE();
-            break;
-        case 0x04600010:
-            if ((Value & PI_SET_RESET) != 0 )
-            {
-                DisplayError("reset Controller");
-            }
-            if ((Value & PI_CLR_INTR) != 0 )
-            {
-                MI_INTR_REG &= ~MI_INTR_PI;
-                CheckInterrupts();
-            }
-            break;
-        case 0x04600014:
-            PI_DOMAIN1_REG = (Value & 0xFF);
-            break;
-        case 0x04600018:
-            PI_BSD_DOM1_PWD_REG = (Value & 0xFF);
-            break;
-        case 0x0460001C:
-            PI_BSD_DOM1_PGS_REG = (Value & 0xFF);
-            break;
-        case 0x04600020:
-            PI_BSD_DOM1_RLS_REG = (Value & 0xFF);
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04700000:
-        switch (PAddr)
-        {
-        case 0x04700000:
-            RI_MODE_REG = Value;
-            break;
-        case 0x04700004:
-            RI_CONFIG_REG = Value;
-            break;
-        case 0x04700008:
-            RI_CURRENT_LOAD_REG = Value;
-            break;
-        case 0x0470000C:
-            RI_SELECT_REG = Value;
-            break;
-        case 0x04700010:
-            RI_REFRESH_REG = Value;
-            break;
-        case 0x04700014:
-            RI_LATENCY_REG = Value;
-            break;
-        case 0x04700018:
-            RI_RERROR_REG = Value;
-            break;
-        case 0x0470001C:
-            RI_WERROR_REG = Value;
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x04800000:
-        switch (PAddr)
-        {
-        case 0x04800000:
-            SI_DRAM_ADDR_REG = Value;
-            break;
-        case 0x04800004:
-            SI_PIF_ADDR_RD64B_REG = Value;
-            SI_DMA_READ ();
-            break;
-        case 0x04800010:
-            SI_PIF_ADDR_WR64B_REG = Value;
-            SI_DMA_WRITE();
-            break;
-        case 0x04800018:
-            MI_INTR_REG &= ~MI_INTR_SI;
-            SI_STATUS_REG &= ~SI_STATUS_INTERRUPT;
-            CheckInterrupts();
-            break;
-        default:
-            return 0;
-        }
-        break;
-    case 0x08000000:
-        if (PAddr != 0x08010000)
-        {
-            return 0;
-        }
-        //WriteToFlashCommand(Value);
-        break;
-    case 0x1FC00000:
-        if (PAddr < 0x1FC007C0)
-        {
-            return 0;
-        }
-        else if (PAddr < 0x1FC00800)
-        {
-
-            if (PAddr == 0x1FC007FC)
-            {
-                PifRamWrite();
-            }
-            return 1;
-        }
-        return 0;
-        break;
-    default:
-        return 0;
-        break;
-    }
-    return 1;
-}
-
-bool r4300i_SW_VAddr ( uint32_t VAddr, uint32_t Value )
-{
-    uintptr_t address = (TLB_Map[VAddr >> 12] + VAddr);
-
-    if (TLB_Map[VAddr >> 12] == 0)
-    {
-        return 0;
-    }
-
-    if((address - (uintptr_t)RDRAM) > RdramSize)
-    {
-        address = address - (uintptr_t)RDRAM;
-        return r4300i_SW_NonMemory(address, Value);
-    }
-    *(uint32_t *)address = Value;
-    return 1;
 }

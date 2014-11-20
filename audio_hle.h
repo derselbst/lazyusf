@@ -30,7 +30,7 @@
 #ifndef HLE_H
 #define HLE_H
 
-#ifndef _BIG_ENDIAN
+#ifdef _BIG_ENDIAN
 #define S 0
 #define S8 0
 #else
@@ -41,13 +41,13 @@
 // types
 typedef unsigned char		u8;
 typedef unsigned short		u16;
-typedef unsigned int		u32;
+typedef unsigned long		u32;
 typedef unsigned long long	u64;
 
 typedef signed char			s8;
 typedef signed short		s16;
-typedef signed int			s32;
-typedef signed long long	s64;
+typedef signed long			s32;
+typedef signed long long		s64;
 
 /*
  * Audio flags
@@ -68,30 +68,34 @@ typedef signed long long	s64;
 
 typedef struct
 {
-   unsigned int type;
-   unsigned int flags;
+   unsigned long type;
+   unsigned long flags;
 
-   unsigned int ucode_boot;
-   unsigned int ucode_boot_size;
+   unsigned long ucode_boot;
+   unsigned long ucode_boot_size;
 
-   unsigned int ucode;
-   unsigned int ucode_size;
+   unsigned long ucode;
+   unsigned long ucode_size;
 
-   unsigned int ucode_data;
-   unsigned int ucode_data_size;
+   unsigned long ucode_data;
+   unsigned long ucode_data_size;
 
-   unsigned int dram_stack;
-   unsigned int dram_stack_size;
+   unsigned long dram_stack;
+   unsigned long dram_stack_size;
 
-   unsigned int output_buff;
-   unsigned int output_buff_size;
+   unsigned long output_buff;
+   unsigned long output_buff_size;
 
-   unsigned int data_ptr;
-   unsigned int data_size;
+   unsigned long data_ptr;
+   unsigned long data_size;
 
-   unsigned int yield_data_ptr;
-   unsigned int yield_data_size;
+   unsigned long yield_data_ptr;
+   unsigned long yield_data_size;
 } OSTask_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern u32 inst1, inst2;
 //extern u16 AudioInBuffer, AudioOutBuffer, AudioCount;
@@ -124,11 +128,20 @@ extern u8 BufferSpace[0x10000];
 
 extern short hleMixerWorkArea[256];
 extern u16 adpcmtable[0x88];
-extern int firstHLE, goldeneye;
+extern int firstHLE;
 
 
 extern int audio_ucode(OSTask_t *task);
 //extern unsigned char *RDRAM,*DMEM, *IMEM, *ROM;
-//extern unsigned int N64MEM_Pages[0x80];
+//extern unsigned long N64MEM_Pages[0x80];
+#include "usf.h"
+#include "memory.h"
+#include "cpu.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif

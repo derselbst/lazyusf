@@ -1,770 +1,597 @@
-/*
- * Project 64 - A Nintendo 64 emulator.
- *
- * (c) Copyright 2001 zilmar (zilmar@emulation64.com) and
- * Jabo (jabo@emulation64.com).
- *
- * pj64 homepage: www.pj64.net
- *
- * Permission to use, copy, modify and distribute Project64 in both binary and
- * source form, for non-commercial purposes, is hereby granted without fee,
- * providing that this license information and copyright notice appear with
- * all copies and any derived work.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event shall the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Project64 is freeware for PERSONAL USE only. Commercial users should
- * seek permission of the copyright holders first. Commercial use includes
- * charging money for Project64 or software derived from Project64.
- *
- * The copyright holders request that bug fixes and improvements to the code
- * should be forwarded to them so if they want them.
- *
- */
-#include <string.h>
-#include "types.h"
 #include "usf.h"
-#include "memory.h"
 #include "cpu.h"
+#include "memory.h"
+#include "ops.h"
 #include "audio.h"
 #include "audio_hle.h"
-#include "registers.h"
-#include "rsp.h"
-#include "interpreter_cpu.h"
-#include "tlb.h"
-#include "pif.h"
-#include "exception.h"
-#include "main.h"
+#include "cpu_hle.h"
 
-uint32_t NextInstruction = 0, JumpToLocation = 0, AudioIntrReg = 0;
-CPU_ACTION * CPU_Action = 0;
-SYSTEM_TIMERS * Timers = 0;
+// interpreter cpu swiped from project 64
+long JumpToLocation = 0, LLBit = 0, NextInstruction = 0, LLAddr = 0, WaitMode = 0, AudioIntrReg = 0;
+long ViFieldNumber = 0, HalfLine = 0;
 OPCODE Opcode;
-uint32_t CPURunning = 0; //TODO: cpu_running??
-uint32_t SPHack = 0;
-uint32_t * WaitMode = 0;
+SaveState *state;
+void * FPRDoubleLocation[32], * FPRFloatLocation[32];
+CPU_ACTION CPU_Action;
+SYSTEM_TIMERS Timers;
+unsigned long FAKE_CAUSE_REGISTER = 0;
+unsigned long long cputimer=0, hletimer=0, sleeptimer=0, lasttimer=0;
 
+#define AddressDefined(x)	(TLB_Map[x>>TLB_GRAN])
 
-void ChangeCompareTimer(void)
-{
-    uint32_t NextCompare = COMPARE_REGISTER - COUNT_REGISTER;
-    if ((NextCompare & 0x80000000) != 0)
-    {
-        NextCompare = 0x7FFFFFFF;
-    }
-    if (NextCompare == 0)
-    {
-        NextCompare = 0x1;
-    }
-    ChangeTimer(CompareTimer,NextCompare);
-}
+void DoSomething ( void ) {
+	if (CPU_Action.CloseCPU) {
+		exit(0);
+	}
+	if (CPU_Action.CheckInterrupts) {
+		CPU_Action.CheckInterrupts = 0;
+		CheckInterrupts();
+	}
+	if (CPU_Action.DoInterrupt) {
+		CPU_Action.DoInterrupt = 0;
+		DoIntrException(0);
+	}
 
-void ChangeTimer(int32_t Type, int32_t Value)
-{
-    if (Value == 0)
-    {
-        Timers->NextTimer[Type] = 0;
-        Timers->Active[Type] = 0;
-        return;
-    }
-    Timers->NextTimer[Type] = Value - Timers->Timer;
-    Timers->Active[Type] = 1;
-    CheckTimer();
-}
+	CPU_Action.DoSomething = 0;
+	//Sleep(1);
 
-void CheckTimer (void)
-{
-    int8_t count;
-
-    for (count = 0; count < MaxTimers; count++)
-    {
-        if (!Timers->Active[count])
-        {
-            continue;
-        }
-        if (!(count == CompareTimer && Timers->NextTimer[count] == 0x7FFFFFFF))
-        {
-            Timers->NextTimer[count] += Timers->Timer;
-        }
-    }
-    Timers->CurrentTimerType = -1;
-    Timers->Timer = 0x7FFFFFFF;
-    for (count = 0; count < MaxTimers; count++)
-    {
-        if (!Timers->Active[count])
-        {
-            continue;
-        }
-        if (Timers->NextTimer[count] >= Timers->Timer)
-        {
-            continue;
-        }
-        Timers->Timer = Timers->NextTimer[count];
-        Timers->CurrentTimerType = count;
-    }
-    if (Timers->CurrentTimerType == -1)
-    {
-        DisplayError("No active timers ???\nEmulation Stoped");
-        StopEmulation();
-    }
-    for (count = 0; count < MaxTimers; count++)
-    {
-        if (!Timers->Active[count])
-        {
-            continue;
-        }
-        if (!(count == CompareTimer && Timers->NextTimer[count] == 0x7FFFFFFF))
-        {
-            Timers->NextTimer[count] -= Timers->Timer;
-        }
-    }
-
-    if (Timers->NextTimer[CompareTimer] == 0x7FFFFFFF)
-    {
-        uint32_t NextCompare = COMPARE_REGISTER - COUNT_REGISTER;
-        if ((NextCompare & 0x80000000) == 0 && NextCompare != 0x7FFFFFFF)
-        {
-            ChangeCompareTimer();
-        }
-    }
+	if (CPU_Action.DoInterrupt == 1) { CPU_Action.DoSomething = 1; }
 }
 
 
+void InPermLoop (void) {
+	// *** Changed ***/
+	if (CPU_Action.DoInterrupt) { return; }
 
-void CloseCpu (void)
-{
-    uint32_t count = 0;
+	if (( STATUS_REGISTER & STATUS_IE  ) == 0 ) { goto InterruptsDisabled; }
+	if (( STATUS_REGISTER & STATUS_EXL ) != 0 ) { goto InterruptsDisabled; }
+	if (( STATUS_REGISTER & STATUS_ERL ) != 0 ) { goto InterruptsDisabled; }
+	if (( STATUS_REGISTER & 0xFF00) == 0) { goto InterruptsDisabled; }
 
-    if(!MemChunk) return;
-    if (!cpu_running)
-    {
-        return;
-    }
-
-    cpu_running = 0;
-
-    for (count = 0; count < 3; count ++ )
-    {
-        CPU_Action->CloseCPU = 1;
-        CPU_Action->DoSomething = 1;
-    }
-
-    CPURunning = 0;
-}
-
-bool DelaySlotEffectsCompare (uint32_t PC, uint32_t Reg1, uint32_t Reg2)
-{
-    OPCODE Command;
-
-    if (!r4300i_LW_VAddr(PC + 4, (uint32_t*)&Command.Hex))
-    {
-        return 1;
-    }
-
-    switch (Command.op)
-    {
-    case R4300i_SPECIAL:
-        switch (Command.funct)
-        {
-        case R4300i_SPECIAL_SLL:
-        case R4300i_SPECIAL_SRL:
-        case R4300i_SPECIAL_SRA:
-        case R4300i_SPECIAL_SLLV:
-        case R4300i_SPECIAL_SRLV:
-        case R4300i_SPECIAL_SRAV:
-        case R4300i_SPECIAL_MFHI:
-        case R4300i_SPECIAL_MTHI:
-        case R4300i_SPECIAL_MFLO:
-        case R4300i_SPECIAL_MTLO:
-        case R4300i_SPECIAL_DSLLV:
-        case R4300i_SPECIAL_DSRLV:
-        case R4300i_SPECIAL_DSRAV:
-        case R4300i_SPECIAL_ADD:
-        case R4300i_SPECIAL_ADDU:
-        case R4300i_SPECIAL_SUB:
-        case R4300i_SPECIAL_SUBU:
-        case R4300i_SPECIAL_AND:
-        case R4300i_SPECIAL_OR:
-        case R4300i_SPECIAL_XOR:
-        case R4300i_SPECIAL_NOR:
-        case R4300i_SPECIAL_SLT:
-        case R4300i_SPECIAL_SLTU:
-        case R4300i_SPECIAL_DADD:
-        case R4300i_SPECIAL_DADDU:
-        case R4300i_SPECIAL_DSUB:
-        case R4300i_SPECIAL_DSUBU:
-        case R4300i_SPECIAL_DSLL:
-        case R4300i_SPECIAL_DSRL:
-        case R4300i_SPECIAL_DSRA:
-        case R4300i_SPECIAL_DSLL32:
-        case R4300i_SPECIAL_DSRL32:
-        case R4300i_SPECIAL_DSRA32:
-            if (Command.rd == 0)
-            {
-                return 0;
-            }
-            if (Command.rd == Reg1)
-            {
-                return 1;
-            }
-            if (Command.rd == Reg2)
-            {
-                return 1;
-            }
-            break;
-        case R4300i_SPECIAL_MULT:
-        case R4300i_SPECIAL_MULTU:
-        case R4300i_SPECIAL_DIV:
-        case R4300i_SPECIAL_DIVU:
-        case R4300i_SPECIAL_DMULT:
-        case R4300i_SPECIAL_DMULTU:
-        case R4300i_SPECIAL_DDIV:
-        case R4300i_SPECIAL_DDIVU:
-            break;
-        default:
-            return 1;
-        }
-        break;
-    case R4300i_CP0:
-        switch (Command.rs)
-        {
-        case R4300i_COP0_MT:
-            break;
-        case R4300i_COP0_MF:
-            if (Command.rt == 0)
-            {
-                return 0;
-            }
-            if (Command.rt == Reg1)
-            {
-                return 1;
-            }
-            if (Command.rt == Reg2)
-            {
-                return 1;
-            }
-            break;
-        default:
-            if ( (Command.rs & 0x10 ) != 0 )
-            {
-                switch( Opcode.funct )
-                {
-                case R4300i_COP0_CO_TLBR:
-                    break;
-                case R4300i_COP0_CO_TLBWI:
-                    break;
-                case R4300i_COP0_CO_TLBWR:
-                    break;
-                case R4300i_COP0_CO_TLBP:
-                    break;
-                default:
-                    return 1;
-                }
-                return 1;
-            }
-        }
-        break;
-    case R4300i_CP1:
-        switch (Command.fmt)
-        {
-        case R4300i_COP1_MF:
-            if (Command.rt == 0)
-            {
-                return 0;
-            }
-            if (Command.rt == Reg1)
-            {
-                return 1;
-            }
-            if (Command.rt == Reg2)
-            {
-                return 1;
-            }
-            break;
-        case R4300i_COP1_CF:
-            break;
-        case R4300i_COP1_MT:
-            break;
-        case R4300i_COP1_CT:
-            break;
-        case R4300i_COP1_S:
-            break;
-        case R4300i_COP1_D:
-            break;
-        case R4300i_COP1_W:
-            break;
-        case R4300i_COP1_L:
-            break;
-            return 1;
-        }
-        break;
-    case R4300i_ANDI:
-    case R4300i_ORI:
-    case R4300i_XORI:
-    case R4300i_LUI:
-    case R4300i_ADDI:
-    case R4300i_ADDIU:
-    case R4300i_SLTI:
-    case R4300i_SLTIU:
-    case R4300i_DADDI:
-    case R4300i_DADDIU:
-    case R4300i_LB:
-    case R4300i_LH:
-    case R4300i_LW:
-    case R4300i_LWL:
-    case R4300i_LWR:
-    case R4300i_LDL:
-    case R4300i_LDR:
-    case R4300i_LBU:
-    case R4300i_LHU:
-    case R4300i_LD:
-    case R4300i_LWC1:
-    case R4300i_LDC1:
-        if (Command.rt == 0)
-        {
-            return 0;
-        }
-        if (Command.rt == Reg1)
-        {
-            return 1;
-        }
-        if (Command.rt == Reg2)
-        {
-            return 1;
-        }
-        break;
-    case R4300i_CACHE:
-        break;
-    case R4300i_SB:
-        break;
-    case R4300i_SH:
-        break;
-    case R4300i_SW:
-        break;
-    case R4300i_SWR:
-        break;
-    case R4300i_SWL:
-        break;
-    case R4300i_SWC1:
-        break;
-    case R4300i_SDC1:
-        break;
-    case R4300i_SD:
-        break;
-    default:
-
-        return 1;
-    }
-    return 0;
-}
-
-int32_t DelaySlotEffectsJump (uint32_t JumpPC)
-{
-    OPCODE Command;
-
-    if (!r4300i_LW_VAddr(JumpPC, &Command.Hex))
-    {
-        return 1;
-    }
-
-    switch (Command.op)
-    {
-    case R4300i_SPECIAL:
-        switch (Command.funct)
-        {
-        case R4300i_SPECIAL_JR:
-            return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
-        case R4300i_SPECIAL_JALR:
-            return DelaySlotEffectsCompare(JumpPC,Command.rs,31);
-        }
-        break;
-    case R4300i_REGIMM:
-        switch (Command.rt)
-        {
-        case R4300i_REGIMM_BLTZ:
-        case R4300i_REGIMM_BGEZ:
-        case R4300i_REGIMM_BLTZL:
-        case R4300i_REGIMM_BGEZL:
-        case R4300i_REGIMM_BLTZAL:
-        case R4300i_REGIMM_BGEZAL:
-            return DelaySlotEffectsCompare(JumpPC,Command.rs,0);
-        }
-        break;
-    case R4300i_JAL:
-    case R4300i_SPECIAL_JALR:
-        return DelaySlotEffectsCompare(JumpPC,31,0);
-        break;
-    case R4300i_J:
-        return 0;
-    case R4300i_BEQ:
-    case R4300i_BNE:
-    case R4300i_BLEZ:
-    case R4300i_BGTZ:
-        return DelaySlotEffectsCompare(JumpPC,Command.rs,Command.rt);
-    case R4300i_CP1:
-        switch (Command.fmt)
-        {
-        case R4300i_COP1_BC:
-            switch (Command.ft)
-            {
-            case R4300i_COP1_BC_BCF:
-            case R4300i_COP1_BC_BCT:
-            case R4300i_COP1_BC_BCFL:
-            case R4300i_COP1_BC_BCTL:
-            {
-                int32_t EffectDelaySlot;
-                OPCODE NewCommand;
-
-                if (!r4300i_LW_VAddr(JumpPC + 4, &NewCommand.Hex))
-                {
-                    return 1;
-                }
-
-                EffectDelaySlot = 0;
-                if (NewCommand.op == R4300i_CP1)
-                {
-                    if (NewCommand.fmt == R4300i_COP1_S && (NewCommand.funct & 0x30) == 0x30 )
-                    {
-                        EffectDelaySlot = 1;
-                    }
-                    if (NewCommand.fmt == R4300i_COP1_D && (NewCommand.funct & 0x30) == 0x30 )
-                    {
-                        EffectDelaySlot = 1;
-                    }
-                }
-                return EffectDelaySlot;
-            }
-            break;
-            }
-            break;
-        }
-        break;
-    case R4300i_BEQL:
-    case R4300i_BNEL:
-    case R4300i_BLEZL:
-    case R4300i_BGTZL:
-        return DelaySlotEffectsCompare(JumpPC,Command.rs,Command.rt);
-    }
-    return 1;
-}
-
-void DoSomething ( void )
-{
-    if (CPU_Action->CloseCPU)
-    {
-        //StopEmulation();
-        cpu_running = 0;
-        //printf("Stopping?\n");
-    }
-    if (CPU_Action->CheckInterrupts)
-    {
-        CPU_Action->CheckInterrupts = 0;
-        CheckInterrupts();
-    }
-    if (CPU_Action->DoInterrupt)
-    {
-        CPU_Action->DoInterrupt = 0;
-        DoIntrException(0);
-    }
-
-
-    CPU_Action->DoSomething = 0;
-
-    if (CPU_Action->DoInterrupt)
-    {
-        CPU_Action->DoSomething = 1;
-    }
-}
-
-void InPermLoop (void)
-{
-    // *** Changed ***/
-    if (CPU_Action->DoInterrupt)
-    {
-        return;
-    }
-
-    /* Interrupts enabled */
-    if (( STATUS_REGISTER & STATUS_IE  ) == 0 )
-    {
-        goto InterruptsDisabled;
-    }
-    if (( STATUS_REGISTER & STATUS_EXL ) != 0 )
-    {
-        goto InterruptsDisabled;
-    }
-    if (( STATUS_REGISTER & STATUS_ERL ) != 0 )
-    {
-        goto InterruptsDisabled;
-    }
-    if (( STATUS_REGISTER & 0xFF00) == 0)
-    {
-        goto InterruptsDisabled;
-    }
-
-    /* check sound playing */
-
-    /* check RSP running */
-    /* check RDP running */
-    if (Timers->Timer >= 0)
-    {
-        COUNT_REGISTER += Timers->Timer + 1;
-        Timers->Timer = -1;
-    }
-    return;
+	if (Timers.Timer > 0) {
+		COUNT_REGISTER += Timers.Timer + 1;
+		Timers.Timer = -1;
+	}
+	return;
 
 InterruptsDisabled:
-    DisplayError("Stuck in Permanent Loop");
-    StopEmulation();
+	//if (UpdateScreen != NULL) { UpdateScreen(); }
+	printf("Error: In permement loop at %08x\nExiting\n", PROGRAM_COUNTER);
+	exit(0);
 }
 
-void ReadFromMem(const void * source, void * target, uint32_t length, uint32_t *offset)
-{
-    memcpy((uint8_t*)target,((uint8_t*)source)+*offset,length);
-    *offset+=length;
+void ChangeCompareTimer(void) {
+	unsigned long NextCompare = COMPARE_REGISTER - COUNT_REGISTER;
+	if ((NextCompare & 0x80000000) != 0) {  NextCompare = 0x7FFFFFFF; }
+	if (NextCompare == 0) { NextCompare = 0x1; }
+	ChangeTimer(CompareTimer,NextCompare);
 }
 
-
-bool Machine_LoadStateFromRAM(void * savestatespace)
-{
-    uint8_t LoadHeader[0x40];
-    uint32_t Value, count, SaveRDRAMSize, offset=0;
-
-    ReadFromMem( savestatespace, &Value, sizeof(Value), &offset);
-    if (Value != 0x23D8A6C8)
-    {
-        return 0;
-    }
-    ReadFromMem( savestatespace, &SaveRDRAMSize, sizeof(SaveRDRAMSize), &offset);
-    ReadFromMem( savestatespace, &LoadHeader, 0x40, &offset);
-
-    Timers->CurrentTimerType = -1;
-    Timers->Timer = 0;
-    for (count = 0; count < MaxTimers; count ++)
-    {
-        Timers->Active[count] = 0;
-    }
-
-    //fix rdram size
-    if (SaveRDRAMSize != RdramSize)
-    {
-        // dothis :)
-    }
-
-    RdramSize = SaveRDRAMSize;
-
-    ReadFromMem( savestatespace, &Value,            sizeof(Value),          &offset);
-    ChangeTimer(ViTimer,Value);
-    ReadFromMem( savestatespace, &PROGRAM_COUNTER,  sizeof(PROGRAM_COUNTER),&offset);
-    ReadFromMem( savestatespace, GPR,               sizeof(int64_t)*32,     &offset);
-    ReadFromMem( savestatespace, FPR,               sizeof(int64_t)*32,     &offset);
-    ReadFromMem( savestatespace, CP0,               sizeof(uint32_t)*32,    &offset);
-    ReadFromMem( savestatespace, FPCR,              sizeof(uint32_t)*32,    &offset);
-    ReadFromMem( savestatespace, &HI,               sizeof(int64_t),        &offset);
-    ReadFromMem( savestatespace, &LO,               sizeof(int64_t),        &offset);
-    ReadFromMem( savestatespace, RegRDRAM,          sizeof(uint32_t)*10,    &offset);
-    ReadFromMem( savestatespace, RegSP,             sizeof(uint32_t)*10,    &offset);
-    ReadFromMem( savestatespace, RegDPC,            sizeof(uint32_t)*10,    &offset);
-    ReadFromMem( savestatespace, RegMI,             sizeof(uint32_t)*4,     &offset);
-    ReadFromMem( savestatespace, RegVI,             sizeof(uint32_t)*14,    &offset);
-    ReadFromMem( savestatespace, RegAI,             sizeof(uint32_t)*6,     &offset);
-    ReadFromMem( savestatespace, RegPI,             sizeof(uint32_t)*13,    &offset);
-    ReadFromMem( savestatespace, RegRI,             sizeof(uint32_t)*8,     &offset);
-    ReadFromMem( savestatespace, RegSI,             sizeof(uint32_t)*4,     &offset);
-    ReadFromMem( savestatespace, tlb,               sizeof(TLB)*32,         &offset);
-    ReadFromMem( savestatespace, (uint8_t*)PIF_Ram, 0x40,                   &offset);
-    ReadFromMem( savestatespace, RDRAM,             SaveRDRAMSize,          &offset);
-    ReadFromMem( savestatespace, DMEM,              0x1000,                 &offset);
-    ReadFromMem( savestatespace, IMEM,              0x1000,                 &offset);
-
-    CP0[32] = 0;
-
-    SetupTLB();
-    ChangeCompareTimer();
-    AI_STATUS_REG = 0;
-    AiDacrateChanged(AI_DACRATE_REG);
-
-//	StartAiInterrupt();
-
-    SetFpuLocations(); // important if FR=1
-
-    return 1;
+void ChangeTimer(int Type, int Value) {
+	if (Value == 0) {
+		Timers.NextTimer[Type] = 0;
+		Timers.Active[Type] = 0;
+		return;
+	}
+	Timers.NextTimer[Type] = Value - Timers.Timer;
+	Timers.Active[Type] = 1;
+	CheckTimer();
 }
 
-void StartEmulationFromSave ( void * savestate )
-{
-    //printf("Starting generic Cpu\n");
+void CheckTimer (void) {
+	int count;
 
-    //CloseCpu();
-    memset(N64MEM, 0, RdramSize);
+	for (count = 0; count < MaxTimers; count++) {
+		if (!Timers.Active[count]) { continue; }
+		if (!(count == CompareTimer && Timers.NextTimer[count] == 0x7FFFFFFF)) {
+			Timers.NextTimer[count] += Timers.Timer;
+		}
+	}
+	Timers.CurrentTimerType = -1;
+	Timers.Timer = 0x7FFFFFFF;
+	for (count = 0; count < MaxTimers; count++) {
+		if (!Timers.Active[count]) { continue; }
+		if (Timers.NextTimer[count] >= Timers.Timer) { continue; }
+		Timers.Timer = Timers.NextTimer[count];
+		Timers.CurrentTimerType = count;
+	}
+	if (Timers.CurrentTimerType == -1) {
+		printf("Error: No active timers ???\nEmulation Stoped at %08x\n", PROGRAM_COUNTER);
+		exit(0);
+	}
+	for (count = 0; count < MaxTimers; count++) {
+		if (!Timers.Active[count]) { continue; }
+		if (!(count == CompareTimer && Timers.NextTimer[count] == 0x7FFFFFFF)) {
+			Timers.NextTimer[count] -= Timers.Timer;
+		}
+	}
 
-    memset(DMEM, 0, 0x1000);
-    memset(IMEM, 0, 0x1000);
-    memset(TLB_Map, 0, 0x100000 * sizeof(uintptr_t) + 0x10000);
-
-    memset(CPU_Action,0,sizeof(CPU_Action));
-    WrittenToRom = 0;
-
-    InitilizeTLB();
-
-    SetupRegisters(Registers);
-
-    BuildInterpreter();
-
-    Timers->CurrentTimerType = -1;
-    Timers->Timer = 0;
-
-    uint32_t count;
-    for (count = 0; count < MaxTimers; count ++)
-    {
-        Timers->Active[count] = 0;
-    }
-    ChangeTimer(ViTimer,5000);
-    ChangeCompareTimer();
-    ViFieldNumber = 0;
-    CPURunning = 1;
-    *WaitMode = 0;
-
-    init_rsp();
-
-    Machine_LoadStateFromRAM(savestate);
-
-    SampleRate = 48681812 / (AI_DACRATE_REG + 1);
-
-    OpenSound();
-
-    if(enableFIFOfull)
-    {
-        const float VSyncTiming = 789000.0f;
-        double BytesPerSecond = 48681812.0 / (AI_DACRATE_REG + 1) * 4;
-        double CountsPerSecond = (double)(((double)VSyncTiming) * (double)60.0);
-        double CountsPerByte = (double)CountsPerSecond / (double)BytesPerSecond;
-        uint32_t IntScheduled = (uint32_t)((double)AI_LEN_REG * CountsPerByte);
-
-        ChangeTimer(AiTimer,IntScheduled);
-        AI_STATUS_REG|=0x40000000;
-    }
-
-    cpu_stopped = 0;
-    cpu_running = 1;
-    fake_seek_stopping = 0;
-
-    StartInterpreterCPU();
+	if (Timers.NextTimer[CompareTimer] == 0x7FFFFFFF) {
+		unsigned long NextCompare = COMPARE_REGISTER - COUNT_REGISTER;
+		if ((NextCompare & 0x80000000) == 0 && NextCompare != 0x7FFFFFFF) {
+			ChangeCompareTimer();
+		}
+	}
 }
 
 
-void RefreshScreen (void )
-{
-    ChangeTimer(ViTimer, 300000);
+void CheckInterrupts ( void ) {
+
+	MI_INTR_REG &= ~MI_INTR_AI;
+	MI_INTR_REG |= (AudioIntrReg & MI_INTR_AI);
+	if ((MI_INTR_MASK_REG & MI_INTR_REG) != 0) {
+		FAKE_CAUSE_REGISTER |= CAUSE_IP2;
+	} else  {
+		FAKE_CAUSE_REGISTER &= ~CAUSE_IP2;
+	}
+
+	if (( STATUS_REGISTER & STATUS_IE   ) == 0 ) { return; }
+	if (( STATUS_REGISTER & STATUS_EXL  ) != 0 ) { return; }
+	if (( STATUS_REGISTER & STATUS_ERL  ) != 0 ) { return; }
+
+	if (( STATUS_REGISTER & FAKE_CAUSE_REGISTER & 0xFF00) != 0) {
+		if (!CPU_Action.DoInterrupt) {
+			CPU_Action.DoSomething = 1;
+			CPU_Action.DoInterrupt = 1;
+		}
+	}
+}
+
+void DoAddressError ( int DelaySlot, unsigned long BadVaddr, int FromRead) {
+
+    int address = TLB_Map[BadVaddr >> TLB_GRAN] + BadVaddr;
+    printf("AddressError at %08x (%08x)  Vaddr=%08x %08x %08x\n", PROGRAM_COUNTER, address, BadVaddr, state->GPR[0x8].UW[0],  state->GPR[0x9].UW[0]);
+    //_asm int 3
+	if (FromRead) {
+		CAUSE_REGISTER = EXC_RADE;
+	} else {
+		CAUSE_REGISTER = EXC_WADE;
+	}
+	BAD_VADDR_REGISTER = BadVaddr;
+	if (DelaySlot) {
+		CAUSE_REGISTER |= CAUSE_BD;
+		EPC_REGISTER = PROGRAM_COUNTER - 4;
+	} else {
+		EPC_REGISTER = PROGRAM_COUNTER;
+	}
+	STATUS_REGISTER |= STATUS_EXL;
+	PROGRAM_COUNTER = 0x80000180;
+}
+
+void DoBreakException ( int DelaySlot) {
+//  printf("DoBreakException\n");
+	CAUSE_REGISTER = EXC_BREAK;
+	if (DelaySlot) {
+		CAUSE_REGISTER |= CAUSE_BD;
+		EPC_REGISTER = PROGRAM_COUNTER - 4;
+	} else {
+		EPC_REGISTER = PROGRAM_COUNTER;
+	}
+	STATUS_REGISTER |= STATUS_EXL;
+	PROGRAM_COUNTER = 0x80000180;
+}
+
+void DoCopUnusableException ( int DelaySlot, int Coprocessor ) {
+   // printf("DoCopUnusableException at %08x\n", PROGRAM_COUNTER);
+	CAUSE_REGISTER = EXC_CPU;
+	if (Coprocessor == 1) { CAUSE_REGISTER |= 0x10000000; }
+	if (DelaySlot) {
+		CAUSE_REGISTER |= CAUSE_BD;
+		EPC_REGISTER = PROGRAM_COUNTER - 4;
+	} else {
+		EPC_REGISTER = PROGRAM_COUNTER;
+	}
+	STATUS_REGISTER |= STATUS_EXL;
+	PROGRAM_COUNTER = 0x80000180;
+}
+
+void DoIntrException ( int DelaySlot ) {
+//	printf("DoIntrException\n");
+	if (( STATUS_REGISTER & STATUS_IE   ) == 0 ) { return; }
+	if (( STATUS_REGISTER & STATUS_EXL  ) != 0 ) { return; }
+	if (( STATUS_REGISTER & STATUS_ERL  ) != 0 ) { return; }
+	CAUSE_REGISTER = FAKE_CAUSE_REGISTER;
+	CAUSE_REGISTER |= EXC_INT;
+	if (DelaySlot) {
+		CAUSE_REGISTER |= CAUSE_BD;
+		EPC_REGISTER = PROGRAM_COUNTER - 4;
+	} else {
+		EPC_REGISTER = PROGRAM_COUNTER;
+	}
+	STATUS_REGISTER |= STATUS_EXL;
+	PROGRAM_COUNTER = 0x80000180;
+}
+
+void DoTLBMiss ( int DelaySlot, unsigned long BadVaddr ) {
+//	printf("DoTLBMiss\n");
+	CAUSE_REGISTER = EXC_RMISS;
+	BAD_VADDR_REGISTER = BadVaddr;
+	CONTEXT_REGISTER &= 0xFF80000F;
+	CONTEXT_REGISTER |= (BadVaddr >> 9) & 0x007FFFF0;
+	ENTRYHI_REGISTER = (BadVaddr & 0xFFFFE000);
+	if ((STATUS_REGISTER & STATUS_EXL) == 0) {
+		if (DelaySlot) {
+			CAUSE_REGISTER |= CAUSE_BD;
+			EPC_REGISTER = PROGRAM_COUNTER - 4;
+		} else {
+			EPC_REGISTER = PROGRAM_COUNTER;
+		}
+		if (AddressDefined(BadVaddr)) {
+			PROGRAM_COUNTER = 0x80000180;
+		} else {
+			PROGRAM_COUNTER = 0x80000000;
+		}
+		STATUS_REGISTER |= STATUS_EXL;
+	} else {
+		PROGRAM_COUNTER = 0x80000180;
+	}
+}
+
+void DoSysCallException ( int DelaySlot) {
+//	printf("DoSysCallException\n");
+	CAUSE_REGISTER = EXC_SYSCALL;
+	if (DelaySlot) {
+		CAUSE_REGISTER |= CAUSE_BD;
+		EPC_REGISTER = PROGRAM_COUNTER - 4;
+	} else {
+		EPC_REGISTER = PROGRAM_COUNTER;
+	}
+	STATUS_REGISTER |= STATUS_EXL;
+	PROGRAM_COUNTER = 0x80000180;
+}
+
+void RefreshScreen (void ){
+	static unsigned long OLD_VI_V_SYNC_REG = 0, VI_INTR_TIME = 500000;
+
+	if (OLD_VI_V_SYNC_REG != VI_V_SYNC_REG) {
+		if (VI_V_SYNC_REG == 0) {
+			VI_INTR_TIME = 500000;
+		} else {
+			VI_INTR_TIME = (VI_V_SYNC_REG + 1) * 1500;
+			if ((VI_V_SYNC_REG % 1) != 0) {
+				VI_INTR_TIME -= 38;
+			}
+		}
+	}
+	ChangeTimer(ViTimer,Timers.Timer + Timers.NextTimer[ViTimer] + VI_INTR_TIME);
+
+	if ((VI_STATUS_REG & 0x10) != 0) {
+		if (ViFieldNumber == 0) {
+			ViFieldNumber = 1;
+		} else {
+			ViFieldNumber = 0;
+		}
+	} else {
+		ViFieldNumber = 0;
+	}
 
 }
 
-void RunRsp (void)
-{
-    if ( ( SP_STATUS_REG & SP_STATUS_HALT ) == 0)
-    {
-        if ( ( SP_STATUS_REG & SP_STATUS_BROKE ) == 0 )
-        {
-
-            uint32_t Task = *( uint32_t *)(DMEM + 0xFC0);
-
-            switch (Task)
-            {
-            case 1:
-            {
-                MI_INTR_REG |= 0x20;
-
-                SP_STATUS_REG |= (0x0203 );
-                if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
-                    MI_INTR_REG |= 1;
-
-                CheckInterrupts();
-
-                DPC_STATUS_REG &= ~0x0002;
-                return;
-
-            }
-            break;
-            case 2:
-            {
-
-                if(use_audiohle)
-                {
-                    OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
-                    if(audio_ucode(task))
-                        break;
-
-                }
-                else
-                    break;
-
-                SP_STATUS_REG |= (0x0203 );
-                if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
-                {
-                    MI_INTR_REG |= 1;
-                    CheckInterrupts();
-                }
-
-                return;
-
-            }
-            break;
-            default:
-
-                break;
-            }
-
-            real_run_rsp(100);
-            SP_STATUS_REG |= (0x0203 );
-            if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
-            {
-                MI_INTR_REG |= 1;
-                CheckInterrupts();
-            }
-
-        }
-    }
-}
-
-void TimerDone (void)
-{
-    switch (Timers->CurrentTimerType)
-    {
-    case CompareTimer:
-        if(enablecompare)
-            FAKE_CAUSE_REGISTER |= CAUSE_IP7;
-        //CheckInterrupts();
-        ChangeCompareTimer();
-        break;
-    case ViTimer:
-        RefreshScreen();
-        MI_INTR_REG |= MI_INTR_VI;
-        CheckInterrupts();
-        //CompileCheckInterrupts();
-        *WaitMode=0;
-        break;
-    case AiTimer:
-        ChangeTimer(AiTimer,0);
+void TimerDone (void) {
+	switch (Timers.CurrentTimerType) {
+	case CompareTimer:
+		// this timer must be agknowledged, even with compare int disabled,
+		// otherwise we get stuck in an endless loop here
+		if (enablecompare)
+			FAKE_CAUSE_REGISTER |= CAUSE_IP7;
+		CheckInterrupts();
+		ChangeCompareTimer();
+		break;
+	case SiTimer:
+		ChangeTimer(SiTimer,0);
+		MI_INTR_REG |= MI_INTR_SI;
+		SI_STATUS_REG |= SI_STATUS_INTERRUPT;
+		CheckInterrupts();
+		break;
+	case PiTimer:
+		ChangeTimer(PiTimer,0);
+		PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
+		MI_INTR_REG |= MI_INTR_PI;
+		CheckInterrupts();
+		break;
+	case ViTimer: {
+		RefreshScreen();
+		MI_INTR_REG |= MI_INTR_VI;
+		CheckInterrupts();
+		WaitMode=0;
+		}
+		break;
+	case AiTimer:
         AI_STATUS_REG=0;
+		ChangeTimer(AiTimer,0);
         AudioIntrReg|=4;
-        //CheckInterrupts();
-        break;
+		CheckInterrupts();
+		break;
+	}
+	CheckTimer();
+}
+
+ int LoadCPU(void) {
+	int i = 0, count = 0;
+
+	state = (SaveState*) PageRAM(0);
+
+	DMEM = (char*) PageRAM(state->RamSize+0x75C);
+	IMEM = (char*) DMEM + 0x1000;
+
+	if(DMEM==0x75C) {
+		//printf("Could not locate DMEM in segmented savestate\n\tRamSize: %08x\n\tPage: %08x	(%08x)\n\tOffset: %08x\n",
+				//state->RamSize, (state->RamSize+0x75C) >> 16, RAM_Pages[(state->RamSize+0x75C) >> 16], (state->RamSize+0x75C) & 0xffff);
+
+		RAM_Pages[(state->RamSize+0x75C) >> 16] = malloc(0x10000);
+		memset(RAM_Pages[(state->RamSize+0x75C) >> 16], 0, 0x10000);
+
+		DMEM = (char*) PageRAM(state->RamSize+0x75C);
+		IMEM = (char*) DMEM + 0x1000;
+
+	}
+
+	SetupTLB(1);
+	memset(&CPU_Action,0,sizeof(CPU_Action));
+
+	Timers.CurrentTimerType = -1;
+	Timers.Timer = 0;
+	for (count = 0; count < MaxTimers; count ++) { Timers.Active[count] = 0; }
+
+	ChangeTimer(ViTimer,state->VITimer);
+
+	if ((STATUS_REGISTER & STATUS_FR) == 0) {
+		for (i = 0; i < 32; i ++) {
+			FPRFloatLocation[i] = (void *)(&state->FPR[i >> 1].W[i & 1]);
+			FPRDoubleLocation[i] = (void *)(&state->FPR[i >> 1].DW);
+		}
+	} else {
+		for (i = 0; i < 32; i ++) {
+			FPRFloatLocation[i] = (void *)(&state->FPR[i].W[0]); // from 1.4
+			FPRDoubleLocation[i] = (void *)(&state->FPR[i].DW);
+		}
+	}
+
+	BuildInterpreter();
+
+	ChangeCompareTimer();
+	CheckInterrupts();
+
+	Timers.CurrentTimerType = -1;
+	Timers.Timer = 0;
+	for (count = 0; count < MaxTimers; count ++) { Timers.Active[count] = 0; }
+	ChangeTimer(ViTimer,5000);
+	ChangeCompareTimer();
+	ViFieldNumber = 0;
+
+	{
+		const float VSyncTiming = 789000.0f;
+		double BytesPerSecond = 48681812.0 / (AI_DACRATE_REG + 1) * 4;
+		double CountsPerSecond = (double)(((double)VSyncTiming) * (double)60.0);
+		double CountsPerByte = (double)CountsPerSecond / (double)BytesPerSecond;
+		unsigned long IntScheduled = (unsigned long)((double)AI_LEN_REG * CountsPerByte);
+
+		if (AI_LEN_REG)
+			ChangeTimer(AiTimer,IntScheduled);
+	}
+
+	AI_STATUS_REG = 0;
+	AudioIntrReg = 0;
+
+	WaitMode = 0;
+
+	CPUHLE_Scan();
+
+	printf("Starting emulation at %08x...\n", PROGRAM_COUNTER);
+
+	return 1;
+
+}
+
+#define N64WORD(x)		(*(unsigned long*)PageVRAM((x)))
+#define N64HALF(x)		(*(unsigned short*)PageVRAM((x)))
+#define N64BYTE(x)		(*(unsigned char*)PageVRAM((x)))
+
+void RunFunction(unsigned long address) {
+	unsigned long oldPC = state->PC, oldRA = state->GPR[31].UW[0], la = NextInstruction;
+    unsigned long callStack = 0;
+
+    NextInstruction = NORMAL;
+    PROGRAM_COUNTER = address;
+
+    while( (state->PC != oldRA) || callStack) {
+
+       	if(state->PC == address)
+    		callStack++;
+
+    	ExecuteInterpreterOpCode();
+
+    	if(state->PC == oldRA)
+    		callStack--;
     }
-    CheckTimer();
+
+    state->PC = oldPC;
+    state->GPR[31].UW[0] = oldRA;
+    NextInstruction = la;
+
 }
 
-void Int3()
-{
-    asm("int $3");
+
+void ExecuteInterpreterOpCode () {
+
+	if (WaitMode) Timers.Timer = -1;
+
+	if (!LW_VAddr(PROGRAM_COUNTER, &Opcode.Hex)) {
+		DoTLBMiss(NextInstruction == JUMP,PROGRAM_COUNTER);
+		NextInstruction = NORMAL;
+		return;
+	}
+
+	COUNT_REGISTER += CountPerOp;
+	Timers.Timer -= CountPerOp;
+
+	RANDOM_REGISTER -= 1;
+	if ((int)RANDOM_REGISTER < (int)WIRED_REGISTER) {
+		RANDOM_REGISTER = 31;
+	}
+
+	((void ( *)()) R4300i_Opcode[ Opcode.op ])();
+
+	if (state->GPR[0].DW != 0)
+		state->GPR[0].DW = 0;
+
+	switch (NextInstruction) {
+	case NORMAL:
+		PROGRAM_COUNTER += 4;
+		break;
+	case DELAY_SLOT:
+		NextInstruction = JUMP;
+		PROGRAM_COUNTER += 4;
+		break;
+	case JUMP:
+
+		if(!DoCPUHLE(JumpToLocation)) {
+			PROGRAM_COUNTER  = JumpToLocation;
+			NextInstruction = NORMAL;
+		} else {
+			PROGRAM_COUNTER = state->GPR[31].DW;
+			NextInstruction = NORMAL;
+		}
+
+		if ((int)Timers.Timer < 0) {  TimerDone(); }
+		if (CPU_Action.DoSomething) { DoSomething(); }
+		break;
+	}
+
 }
 
-void _Emms()
-{
-    asm("emms");
+
+#define N64DWORD(x)		(*(unsigned long long*)PageVRAM((x)))
+#define N64WORD(x)		(*(unsigned long*)PageVRAM((x)))
+#define N64HALF(x)		(*(unsigned short*)PageVRAM((x)))
+#define N64BYTE(x)		(*(unsigned char*)PageVRAM((x)))
+
+
+void StartCpu() {
+	int logging;
+	NextInstruction = NORMAL;
+
+	while(!stopping) {
+	    	if(PROGRAM_COUNTER==0x70003EAC)
+	    		printf("A0 = %08x\tA1 = %08x\n",state->GPR[0x1a].UW[0],state->GPR[0x1b].UW[0]);
+		ExecuteInterpreterOpCode();
+	}
 }
 
-void controlfp(uint32_t control)
-{
+const unsigned char ZEROMON=0;
+
+const unsigned char * PageROM(unsigned long addr) {
+	return (ROM_Pages[addr >> 16]) ? ROM_Pages[addr >> 16] + (addr & 0xffff) : &ZEROMON;
+}
+
+void RunRsp (void) {
+	if ( ( SP_STATUS_REG & SP_STATUS_HALT ) == 0) {
+		if ( ( SP_STATUS_REG & SP_STATUS_BROKE ) == 0 ) {
+
+			unsigned long Task = *( unsigned long *)PageRAM(state->RamSize+0x75C +0xFC0);
+
+			switch (Task) {
+			case 1:	{
+					MI_INTR_REG |= 0x20;
+
+					SP_STATUS_REG |= (0x0203 );
+					if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
+						MI_INTR_REG |= 1;
+
+					CheckInterrupts();
+
+					DPC_STATUS_REG &= ~0x0002;
+					//DlistCount += 1;
+				}
+				break;
+			case 2: {
+
+					//do audio HLE
+					if(/*!IsSeeking()*/ 1) {
+						OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
+						if (audio_ucode(task)!=0)
+							printf("Can't run HLE for audio.\nAudio HLE support is required for no-rsp\n");
+					}
+
+					SP_STATUS_REG |= (0x0203 );
+					if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 ) {
+						MI_INTR_REG |= 1;
+						CheckInterrupts();
+					}
+
+				}
+				break;
+			default:
+
+				break;
+			}
+
+
+		}
+	}
+}
+
+
+void PI_DMA_WRITE(void) {
+	PI_STATUS_REG |= PI_STATUS_DMA_BUSY;
+	if ( PI_DRAM_ADDR_REG + PI_WR_LEN_REG + 1 > state->RamSize) {
+		//DisplayError("PI_DMA_WRITE not in Memory");
+		PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
+		MI_INTR_REG |= MI_INTR_PI;
+		CheckInterrupts();
+		return;
+	}
+
+	if ((PI_CART_ADDR_REG >= 0x10000000) && (PI_CART_ADDR_REG <= 0x1FBFFFFF)) {
+		int i = 0;
+		PI_CART_ADDR_REG -= 0x10000000;
+		for (i = 0; i < PI_WR_LEN_REG + 1; i++) {
+			unsigned long address = ((PI_DRAM_ADDR_REG + i) ^ 3) + 0x75c;
+
+			if(!RAM_Pages[address >> 16])
+				RAM_Pages[address >> 16] = malloc(0x100000);
+
+			*(unsigned char*) PageRAM(address) = *PageROM((PI_CART_ADDR_REG + i) ^ 3);
+		}
+
+	PI_CART_ADDR_REG += 0x10000000;
+		MI_INTR_REG |= MI_INTR_PI;
+		CheckInterrupts();
+		CheckTimer();
+	}
+
+	PI_STATUS_REG &= ~PI_STATUS_DMA_BUSY;
+	MI_INTR_REG |= MI_INTR_PI;
+	CheckInterrupts();
+}
+
+void SP_DMA_READ(void) {
+	int i = 0;
+	SP_DRAM_ADDR_REG &= 0x1FFFFFFF;
+
+	//printf("SP_DMA_READing : REG=%08x  length=%08x  count=%08x  skip=%08x\n", SP_RD_LEN_REG, (SP_RD_LEN_REG&0xfff), (SP_RD_LEN_REG>>12)&0xff, (SP_RD_LEN_REG>>20)&0xfff);
+
+	if (SP_DRAM_ADDR_REG > state->RamSize) {
+		SP_DMA_BUSY_REG = 0;
+		SP_STATUS_REG  &= ~SP_STATUS_DMA_BUSY;
+		return;
+	}
+
+	if (SP_RD_LEN_REG + 1  + (SP_MEM_ADDR_REG & 0xFFF) > 0x1000) {
+		return;
+	}
+
+	for(i=0;i<SP_RD_LEN_REG + 1; i++) {
+		int iaddress = DMEM+(SP_MEM_ADDR_REG & 0x1FFF)+i;
+		int oaddress = SP_DRAM_ADDR_REG + i;
+
+		*(unsigned char*)(iaddress) = *(unsigned char*) PageRAM(oaddress+0x75c);
+
+	}
+
+	SP_DMA_BUSY_REG = 0;
+	SP_STATUS_REG  &= ~SP_STATUS_DMA_BUSY;
+	MI_INTR_REG &= ~MI_INTR_SP;
+	CheckInterrupts();
+	CheckTimer();
 }

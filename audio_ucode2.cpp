@@ -1,14 +1,9 @@
 extern "C" {
-	#include <stdio.h>
-	#include <string.h>
-	#include "types.h"
 	#include "usf.h"
-	#include "audio_hle.h"
-	#include "memory.h"
 }
-
-
-
+#include <stdio.h>
+#include "audio_hle.h"
+#include "memory.h"
 
 extern u8 BufferSpace[0x10000];
 
@@ -27,10 +22,6 @@ extern u16 ResampleLUT [0x200];
 
 bool isMKABI = false;
 bool isZeldaABI = false;
-
-#define PageRAM2(x)	((uintptr_t) (RDRAM + (x)))
-#define memcpyfn64(a,b,c)	memcpy((a),(void*)((uintptr_t)RDRAM + (uintptr_t)(b)),(c))
-#define memcpy2n64(a,b,c)	memcpy((void*)((uintptr_t)RDRAM + (uintptr_t)(a)),(b),(c))
 
 static void LOADADPCM2 () { // Loads an ADPCM table - Works 100% Now 03-13-01
 	u32 v0;
@@ -60,15 +51,15 @@ static void SETLOOP2 () {
 }
 
 static void SETBUFF2 () {
-	AudioInBuffer   = (u16)(inst1);			 // 0x00
-	AudioOutBuffer	= (u16)((inst2 >> 0x10)); // 0x02
-	AudioCount		= (u16)(inst2);			 // 0x04
+	AudioInBuffer   = u16(inst1);			 // 0x00
+	AudioOutBuffer	= u16((inst2 >> 0x10)); // 0x02
+	AudioCount		= u16(inst2);			 // 0x04
 }
 
 static void ADPCM2 () { // Verified to be 100% Accurate...
 	unsigned char Flags=(u8)(inst1>>16)&0xff;
 	//WORD Gain=(u16)(inst1&0xffff);
-	unsigned int Address=(inst2 & 0xffffff);// + SEGMENTS[(inst2>>24)&0xf];
+	unsigned long Address=(inst2 & 0xffffff);// + SEGMENTS[(inst2>>24)&0xf];
 	unsigned short inPtr=0;
 	//short *out=(s16 *)(testbuff+(AudioOutBuffer>>2));
 	short *out=(short *)(BufferSpace+AudioOutBuffer);
@@ -393,10 +384,10 @@ static void MIXER2 () { // Needs accuracy verification...
 
 static void RESAMPLE2 () {
 	unsigned char Flags=(u8)((inst1>>16)&0xff);
-	unsigned int Pitch=((inst1&0xffff))<<1;
+	unsigned long Pitch=((inst1&0xffff))<<1;
 	u32 addy = (inst2 & 0xffffff);// + SEGMENTS[(inst2>>24)&0xf];
-	unsigned int Accum=0;
-	unsigned int location;
+	unsigned long Accum=0;
+	unsigned long location;
 	s16 *lut;
 	short *dst;
 	s16 *src;
@@ -524,6 +515,7 @@ static void ENVMIXER2 () {
 	bufft7 = (s16 *)(BufferSpace + ((inst2 >> 0x0c)&0x0ff0));
 	buffs0 = (s16 *)(BufferSpace + ((inst2 >> 0x04)&0x0ff0));
 	buffs1 = (s16 *)(BufferSpace + ((inst2 << 0x04)&0x0ff0));
+
 
 	v2[0] = 0 - (s16)((inst1 & 0x2) >> 1);
 	v2[1] = 0 - (s16)((inst1 & 0x1));
@@ -705,7 +697,7 @@ static void INTERLEAVE2 () { // Needs accuracy verification...
 }
 
 static void ADDMIXER () {
-	short Count   = (inst1 >> 12)	 & 0x00ff0;
+	short Count   = (inst1 >> 12) & 0x00ff0;
 	u16 InBuffer  = (inst2 >> 16);
 	u16 OutBuffer = inst2 & 0xffff;
 
@@ -896,16 +888,12 @@ void (*ABI2[0x20])() = {
     SPNOOP, SPNOOP, SPNOOP, SPNOOP, SPNOOP, SPNOOP, SPNOOP, SPNOOP
 };*/
 
-extern "C" {
-
 void (*ABI2[0x20])() = {
     SPNOOP , ADPCM2, CLEARBUFF2, UNKNOWN, ADDMIXER, RESAMPLE2, UNKNOWN, SEGMENT2,
     SETBUFF2 , DUPLICATE2, DMEMMOVE2, LOADADPCM2, MIXER2, INTERLEAVE2, HILOGAIN, SETLOOP2,
     SPNOOP, INTERL2 , ENVSETUP1, ENVMIXER2, LOADBUFF2, SAVEBUFF2, ENVSETUP2, SPNOOP,
     HILOGAIN , SPNOOP, DUPLICATE2 , UNKNOWN    , SPNOOP  , SPNOOP    , SPNOOP  , SPNOOP
 };
-
-}
 /*
 void (*ABI2[0x20])() = {
     SPNOOP , ADPCM2, CLEARBUFF2, SPNOOP, SPNOOP, RESAMPLE2  , SPNOOP  , SEGMENT2,

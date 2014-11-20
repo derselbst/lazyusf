@@ -1,13 +1,9 @@
-
 extern "C" {
-	#include <stdio.h>
-	#include <string.h>
-	#include "types.h"
 	#include "usf.h"
-	#include "audio_hle.h"
-	#include "memory.h"
 }
-
+#include <stdio.h>
+#include "audio_hle.h"
+#include "memory.h"
 
 static void SPNOOP () {
 	//char buff[0x100];
@@ -58,19 +54,23 @@ static void SETVOL3 () { // Swapped Rate_Left and Vol
 */
 static void SETVOL3 () {
 	u8 Flags = (u8)(inst1 >> 0x10);
+
 	if (Flags & 0x4) { // 288
 		if (Flags & 0x2) { // 290
 			Vol_Left  = *(s16*)&inst1; // 0x50
 			Env_Dry		= (s16)(*(s32*)&inst2 >> 0x10); // 0x4E
 			Env_Wet		= *(s16*)&inst2; // 0x4C
+			firstHLE|=1;
 		} else {
 			VolTrg_Right  = *(s16*)&inst1; // 0x46
 			//VolRamp_Right = (u16)(inst2 >> 0x10) | (s32)(s16)(inst2 << 0x10);
 			VolRamp_Right = *(s32*)&inst2; // 0x48/0x4A
+			firstHLE|=2;
 		}
 	} else {
 		VolTrg_Left  = *(s16*)&inst1; // 0x40
 		VolRamp_Left = *(s32*)&inst2; // 0x42/0x44
+		firstHLE|=4;
 	}
 }
 
@@ -102,10 +102,17 @@ static void ENVMIXER3 () {
 	s16 Wet, Dry;
 	s16 LTrg, RTrg;
 
+	if(!firstHLE) {
+		//firstHLE = 1;
+		//DisplayError("A_INIT: %d", flags&A_INIT);
+
+
+	}
 
 	Vol_Right = (*(s16 *)&inst1);
 
 	if (flags & A_INIT) {
+		//DisplayError("A_INIT: %d", flags&A_INIT);
 		LAdder = VolRamp_Left / 8;
 		LAcc  = 0;
 		LVol  = Vol_Left;
@@ -119,7 +126,8 @@ static void ENVMIXER3 () {
 		Wet = (s16)Env_Wet; Dry = (s16)Env_Dry; // Save Wet/Dry values
 		LTrg = VolTrg_Left; RTrg = VolTrg_Right; // Save Current Left/Right Targets
 	} else {
-		memcpy((u8 *)hleMixerWorkArea, N64MEM+addy, 80);
+		memcpyfn64((u8 *)hleMixerWorkArea, (u8 *)addy, 80);
+		//memcpy((u8 *)hleMixerWorkArea, RDRAM+addy, 80);
 		Wet    = *(s16 *)(hleMixerWorkArea +  0); // 0-1
 		Dry    = *(s16 *)(hleMixerWorkArea +  2); // 2-3
 		LTrg   = *(s16 *)(hleMixerWorkArea +  4); // 4-5
@@ -136,6 +144,9 @@ static void ENVMIXER3 () {
 		//if (test != 0x13371337)
 		//	__asm int 3;
 	}
+
+	//if(firstHLE!=63)
+	//	return;
 
 
 	//if(!(flags&A_AUX)) {
@@ -235,7 +246,7 @@ static void ENVMIXER3 () {
 	*(s16 *)(hleMixerWorkArea + 20) = LSig; // 20-21
 	*(s16 *)(hleMixerWorkArea + 22) = RSig; // 22-23
 	//*(u32 *)(hleMixerWorkArea + 24) = 0x13371337; // 22-23
-	memcpy(N64MEM+addy, (u8 *)hleMixerWorkArea,80);
+	memcpy2n64((u8 *)addy, (u8 *)hleMixerWorkArea,80);
 }
 
 static void CLEARBUFF3 () {
@@ -269,7 +280,7 @@ static void LOADBUFF3 () {
 	u32 cnt = (((inst1 >> 0xC)+3)&0xFFC);
 	v0 = (inst2 & 0xfffffc);
 	u32 src = (inst1&0xffc)+0x4f0;
-	memcpy (BufferSpace+src, (u8 *)N64MEM+v0, cnt);
+	memcpyfn64 ((u8 *)BufferSpace+src, (u8 *)v0, cnt);
 }
 
 static void SAVEBUFF3 () {
@@ -277,15 +288,16 @@ static void SAVEBUFF3 () {
 	u32 cnt = (((inst1 >> 0xC)+3)&0xFFC);
 	v0 = (inst2 & 0xfffffc);
 	u32 src = (inst1&0xffc)+0x4f0;
-	memcpy (N64MEM+v0, (u8 *)BufferSpace+src, cnt);
+	memcpy2n64 ((u8 *)v0, (u8 *)BufferSpace+src, cnt);
 }
 
 static void LOADADPCM3 () { // Loads an ADPCM table - Works 100% Now 03-13-01
 	u32 v0;
 	v0 = (inst2 & 0xffffff);
 
-	u16 *table = (u16 *)(RDRAM+v0);
 	for (u32 x = 0; x < ((inst1&0xffff)>>0x4); x++) {
+		u16 *table = (u16 *)PageRAM2(v0 + (x<<4));
+
 		adpcmtable[0x1+(x<<3)] = table[0];
 		adpcmtable[0x0+(x<<3)] = table[1];
 
@@ -297,7 +309,7 @@ static void LOADADPCM3 () { // Loads an ADPCM table - Works 100% Now 03-13-01
 
 		adpcmtable[0x7+(x<<3)] = table[6];
 		adpcmtable[0x6+(x<<3)] = table[7];
-		table += 8;
+		//table += 8;
 	}
 }
 
@@ -323,7 +335,7 @@ static void ADPCM3 () { // Verified to be 100% Accurate...
 	int vscale, a[8];
 	unsigned short index, j, inPtr, x;
 	short *book1,*book2,*out;
-	unsigned int Address;
+	unsigned long Address;
 
 	Flags=(u8)(inst2>>0x1c)&0xff;
 	Address=(inst1 & 0xffffff);
@@ -339,11 +351,11 @@ static void ADPCM3 () { // Verified to be 100% Accurate...
 	{
 		if(Flags&0x2)
 		{
-			memcpy(out,&RDRAM[loopval],32);
+			memcpyfn64((u8 *)out,(u8 *)loopval,32);
 		}
 		else
 		{
-			memcpy(out,&RDRAM[Address],32);
+			memcpyfn64((u8 *)out,(u8 *)Address,32);
 		}
 	}
 
@@ -551,7 +563,7 @@ static void ADPCM3 () { // Verified to be 100% Accurate...
 		count-=32;
 	}
 	out-=16;
-	memcpy(&RDRAM[Address],out,32);
+	memcpy2n64((u8 *)Address,(u8 *)out,32);
 }
 
 static void RESAMPLE3 () {
@@ -579,20 +591,17 @@ static void RESAMPLE3 () {
 	}
 
 	if ((Flags & 0x1) == 0) {
-		for (int x=0; x < 4; x++) //memcpy (src+srcPtr, rsp.RDRAM+addy, 0x8);
-			src[(srcPtr+x)^1] = ((u16 *)RDRAM)[((addy/2)+x)^1];
-		Accum = *(u16 *)(RDRAM+addy+10);
+		for (x = 0; x < 4; x++) //memcpy (src+srcPtr, rsp.RDRAM+addy, 0x8);
+			src[(srcPtr+x)^1] = *(u16 *)PageRAM2((addy+(x*2)));//(*(u16 *)PageRAM2(((addy)+x)^1));
+		Accum = *(u16 *)(PageRAM2(addy+10));
 	} else {
-		for (int x=0; x < 4; x++)
+		for (x = 0; x < 4; x++)
 			src[(srcPtr+x)^1] = 0;//*(u16 *)(rsp.RDRAM+((addy+x)^2));
 	}
 
-	//if ((Flags & 0x2))
-	//	__asm int 3;
-
-	for(int i=0;i < 0x170/2;i++)	{
+	for(i = 0; i < 0x170 / 2; i++)	{
 		location = (((Accum * 0x40) >> 0x10) * 8);
-		//location = (Accum >> 0xa) << 0x3;
+
 		lut = (s16 *)(((u8 *)ResampleLUT) + location);
 
 		temp =  ((s32)*(s16*)(src+((srcPtr+0)^1))*((s32)((s16)lut[0])));
@@ -616,9 +625,10 @@ static void RESAMPLE3 () {
 		srcPtr += (Accum>>16);
 		Accum&=0xffff;
 	}
-	for (int x=0; x < 4; x++)
-		((u16 *)RDRAM)[((addy/2)+x)^1] = src[(srcPtr+x)^1];
-	*(u16 *)(RDRAM+addy+10) = Accum;
+	for (x = 0; x < 4; x++)
+		*(u16 *)PageRAM2((addy+(x*2))) = src[(srcPtr+x)^1];
+
+	*(u16 *)PageRAM2(addy+10) = Accum;
 }
 
 static void INTERLEAVE3 () { // Needs accuracy verification...
@@ -654,7 +664,7 @@ static void MP3ADDY () {
 
 extern "C" {
 	void rsp_run();
-	void mp3setup (unsigned int inst1, unsigned int inst2, unsigned int t8);
+	void mp3setup (unsigned long inst1, unsigned long inst2, unsigned long t8);
 }
 
 extern u32 base, dmembase;
@@ -667,8 +677,6 @@ static void DISABLE () {
 }
 
 
-extern "C" {
-
 void (*ABI3[0x20])() = {
     DISABLE , ADPCM3 , CLEARBUFF3,	ENVMIXER3  , LOADBUFF3, RESAMPLE3  , SAVEBUFF3, MP3,
 	MP3ADDY, SETVOL3, DMEMMOVE3 , LOADADPCM3 , MIXER3   , INTERLEAVE3, WHATISTHIS   , SETLOOP3,
@@ -676,4 +684,3 @@ void (*ABI3[0x20])() = {
     SPNOOP , SPNOOP, SPNOOP   , SPNOOP    , SPNOOP  , SPNOOP    , SPNOOP  , SPNOOP
 };
 
-}

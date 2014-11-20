@@ -1,6 +1,3 @@
-#include <string.h>
-#include "types.h"
-#include "memory.h"
 #include "usf.h"
 #include "audio_hle.h"
 
@@ -32,7 +29,7 @@ s32 VolRamp_Right;	// m_RightVolTarget
 //u16 VolRate_Right;	// m_RightVolRate
 s16 Env_Dry;		// 0x001C(T8)
 s16 Env_Wet;		// 0x001E(T8)
-int firstHLE = 0, goldeneye = 0;
+int firstHLE = 0;
 
 u8 BufferSpace[0x10000];
 
@@ -116,33 +113,20 @@ static void ENVMIXER () {
 	memset(zero,0,16);
 
 	if (flags & A_INIT) {
-
-    	if(goldeneye) {
-    		//Vol_Left = Vol_Right;
-    		// VolTrg_Left = VolTrg_Right;
-    		Vol_Left = (Vol_Right >> 8) << 8;
-    		VolTrg_Left = (VolTrg_Right >> 8) << 8;
-    		//Vol_Right = (Vol_Right & 0xff) << 8;
-    		//VolTrg_Right = (VolTrg_Right & 0xff) << 8;
-    	}
-
 		LVol = ((Vol_Left * (s32)VolRamp_Left));
 		RVol = ((Vol_Right * (s32)VolRamp_Right));
-
-		Wet = (s16)Env_Wet;
-		Dry = (s16)Env_Dry; // Save Wet/Dry values
-		LTrg = (VolTrg_Left << 16);
-		RTrg = (VolTrg_Right << 16); // Save Current Left/Right Targets
+		Wet = (s16)Env_Wet; Dry = (s16)Env_Dry; // Save Wet/Dry values
+		LTrg = (VolTrg_Left << 16); RTrg = (VolTrg_Right << 16); // Save Current Left/Right Targets
 		LAdderStart = Vol_Left << 16;
 		RAdderStart = Vol_Right << 16;
-		LAdderEnd = LVol ;
-		RAdderEnd = RVol ;
+		LAdderEnd = LVol;
+		RAdderEnd = RVol;
 		RRamp = VolRamp_Right;
 		LRamp = VolRamp_Left;
 	} else {
 		// Load LVol, RVol, LAcc, and RAcc (all 32bit)
 		// Load Wet, Dry, LTrg, RTrg
-		memcpy((u8*)hleMixerWorkArea, (u8*)RDRAM+addy, 80);
+		memcpyfn64((u8*)hleMixerWorkArea, (u8*)addy, 80);
 		Wet  = *(s16 *)(hleMixerWorkArea +  0); // 0-1
 		Dry  = *(s16 *)(hleMixerWorkArea +  2); // 2-3
 		LTrg = *(s32 *)(hleMixerWorkArea +  4); // 4-5
@@ -282,12 +266,12 @@ static void ENVMIXER () {
 	*(s32 *)(hleMixerWorkArea + 16) = LAdderStart; // 12-13
 	*(s32 *)(hleMixerWorkArea + 18) = RAdderStart; // 14-15
 
-	memcpy((u8*)RDRAM+addy,(u8*)hleMixerWorkArea,80);
+	memcpy2n64((u8*)addy,(u8*)hleMixerWorkArea,80);
 }
 
 static void RESAMPLE () {
-	unsigned int Accum=0;
-	unsigned int location;
+	unsigned long Accum=0;
+	unsigned long location;
 	s16 *lut/*, *lut2*/;
 	short *dst;
 	s16 *src;
@@ -295,7 +279,7 @@ static void RESAMPLE () {
 	s32 accum,addy;
 	u32 srcPtr, dstPtr;
 	unsigned char Flags;
-	unsigned int Pitch;
+	unsigned long Pitch;
 	int x = 0, i = 0;
 
 	dst=(short *)(BufferSpace);
@@ -312,9 +296,9 @@ static void RESAMPLE () {
 
 	if ((Flags & 0x1) == 0) {
 		for (x=0; x < 4; x++)
-			src[(srcPtr+x)^1] = *(u16 *)(N64MEM+(addy+(x*2)));
+			src[(srcPtr+x)^1] = *(u16 *)PageRAM2((addy+(x*2)));
 
-		Accum = *(u16 *)(N64MEM+addy+10);
+		Accum = *(u16 *)PageRAM2(addy+10);
 	} else {
 		for (x=0; x < 4; x++)
 			src[(srcPtr+x)^1] = 0;
@@ -348,15 +332,15 @@ static void RESAMPLE () {
 		Accum&=0xffff;
 	}
 	for (x = 0; x < 4; x++)
-		*(u16 *)(N64MEM+(addy+(x*2))) = src[(srcPtr+x)^1];
+		*(u16 *)PageRAM2((addy+(x*2))) = src[(srcPtr+x)^1];
 
-	*(u16 *)(N64MEM+addy+10) = Accum;
+	*(u16 *)PageRAM2(addy+10) = Accum;
 }
 static void SETVOL () {
 // Might be better to unpack these depending on the flags...
 	u8 flags = (u8)((inst1 >> 16) & 0xff);
 	u16 vol = (s16)(inst1 & 0xffff);
-	u16 voltarg =(u16)((inst2 >> 16)&0xffff);
+	//u16 voltarg =(u16)((inst2 >> 16)&0xffff);
 	u16 volrate = (u16)((inst2 & 0xffff));
 
 	if (flags & A_AUX) {
@@ -376,16 +360,10 @@ static void SETVOL () {
 
 	if(flags & A_LEFT) { // Set the Ramping values Target, Ramp
 		VolTrg_Left  = *(s16 *)&inst1;		// m_LeftVol
-		if(goldeneye)
-			VolRamp_Left = voltarg;
-		else
-			VolRamp_Left = (s32)volrate;//*(s32 *)&inst2;//(u16)(inst2) | (s32)(s16)(inst2 << 0x10);
+		VolRamp_Left = *(s32 *)&inst2;//(u16)(inst2) | (s32)(s16)(inst2 << 0x10);
 	} else { // A_RIGHT
 		VolTrg_Right  = *(s16 *)&inst1;		// m_RightVol
-		if(goldeneye)
-			VolRamp_Right = voltarg;
-		else
-			VolRamp_Right = (s32)volrate;//*(s32 *)&inst2;//(u16)(inst2 >> 0x10) | (s32)(s16)(inst2 << 0x10);
+		VolRamp_Right = *(s32 *)&inst2;//(u16)(inst2 >> 0x10) | (s32)(s16)(inst2 << 0x10);
 	}
 }
 
@@ -410,7 +388,7 @@ static void ADPCM () { // Work in progress! :)
 	short *out, count;
 
 	unsigned char Flags=(u8)(inst1>>16)&0xff;
-	unsigned int Address=(inst2 & 0xffffff);
+	unsigned long Address=(inst2 & 0xffffff);
 
 	out=(short *)(BufferSpace+AudioOutBuffer);
 	count=(short)AudioCount;
@@ -420,9 +398,9 @@ static void ADPCM () { // Work in progress! :)
 	if(!(Flags&0x1))
 	{
 		if(Flags&0x2) {
-			memcpy((u8*)out,(u8*)RDRAM+Address,32);
+			memcpyfn64((u8*)out,(u8*)Address,32);
 		} else {
-			memcpy((u8*)out,(u8*)RDRAM+Address,32);
+			memcpyfn64((u8*)out,(u8*)Address,32);
 		}
 	}
 
@@ -628,7 +606,7 @@ static void ADPCM () { // Work in progress! :)
 	}
 	out-=16;
 
-	memcpy((u8*)RDRAM+Address,(u8*) out, 32);
+	memcpy2n64((u8*)Address,(u8*) out, 32);
 }
 
 static void LOADBUFF () { // memcpy causes static... endianess issue :(
@@ -637,7 +615,7 @@ static void LOADBUFF () { // memcpy causes static... endianess issue :(
  		return;
 	v0 = (inst2 & 0xfffffc);
 
-    memcpy(BufferSpace+(AudioInBuffer&0xFFFC), (u8*)RDRAM+v0, (AudioCount+3)&0xFFFC);
+    memcpyfn64(BufferSpace+(AudioInBuffer&0xFFFC), (u8*)v0, (AudioCount+3)&0xFFFC);
 
 }
 
@@ -647,7 +625,7 @@ static void SAVEBUFF () { // memcpy causes static... endianess issue :(
 		return;
 	v0 = (inst2 & 0xfffffc);
 
-	memcpy((unsigned char*)RDRAM+v0, BufferSpace+(AudioOutBuffer&0xFFFC), (AudioCount+3)&0xFFFC);
+	memcpy2n64((unsigned char*)v0, BufferSpace+(AudioOutBuffer&0xFFFC), (AudioCount+3)&0xFFFC);
 }
 
 static void SEGMENT () { // Should work
@@ -686,7 +664,7 @@ static void LOADADPCM () { // Loads an ADPCM table - Works 100% Now 03-13-01
 
 	for (x = 0; x < ((inst1 & 0xffff) >> 0x4); x++) {
 
-		u16 *table = (u16 *)(N64MEM+v0+(x<<4));
+		u16 *table = (u16 *)PageRAM2(v0+(x<<4));
 
 		adpcmtable[0x1+(x<<3)] = table[0];
 		adpcmtable[0x0+(x<<3)] = table[1];

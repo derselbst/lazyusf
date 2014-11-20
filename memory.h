@@ -1,71 +1,122 @@
-/*
- * Project 64 - A Nintendo 64 emulator.
- *
- * (c) Copyright 2001 zilmar (zilmar@emulation64.com) and
- * Jabo (jabo@emulation64.com).
- *
- * pj64 homepage: www.pj64.net
- *
- * Permission to use, copy, modify and distribute Project64 in both binary and
- * source form, for non-commercial purposes, is hereby granted without fee,
- * providing that this license information and copyright notice appear with
- * all copies and any derived work.
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event shall the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Project64 is freeware for PERSONAL USE only. Commercial users should
- * seek permission of the copyright holders first. Commercial use includes
- * charging money for Project64 or software derived from Project64.
- *
- * The copyright holders request that bug fixes and improvements to the code
- * should be forwarded to them so if they want them.
- *
- */
-extern uint32_t RdramSize, SystemRdramSize, RomFileSize;
-extern uintptr_t *TLB_Map;
-extern uint8_t * MemChunk;
+#ifndef _MEMORY_H_
+#define _MEMORY_H_
 
-extern uint8_t *N64MEM, *RDRAM, *DMEM, *IMEM, * ROMPages[0x400], *savestatespace, * NOMEM;
-extern uint32_t WrittenToRom, MemoryState;
+#include "usf.h"
+#include "cpu.h"
+#include "memory.h"
 
-/* Memory Control */
-bool Allocate_Memory             ( void );
-void Release_Memory              ( void );
-bool PreAllocate_Memory(void);
+//extern char *
 
-void *malloc_exec(uint32_t bytes);
+#define	TLB_GRAN	12
+#define	TLB_GRAN2	(2 << (TLB_GRAN-1))
+#define TLB_SIZE	(0x100000000ULL >> TLB_GRAN)
 
-/* CPU memory functions */
-//int  r4300i_Command_MemoryFilter ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
-//int  r4300i_CPU_MemoryFilter     ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
-bool r4300i_LB_NonMemory         ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend );
-bool r4300i_LB_VAddr             ( uint32_t VAddr, uint8_t * Value );
-bool r4300i_LD_VAddr             ( uint32_t VAddr, uint64_t * Value );
-bool r4300i_LH_NonMemory         ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend );
-bool r4300i_LH_VAddr             ( uint32_t VAddr, uint16_t * Value );
-bool r4300i_LW_NonMemory         ( uint32_t PAddr, uint32_t * Value );
-void r4300i_LW_PAddr             ( uint32_t PAddr, uint32_t * Value );
-bool r4300i_LW_VAddr             ( uint32_t VAddr, uint32_t * Value );
-bool r4300i_SB_NonMemory         ( uint32_t PAddr, uint8_t Value );
-bool r4300i_SB_VAddr             ( uint32_t VAddr, uint8_t Value );
-bool r4300i_SD_VAddr             ( uint32_t VAddr, uint64_t Value );
-bool r4300i_SH_NonMemory         ( uint32_t PAddr, uint16_t Value );
-bool r4300i_SH_VAddr             ( uint32_t VAddr, uint16_t Value );
-bool r4300i_SW_NonMemory         ( uint32_t PAddr, uint32_t Value );
-bool r4300i_SW_VAddr             ( uint32_t VAddr, uint32_t Value );
+#define PageRAM(x)	((unsigned long) (RAM_Pages[(x) >> 16]+((x) & 0xffff)))
+#define PageRAM2(x)	((unsigned long) (RAM_Pages[(x+0x75c) >> 16]+((x+0x75c) & 0xffff)))
+#define PageVRAM2(x) ((unsigned long) (TLB_Map[(x) >> TLB_GRAN] + (x) + 0x75c))
+#define PageVRAM3(x) ((unsigned long) (TLB_Map[(x) >> TLB_GRAN] + (x)))
 
-/* Recompiler Memory Functions */
-void Compile_LB                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );
-void Compile_LH                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );
-void Compile_LW                  ( int32_t Reg, uint32_t Addr );
-void Compile_SB_Const            ( uint8_t Value, uint32_t Addr );
-void Compile_SB_Register         ( int32_t x86Reg, uint32_t Addr );
-void Compile_SH_Const            ( uint16_t Value, uint32_t Addr );
-void Compile_SH_Register         ( int32_t x86Reg, uint32_t Addr );
-void Compile_SW_Const            ( uint32_t Value, uint32_t Addr );
-void Compile_SW_Register         ( int32_t x86Reg, uint32_t Addr );
-void ResetRecompCode             ( void );
+extern char *RAM_Pages[0x81];
+extern char *ROM_Pages[0x400];
+extern char *IMEM, *DMEM;
+extern int *TLB_Map;
+extern int RamSize, RomSize;
 
-uint8_t * PageROM(uint32_t addr);
+extern int RomBytes, RamBytes;
+
+
+int InitMemory(void);
+int FreeMemory(void);
+int SetupTLB(int start);
+void WriteTlb(int index) ;
+unsigned long PageVRAM(unsigned long x);
+void memcpyn642n64(char *dest, char *src, int len);
+
+int LD_VAddr(unsigned long addr, long long *value);
+int SD_VAddr(unsigned long addr, long long value);
+int LW_VAddr(unsigned long addr, unsigned long *value);
+int SW_VAddr(unsigned long addr, unsigned long value);
+int LH_VAddr(unsigned long addr, unsigned short *value);
+int SH_VAddr(unsigned long addr, unsigned short value);
+int LB_VAddr(unsigned long addr, unsigned char *value);
+int SB_VAddr(unsigned long addr, unsigned char value);
+int SW_Register(unsigned long addr, unsigned long value);
+int LW_Register(unsigned long addr, unsigned long *value);
+
+int LW_PAddr(unsigned long addr, unsigned long *value);
+int SW_PAddr(unsigned long addr, unsigned long value);
+int LH_PAddr(unsigned long addr, unsigned short *value);
+int SH_PAddr(unsigned long addr, unsigned short value);
+int LB_PAddr(unsigned long addr, unsigned char *value);
+int SB_PAddr(unsigned long addr, unsigned char value);
+
+int LW_PAddr_Imm(unsigned long addr);
+unsigned char LB_PAddr_Imm(unsigned long addr);
+
+void memcpy2n64(unsigned char *dest, unsigned char *src, int len);
+void memcpyfn64(unsigned char *dest, unsigned char* src, int len);
+
+
+// these structures sequestered from project64
+
+typedef struct {
+	int EntryDefined;
+	union {
+		unsigned long Value;
+		unsigned char A[4];
+
+		struct {
+			unsigned zero : 13;
+			unsigned Mask : 12;
+			unsigned zero2 : 7;
+		} ;
+
+	} PageMask;
+
+	union {
+		unsigned long Value;
+		unsigned char A[4];
+
+		struct {
+			unsigned ASID : 8;
+			unsigned Zero : 4;
+			unsigned G : 1;
+			unsigned VPN2 : 19;
+		};
+
+	} EntryHi;
+
+	union {
+		unsigned long Value;
+		unsigned char A[4];
+
+		struct {
+			unsigned GLOBAL: 1;
+			unsigned V : 1;
+			unsigned D : 1;
+			unsigned C : 3;
+			unsigned PFN : 20;
+			unsigned ZERO: 6;
+		} ;
+
+	} EntryLo0;
+
+	union {
+		unsigned long Value;
+		unsigned char A[4];
+
+		struct {
+			unsigned GLOBAL: 1;
+			unsigned V : 1;
+			unsigned D : 1;
+			unsigned C : 3;
+			unsigned PFN : 20;
+			unsigned ZERO: 6;
+		} ;
+
+	} EntryLo1;
+} TLB;
+
+
+#endif
+
