@@ -71,8 +71,5 @@ typedef union tagUDWORD {
 	float 				F[2];
 } MIPS_DWORD;
 
-typedef MIPS_WORD	MIPSUWORD;
-typedef MIPS_DWORD	MIPSUDWORD;
-
 
 #endif

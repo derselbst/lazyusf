@@ -17,8 +17,6 @@ void (*RSP_Vector[64])();
 void (*RSP_Lc2[32])();
 void (*RSP_Sc2[32])();
 
-uint32_t *RegSP,*RegDPC,*RegMI;
-
 void RSP_Opcode_SPECIAL ( void ) {
 	(RSP_Special[ RSPOpC.funct ])();
 }

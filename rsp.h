@@ -383,7 +383,7 @@ extern VECTOR *RSP_Vect;
 
 extern REGISTER EleSpec[32], Indx[32];
 extern RSPOPCODE RSPOpC;
-extern uint32_t *PrgCount, RSPNextInstruction;
+extern uint32_t *PrgCount;
 extern uint32_t RSP_NextInstruction;
 extern REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 

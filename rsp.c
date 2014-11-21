@@ -7,10 +7,6 @@
 #include "cpu.h"
 #include "rsp.h"
 
-uint32_t NoOfMaps, MapsCRC[MaxMaps], Table,ConditionalMove=0;
-uint8_t * RSPRecompCode = 0, * RSPRecompCodeSecondary, * RSPRecompPos, *RSPJumpTables;
-void ** RSPJumpTable;
-
 REGISTER32 *RSP_GPR, RSP_Flags[4];
 REGISTER * RSP_ACCUM;
 VECTOR * RSP_Vect;
@@ -18,8 +14,7 @@ RSPOPCODE RSPOpC;
 REGISTER EleSpec[32], Indx[32];
 REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 
-uint32_t *PrgCount = 0, RSPNextInstruction = 0;
-uint32_t RSP_NextInstruction = 0;
+uint32_t *PrgCount = 0;
 
 uint32_t RSP_NextInstruction, RSP_JumpTo;
 uint32_t RSP_Running = 0;
@@ -29,12 +24,6 @@ void init_rsp(void)
 // 	runcount++;
 
     RSP_Running = 0;
-
-
-    NoOfMaps = 0;
-    Table = 0;
-    ConditionalMove = 0;
-
 
     RSP_NextInstruction = 0;
     RSP_JumpTo = 0;
@@ -675,7 +664,7 @@ void RSP_LW_IMEM ( uint32_t Addr, uint32_t * Value )
 {
     if ((Addr & 0x3) != 0)
     {
-        //printf("Unaligned RSP_LW_IMEM");
+        printf("Unaligned RSP_LW_IMEM\n");
     }
     * Value = *(uint32_t *)(IMEM + (Addr & 0xFFF));
 }
