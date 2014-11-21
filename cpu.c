@@ -5,6 +5,7 @@
 #include "audio.h"
 #include "audio_hle.h"
 #include "cpu_hle.h"
+#include "rsp.h"
 
 // interpreter cpu swiped from project 64
 long JumpToLocation = 0, LLBit = 0, NextInstruction = 0, LLAddr = 0, WaitMode = 0, AudioIntrReg = 0;
@@ -306,13 +307,17 @@ void TimerDone (void) {
 	CheckTimer();
 }
 
- int LoadCPU(void) {
+int LoadCPU(void) {
 	int i = 0, count = 0;
 
 	state = (SaveState*) PageRAM(0);
 
 	DMEM = (char*) PageRAM(state->RamSize+0x75C);
 	IMEM = (char*) DMEM + 0x1000;
+	
+	RSP_GPR = (REGISTER32 *)(DMEM - (32 * 8));
+	RSP_ACCUM = (REGISTER *)(DMEM + 0x2000);
+	RSP_Vect = (VECTOR *)((char*)RSP_ACCUM + (sizeof(REGISTER)*32));
 
 	if(DMEM==0x75C) {
 		//printf("Could not locate DMEM in segmented savestate\n\tRamSize: %08x\n\tPage: %08x	(%08x)\n\tOffset: %08x\n",
@@ -526,7 +531,7 @@ void RunRsp (void) {
 				break;
 			}
 
-
+			real_run_rsp(100);
 		}
 	}
 }

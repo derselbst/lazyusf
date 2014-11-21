@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "usf.h"
 #include "cpu.h"
 #include "memory.h"
@@ -5,7 +6,7 @@
 
 char *RAM_Pages[0x81];
 char *ROM_Pages[0x400];
-char *IMEM, *DMEM;
+char *IMEM, *DMEM, *RDRAM;
 int RamSize, RomSize;
 int *TLB_Map;
 
@@ -30,6 +31,15 @@ int InitMemory() {
 	TLB_Map = (int*) malloc(TLB_SIZE * sizeof(int*));
 
 	memset(TLB_Map, 0, (TLB_SIZE * sizeof(int*)));
+	
+// 	N64MEM = mmap((uintptr_t)TLB_Map + 0x100000 * sizeof(uintptr_t) + 0x10000, 0xD000 + RdramSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON | MAP_FIXED, 0, 0);
+	RDRAM = (uintptr_t)TLB_Map + 0x100000 * sizeof(uintptr_t) + 0x10000;
+    if(RDRAM == NULL)
+    {
+        printf("Failed to allocate RDRAM");
+        return 0;
+    }
+
 
     return 1;
 }

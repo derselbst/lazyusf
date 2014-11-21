@@ -188,6 +188,9 @@ int main(int argc, char **argv) {
     	FreeMemory();
     	return 0;
     }
+    
+    init_rsp();
+    
 
     StartCpu();
 
