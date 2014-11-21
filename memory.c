@@ -47,7 +47,7 @@ uint32_t RdramSize = 0x800000, SystemRdramSize = 0x800000, RomFileSize = 0x40000
 uint8_t * N64MEM = 0, * RDRAM = 0, * DMEM = 0, * IMEM = 0, * ROMPages[0x400], * savestatespace = 0, * NOMEM = 0;
 void ** JumpTable = 0, ** DelaySlotTable = 0;
 uint8_t * RecompCode = 0, * RecompPos = 0;
-
+		
 uint32_t WrittenToRom = 0;
 uint32_t WroteToRom = 0;
 uint32_t TempValue = 0;
@@ -62,20 +62,20 @@ uint8_t * PageROM(uint32_t addr) {
 
 #define PAGE_SIZE	4096
 void *malloc_exec(uint32_t bytes)
-{
+	{  
 	void *ptr = NULL;
-
+	
 	ptr = mmap(0,bytes,PROT_EXEC|PROT_READ|PROT_WRITE,MAP_PRIVATE | MAP_ANONYMOUS | MAP_32BIT, 0, 0);
 
 	return ptr;
 
-}
+	}
 
 
 int32_t Allocate_Memory ( void ) {
 	//uint32_t i = 0;
 	//RdramSize = 0x800000;
-
+		
 	// Allocate the N64MEM and TLB_Map so that they are in each others 4GB range
 	// Also put the registers there :)
 
@@ -87,7 +87,7 @@ int32_t Allocate_Memory ( void ) {
 	TLB_Map = (uintptr_t*)MemChunk;
 	if (TLB_Map == NULL) {
 		return 0;
-	}
+}
 
 	memset(TLB_Map, 0, 0x100000 * sizeof(uintptr_t) + 0x10000);
 
@@ -95,16 +95,16 @@ int32_t Allocate_Memory ( void ) {
 	if(N64MEM == NULL) {
 		DisplayError("Failed to allocate N64MEM");
 		return 0;
-	}
+}
 
 	memset(N64MEM, 0, RdramSize);
 
 	NOMEM = mmap((void*)((uintptr_t)N64MEM + RdramSize), 0xD000, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, 0, 0);
 
 	if(RdramSize == 0x400000)
-	{
+{
 	//	munmap(N64MEM + 0x400000, 0x400000);
-	}
+}
 
 	Registers = (N64_REGISTERS *)((uintptr_t)MemChunk + 0x100000 * sizeof(uintptr_t));
 	TLBLoadAddress = (uint32_t *)((uintptr_t)Registers + 0x500);
@@ -139,7 +139,7 @@ int32_t Allocate_Memory ( void ) {
 		JumpTable = NULL;
 		RecompCode = NULL;
 		DelaySlotTable = NULL;
-	}
+}
 	RDRAM = (uint8_t *)(N64MEM);
 	IMEM  = DMEM + 0x1000;
 
@@ -155,18 +155,18 @@ int PreAllocate_Memory(void) {
 	savestatespace = malloc(0x80275C);
 
 	if(savestatespace == 0)
-    {
+{
         DisplayError("Allocation of savestatespace failed.");
         return 0;
-    }
+}
 	memset(savestatespace, 0, 0x80275C);
 
 	for (i = 0; i < 0x400; i++) {
 		ROMPages[i] = 0;
-	}
+}
 
 	return 1;
-}
+		}
 
 void Release_Memory ( void ) {
 	uint32_t i;
@@ -174,18 +174,18 @@ void Release_Memory ( void ) {
 	for (i = 0; i < 0x400; i++) {
 		if (ROMPages[i]) {
 			free(ROMPages[i]); ROMPages[i] = 0;
-		}
 	}
+}
 	printf("Freeing memory\n");
 
 	MemoryState = 0;
 
 	if (MemChunk != 0)
-	{
+{
 	  munmap(MemChunk, 0x100000 * sizeof(uintptr_t));//+ 0x1D000 + RdramSize;
 //                                                         ^   unused value?  ^
 	  MemChunk=0;
-	}
+}
 	if (N64MEM != 0) {munmap(N64MEM, RdramSize); N64MEM=0;}
 	if (NOMEM != 0) {munmap(NOMEM, 0xD000); NOMEM=0;}
 
@@ -202,7 +202,7 @@ void Release_Memory ( void ) {
 		free(savestatespace);
 	savestatespace = NULL;
 
-}
+		}
 
 
 
@@ -214,15 +214,15 @@ void Compile_LB ( int32_t Reg, uint32_t addr, uint32_t SignExtend ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
-	case 0x10000000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
+	case 0x10000000: 
 
 		if (SignExtend) {
 			MoveSxVariableToX86regByte(Addr + N64MEM,Reg);
@@ -232,8 +232,8 @@ void Compile_LB ( int32_t Reg, uint32_t addr, uint32_t SignExtend ) {
 		break;
 	default:
 		MoveConstToX86reg(0,Reg);
+		}
 	}
-}
 
 void Compile_LH ( int32_t Reg, uint32_t addr, uint32_t SignExtend) {
 	uintptr_t Addr = addr;
@@ -243,15 +243,15 @@ void Compile_LH ( int32_t Reg, uint32_t addr, uint32_t SignExtend) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
-	case 0x10000000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
+	case 0x10000000: 
 
 		if (SignExtend) {
 			MoveSxVariableToX86regHalf(Addr + N64MEM,Reg);
@@ -261,64 +261,64 @@ void Compile_LH ( int32_t Reg, uint32_t addr, uint32_t SignExtend) {
 		break;
 	default:
 		MoveConstToX86reg(0,Reg);
-	}
 }
+		}
 
 void Compile_LW ( int32_t Reg, uint32_t addr ) {
 	uintptr_t Addr = addr;
 	if (!TranslateVaddr(&Addr)) {
 		MoveConstToX86reg(0,Reg);
-	}
+		}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+		case 0x00000000: 
+		case 0x00100000: 
+		case 0x00200000: 
+		case 0x00300000: 
+		case 0x00400000: 
+		case 0x00500000: 
+		case 0x00600000: 
+		case 0x00700000: 
 	case 0x10000000:
 		MoveVariableToX86reg(Addr + N64MEM,Reg);
-		break;
-	case 0x04000000:
+			break;
+		case 0x04000000:
 		if (Addr < 0x04002000) {
 			MoveVariableToX86reg(Addr + N64MEM,Reg);
-			break;
-		}
+				break;
+			}
 		switch (Addr) {
 		case 0x04040010: MoveVariableToX86reg(&SP_STATUS_REG,Reg); break;
 		case 0x04040014: MoveVariableToX86reg(&SP_DMA_FULL_REG,Reg); break;
 		case 0x04040018: MoveVariableToX86reg(&SP_DMA_BUSY_REG,Reg); break;
 		case 0x04080000: MoveVariableToX86reg(&SP_PC_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
+			}
+			break;
 	case 0x04100000: MoveVariableToX86reg(Addr + N64MEM,Reg); break;
-	case 0x04300000:
+		case 0x04300000:
 		switch (Addr) {
 		case 0x04300000: MoveVariableToX86reg(&MI_MODE_REG,Reg); break;
 		case 0x04300004: MoveVariableToX86reg(&MI_VERSION_REG,Reg); break;
 		case 0x04300008: MoveVariableToX86reg(&MI_INTR_REG,Reg); break;
 		case 0x0430000C: MoveVariableToX86reg(&MI_INTR_MASK_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
-	case 0x04400000:
+			}
+			break;
+		case 0x04400000: 
 		switch (Addr) {
-		case 0x04400010:
+			case 0x04400010:
 			Pushad();
 			Call_Direct(&UpdateCurrentHalfLine);
 			Popad();
 			MoveVariableToX86reg(&HalfLine,Reg);
-			break;
+				break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
-	case 0x04500000: /* AI registers */
+			}
+			break;
+		case 0x04500000: /* AI registers */
 		switch (Addr) {
-		case 0x04500004:
+			case 0x04500004: 
 			Pushad();
 			Call_Direct(AiReadLength);
 			MoveX86regToVariable(x86_EAX,&TempValue);
@@ -328,9 +328,9 @@ void Compile_LW ( int32_t Reg, uint32_t addr ) {
 		case 0x0450000C: MoveVariableToX86reg(&AI_STATUS_REG,Reg); break;
 		case 0x04500010: MoveVariableToX86reg(&AI_DACRATE_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
-	case 0x04600000:
+			}
+			break;
+		case 0x04600000:
 		switch (Addr) {
 		case 0x04600010: MoveVariableToX86reg(&PI_STATUS_REG,Reg); break;
 		case 0x04600014: MoveVariableToX86reg(&PI_DOMAIN1_REG,Reg); break;
@@ -342,25 +342,25 @@ void Compile_LW ( int32_t Reg, uint32_t addr ) {
 		case 0x0460002C: MoveVariableToX86reg(&PI_BSD_DOM2_PGS_REG,Reg); break;
 		case 0x04600030: MoveVariableToX86reg(&PI_BSD_DOM2_RLS_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
-	case 0x04700000:
+			}
+			break;
+		case 0x04700000:
 		switch (Addr) {
 		case 0x0470000C: MoveVariableToX86reg(&RI_SELECT_REG,Reg); break;
 		case 0x04700010: MoveVariableToX86reg(&RI_REFRESH_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
-	case 0x04800000:
+			}
+			break;
+		case 0x04800000:
 		switch (Addr) {
 		case 0x04800018: MoveVariableToX86reg(&SI_STATUS_REG,Reg); break;
 		default: MoveConstToX86reg(0,Reg); break;
-		}
-		break;
+			}
+			break;
 	case 0x1FC00000: MoveVariableToX86reg(Addr + N64MEM,Reg); break;
 	default: MoveConstToX86reg(((Addr & 0xFFFF) << 16) | (Addr & 0xFFFF),Reg);
+		}
 	}
-}
 
 void Compile_SB_Const ( uint8_t Value, uint32_t addr ) {
 	uintptr_t Addr = addr;
@@ -369,14 +369,14 @@ void Compile_SB_Const ( uint8_t Value, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveConstByteToVariable(Value,Addr + N64MEM);
 		break;
 	}
@@ -389,14 +389,14 @@ void Compile_SB_Register ( int32_t x86Reg, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveX86regByteToVariable(x86Reg,Addr + N64MEM);
 		break;
 	}
@@ -409,18 +409,18 @@ void Compile_SH_Const ( uint16_t Value, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveConstHalfToVariable(Value,Addr + N64MEM);
 		break;
-	}
 }
+	}
 
 void Compile_SH_Register ( int32_t x86Reg, uint32_t addr ) {
 	uintptr_t Addr = addr;
@@ -429,18 +429,18 @@ void Compile_SH_Register ( int32_t x86Reg, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveX86regHalfToVariable(x86Reg,Addr + N64MEM);
 		break;
-	}
 }
+	}
 
 void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 	uintptr_t Addr = addr;
@@ -449,14 +449,14 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveConstToVariable(Value,Addr + N64MEM);
 		break;
 	case 0x03F00000:
@@ -493,7 +493,7 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 			Call_Direct(&SP_DMA_READ);
 			Popad();
 			break;
-		case 0x04040010:
+		case 0x04040010: 
 			{
 				uint32_t ModValue = 0;
 				if ( ( Value & SP_CLR_HALT ) != 0 ) { ModValue |= SP_STATUS_HALT; }
@@ -546,9 +546,9 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 		case 0x04080000: MoveConstToVariable(Value & 0xFFC,&SP_PC_REG); break;
 		}
 		break;
-	case 0x04300000:
+	case 0x04300000: 
 		switch (Addr) {
-		case 0x04300000:
+		case 0x04300000: 
 			{
 				uint32_t ModValue = 0x7F;
 				if ( ( Value & MI_CLR_INIT ) != 0 ) { ModValue |= MI_MODE_INIT; }
@@ -565,12 +565,12 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 				if (ModValue != 0) {
 					OrConstToVariable(ModValue,&MI_MODE_REG);
 				}
-				if ( ( Value & MI_CLR_DP_INTR ) != 0 ) {
+				if ( ( Value & MI_CLR_DP_INTR ) != 0 ) { 
 					AndConstToVariable(~MI_INTR_DP,&MI_INTR_REG);
 				}
 			}
 			break;
-		case 0x0430000C:
+		case 0x0430000C: 
 			{
 				uint32_t ModValue;
 				ModValue = 0;
@@ -598,17 +598,17 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 			break;
 		}
 		break;
-	case 0x04400000:
+	case 0x04400000: 
 		switch (Addr) {
-		case 0x04400000:
+		case 0x04400000: 
 			MoveConstToVariable(Value,&VI_STATUS_REG);
 			break;
 		case 0x04400004: MoveConstToVariable((Value & 0xFFFFFF),&VI_ORIGIN_REG); break;
-		case 0x04400008:
+		case 0x04400008: 
 			MoveConstToVariable(Value,&VI_WIDTH_REG);
 			break;
 		case 0x0440000C: MoveConstToVariable(Value,&VI_INTR_REG); break;
-		case 0x04400010:
+		case 0x04400010: 
 			AndConstToVariable(~MI_INTR_VI,&MI_INTR_REG);
 			Pushad();
 			Call_Direct(CheckInterrupts);
@@ -628,7 +628,7 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 	case 0x04500000: /* AI registers */
 		switch (Addr) {
 		case 0x04500000: MoveConstToVariable(Value,&AI_DRAM_ADDR_REG); break;
-		case 0x04500004:
+		case 0x04500004: 
 			MoveConstToVariable(Value,&AI_LEN_REG);
 			Pushad();
 			//Pushad();
@@ -640,14 +640,14 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 			break;
 		case 0x04500008: MoveConstToVariable((Value & 1),&AI_CONTROL_REG); break;
 		case 0x0450000C:
-			/* Clear Interrupt */;
+			/* Clear Interrupt */; 
 			AndConstToVariable(~MI_INTR_AI,&MI_INTR_REG);
 			AndConstToVariable(~MI_INTR_AI,&AudioIntrReg);
 			Pushad();
 			Call_Direct(CheckInterrupts);
 			Popad();
 			break;
-		case 0x04500010:
+		case 0x04500010: 
 			Addr|=0xa0000000;
 			MoveConstToVariable(Value,Addr + N64MEM);
 			break;
@@ -658,7 +658,7 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 		switch (Addr) {
 		case 0x04600000: MoveConstToVariable(Value,&PI_DRAM_ADDR_REG); break;
 		case 0x04600004: MoveConstToVariable(Value,&PI_CART_ADDR_REG); break;
-		case 0x04600008:
+		case 0x04600008: 
 			MoveConstToVariable(Value,&PI_RD_LEN_REG);
 			Pushad();
 			Call_Direct(&PI_DMA_READ);
@@ -670,7 +670,7 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 			Call_Direct(&PI_DMA_WRITE);
 			Popad();
 			break;
-		case 0x04600010:
+		case 0x04600010: 
 			if ((Value & PI_CLR_INTR) != 0 ) {
 				AndConstToVariable(~MI_INTR_PI,&MI_INTR_REG);
 				Pushad();
@@ -695,19 +695,19 @@ void Compile_SW_Const ( uint32_t Value, uint32_t addr ) {
 	case 0x04800000:
 		switch (Addr) {
 		case 0x04800000: MoveConstToVariable(Value,&SI_DRAM_ADDR_REG); break;
-		case 0x04800004:
+		case 0x04800004: 			
 			MoveConstToVariable(Value,&SI_PIF_ADDR_RD64B_REG);
 			Pushad();
 			Call_Direct(&SI_DMA_READ);
 			Popad();
 			break;
-		case 0x04800010:
+		case 0x04800010: 
 			MoveConstToVariable(Value,&SI_PIF_ADDR_WR64B_REG);
 			Pushad();
 			Call_Direct(&SI_DMA_WRITE);
 			Popad();
 			break;
-		case 0x04800018:
+		case 0x04800018: 
 			AndConstToVariable(~MI_INTR_SI,&MI_INTR_REG);
 			AndConstToVariable(~SI_STATUS_INTERRUPT,&SI_STATUS_REG);
 			Pushad();
@@ -728,40 +728,40 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 	}
 
 	switch (Addr & 0xFFF00000) {
-	case 0x00000000:
-	case 0x00100000:
-	case 0x00200000:
-	case 0x00300000:
-	case 0x00400000:
-	case 0x00500000:
-	case 0x00600000:
-	case 0x00700000:
+	case 0x00000000: 
+	case 0x00100000: 
+	case 0x00200000: 
+	case 0x00300000: 
+	case 0x00400000: 
+	case 0x00500000: 
+	case 0x00600000: 
+	case 0x00700000: 
 		MoveX86regToVariable(x86Reg,Addr + N64MEM);
 		break;
-	case 0x04000000:
+	case 0x04000000: 
 		switch (Addr) {
 		case 0x04040000: MoveX86regToVariable(x86Reg,&SP_MEM_ADDR_REG); break;
 		case 0x04040004: MoveX86regToVariable(x86Reg,&SP_DRAM_ADDR_REG); break;
-		case 0x04040008:
+		case 0x04040008: 
 			MoveX86regToVariable(x86Reg,&SP_RD_LEN_REG);
 			Pushad();
 			Call_Direct(&SP_DMA_READ);
 			Popad();
 			break;
-		case 0x0404000C:
+		case 0x0404000C: 
 			MoveX86regToVariable(x86Reg,&SP_WR_LEN_REG);
 			Pushad();
 			Call_Direct(&SP_DMA_WRITE);
 			Popad();
 			break;
-		case 0x04040010:
+		case 0x04040010: 
 			MoveX86regToVariable(x86Reg,&RegModValue);
 			Pushad();
 			Call_Direct(ChangeSpStatus);
 			Popad();
 			break;
 		case 0x0404001C: MoveConstToVariable(0,&SP_SEMAPHORE_REG); break;
-		case 0x04080000:
+		case 0x04080000: 
 			MoveX86regToVariable(x86Reg,&SP_PC_REG);
 			AndConstToVariable(0xFFC,&SP_PC_REG);
 			break;
@@ -770,18 +770,18 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 				MoveX86regToVariable(x86Reg,Addr + N64MEM);
 		}
 		break;
-	case 0x04100000:
+	case 0x04100000: 
 		break;
 		//MoveX86regToVariable(x86Reg,Addr + N64MEM);
-	case 0x04300000:
+	case 0x04300000: 
 		switch (Addr) {
-		case 0x04300000:
+		case 0x04300000: 
 			MoveX86regToVariable(x86Reg,&RegModValue);
 			Pushad();
 			Call_Direct(ChangeMiIntrMask);
 			Popad();
 			break;
-		case 0x0430000C:
+		case 0x0430000C: 
 			MoveX86regToVariable(x86Reg,&RegModValue);
 			Pushad();
 			Call_Direct(ChangeMiIntrMask);
@@ -790,22 +790,22 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 		}
 		break;
 
-	case 0x04400000:
+	case 0x04400000: 
 		switch (Addr) {
-		case 0x04400000:
+		case 0x04400000: 
 			// inserted in place of compiled stuff
 			MoveX86regToVariable(x86Reg,&VI_STATUS_REG);
 			break;
-		case 0x04400004:
+		case 0x04400004: 
 			MoveX86regToVariable(x86Reg,&VI_ORIGIN_REG);
 			AndConstToVariable(0xFFFFFF,&VI_ORIGIN_REG);
 			break;
-		case 0x04400008:
+		case 0x04400008: 
 			// inserted in place of compiled stuff
 			MoveX86regToVariable(x86Reg,&VI_WIDTH_REG);
 			break;
 		case 0x0440000C: MoveX86regToVariable(x86Reg,&VI_INTR_REG); break;
-		case 0x04400010:
+		case 0x04400010: 
 			AndConstToVariable(~MI_INTR_VI,&MI_INTR_REG);
 			Pushad();
 			Call_Direct(CheckInterrupts);
@@ -825,7 +825,7 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 	case 0x04500000: /* AI registers */
 		switch (Addr) {
 		case 0x04500000: MoveX86regToVariable(x86Reg,&AI_DRAM_ADDR_REG); break;
-		case 0x04500004:
+		case 0x04500004: 
 			MoveX86regToVariable(x86Reg,&AI_LEN_REG);
 			Pushad();
 			//MoveX86RegToX86Reg(x86_ESP, x86_EAX);
@@ -837,18 +837,18 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 			//AddX86RegToX86Reg(x86_ESP,x86_EAX);
 			Popad();
 			break;
-		case 0x04500008:
+		case 0x04500008: 
 			MoveX86regToVariable(x86Reg,&AI_CONTROL_REG);
 			AndConstToVariable(1,&AI_CONTROL_REG);
 		case 0x0450000C:
-			/* Clear Interrupt */;
+			/* Clear Interrupt */; 
 			AndConstToVariable(~MI_INTR_AI,&MI_INTR_REG);
 			AndConstToVariable(~MI_INTR_AI,&AudioIntrReg);
 			Pushad();
 			Call_Direct(CheckInterrupts);
 			Popad();
 			break;
-		case 0x04500010:
+		case 0x04500010: 
 			MoveX86regToVariable(x86Reg,Addr + N64MEM);
 			break;
 		default:
@@ -871,7 +871,7 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 			Call_Direct(&PI_DMA_WRITE);
 			Popad();
 			break;
-		case 0x04600010:
+		case 0x04600010: 
 			AndConstToVariable(~MI_INTR_PI,&MI_INTR_REG);
 			Pushad();
 			Call_Direct(CheckInterrupts);
@@ -879,19 +879,19 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 			break;
 			MoveX86regToVariable(x86Reg,&VI_ORIGIN_REG);
 			AndConstToVariable(0xFFFFFF,&VI_ORIGIN_REG);
-		case 0x04600014:
+		case 0x04600014: 
 			MoveX86regToVariable(x86Reg,&PI_DOMAIN1_REG);
 			AndConstToVariable(0xFF,&PI_DOMAIN1_REG);
 			break;
-		case 0x04600018:
+		case 0x04600018: 
 			MoveX86regToVariable(x86Reg,&PI_BSD_DOM1_PWD_REG);
 			AndConstToVariable(0xFF,&PI_BSD_DOM1_PWD_REG);
 			break;
-		case 0x0460001C:
+		case 0x0460001C: 
 			MoveX86regToVariable(x86Reg,&PI_BSD_DOM1_PGS_REG);
 			AndConstToVariable(0xFF,&PI_BSD_DOM1_PGS_REG);
 			break;
-		case 0x04600020:
+		case 0x04600020: 
 			MoveX86regToVariable(x86Reg,&PI_BSD_DOM1_RLS_REG);
 			AndConstToVariable(0xFF,&PI_BSD_DOM1_RLS_REG);
 			break;
@@ -905,19 +905,19 @@ void Compile_SW_Register ( int32_t x86Reg, uint32_t addr ) {
 	case 0x04800000:
 		switch (Addr) {
 		case 0x04800000: MoveX86regToVariable(x86Reg,&SI_DRAM_ADDR_REG); break;
-		case 0x04800004:
+		case 0x04800004: 
 			MoveX86regToVariable(x86Reg,&SI_PIF_ADDR_RD64B_REG);
 			Pushad();
 			Call_Direct(&SI_DMA_READ);
 			Popad();
 			break;
-		case 0x04800010:
+		case 0x04800010: 
 			MoveX86regToVariable(x86Reg,&SI_PIF_ADDR_WR64B_REG);
 			Pushad();
 			Call_Direct(&SI_DMA_WRITE);
 			Popad();
 			break;
-		case 0x04800018:
+		case 0x04800018: 
 			AndConstToVariable(~MI_INTR_SI,&MI_INTR_REG);
 			AndConstToVariable(~SI_STATUS_INTERRUPT,&SI_STATUS_REG);
 			Pushad();
@@ -940,14 +940,14 @@ int32_t r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExt
 			if (SignExtend) {
 				*Value = (char)*PageROM((PAddr - 0x10000000)^3);
 
-			} else {
+	} else {
 				*Value = *PageROM((PAddr - 0x10000000)^3);
-			}
+	}
 			return 1;
-		} else {
+	} else {
 			*Value = 0;
 			return 0;
-		}
+	}
 	}
 
 	switch (PAddr & 0xFFF00000) {
@@ -955,22 +955,22 @@ int32_t r4300i_LB_NonMemory ( uint32_t PAddr, uint32_t * Value, uint32_t SignExt
 		* Value = 0;
 		return 0;
 		break;
-	}
+		}
 	return 1;
-}
+	}
 
 uint32_t r4300i_LB_VAddr ( uint32_t VAddr, uint8_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*Value = *(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3));
 	return 1;
-}
+	}
 
 uint32_t r4300i_LD_VAddr ( uint32_t VAddr, uint64_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
 	*((uint32_t *)(Value) + 1) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr);
 	*((uint32_t *)(Value)) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4);
 	return 1;
-}
+	}
 
 int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend ) {
 	switch (PAddr & 0xFFF00000) {
@@ -978,9 +978,9 @@ int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExte
 		* Value = 0;
 		return 0;
 		break;
-	}
-	return 1;
 }
+	return 1;
+	}
 
 uint32_t r4300i_LH_VAddr ( uint32_t VAddr, uint16_t * Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
@@ -1029,6 +1029,10 @@ int32_t r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value ) {
 		case 0x04040010: *Value = SP_STATUS_REG; break;
 		case 0x04040014: *Value = SP_DMA_FULL_REG; break;
 		case 0x04040018: *Value = SP_DMA_BUSY_REG; break;
+		case 0x0404001C: 
+			*Value = SP_SEMAPHORE_REG; 
+			SP_SEMAPHORE_REG = 1;
+			break;
 		case 0x04080000: *Value = SP_PC_REG; break;
 		default:
 			* Value = 0;
@@ -1064,7 +1068,7 @@ int32_t r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value ) {
 		case 0x04400004: *Value = VI_ORIGIN_REG; break;
 		case 0x04400008: *Value = VI_WIDTH_REG; break;
 		case 0x0440000C: *Value = VI_INTR_REG; break;
-		case 0x04400010:
+		case 0x04400010: 
 			*Value = 0;
 			break;
 		case 0x04400014: *Value = VI_BURST_REG; break;
@@ -1134,7 +1138,7 @@ int32_t r4300i_LW_NonMemory ( uint32_t PAddr, uint32_t * Value ) {
 		*Value = (*Value << 16) | *Value;
 		return 0;
 	case 0x08000000:
-		*Value = 0;
+			* Value = 0;
 		break;
 	default:
 		*Value = PAddr & 0xFFFF;
@@ -1225,7 +1229,7 @@ uint32_t r4300i_SD_VAddr ( uint32_t VAddr, uint64_t Value ) {
 	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr) = *((uint32_t *)(&Value) + 1);
 	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4) = *((uint32_t *)(&Value));
 	return 1;
-}
+			}
 
 uint32_t r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value ) {
 	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
@@ -1282,13 +1286,13 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			return 0;
 		}
 		break;
-	case 0x04000000:
+	case 0x04000000: 
 		if (PAddr < 0x04002000) {
 			*(uint32_t *)(N64MEM+PAddr) = Value;
 			if (PAddr < 0x04001000) {
 				if (N64_Blocks.NoOfDMEMBlocks == 0) { break; }
 				N64_Blocks.NoOfDMEMBlocks = 0;
-			} else {
+		} else {
 				if (N64_Blocks.NoOfIMEMBlocks == 0) { break; }
 				N64_Blocks.NoOfIMEMBlocks = 0;
 			}
@@ -1296,25 +1300,25 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			*(DelaySlotTable + ((PAddr & 0xFFFFF000) >> 12)) = NULL;
 			return 1;
 		}
-		switch (PAddr) {
+			switch (PAddr) {
 		case 0x04040000: SP_MEM_ADDR_REG = Value; break;
 		case 0x04040004: SP_DRAM_ADDR_REG = Value; break;
-		case 0x04040008:
+			case 0x04040008: 
 			SP_RD_LEN_REG = Value;
-			SP_DMA_READ();
-			break;
-		case 0x0404000C:
+				SP_DMA_READ();
+				break;
+			case 0x0404000C: 
 			SP_WR_LEN_REG = Value;
-			SP_DMA_WRITE();
-			break;
-		case 0x04040010:
+				SP_DMA_WRITE();
+				break;
+			case 0x04040010: 
 			if ( ( Value & SP_CLR_HALT ) != 0) { SP_STATUS_REG &= ~SP_STATUS_HALT; }
 			if ( ( Value & SP_SET_HALT ) != 0) { SP_STATUS_REG |= SP_STATUS_HALT;  }
 			if ( ( Value & SP_CLR_BROKE ) != 0) { SP_STATUS_REG &= ~SP_STATUS_BROKE; }
-			if ( ( Value & SP_CLR_INTR ) != 0) {
+				if ( ( Value & SP_CLR_INTR ) != 0) { 
 				MI_INTR_REG &= ~MI_INTR_SP;
 				CheckInterrupts();
-			}
+					}
 			if ( ( Value & SP_CLR_SSTEP ) != 0) { SP_STATUS_REG &= ~SP_STATUS_SSTEP; }
 			if ( ( Value & SP_SET_SSTEP ) != 0) { SP_STATUS_REG |= SP_STATUS_SSTEP;  }
 			if ( ( Value & SP_CLR_INTR_BREAK ) != 0) { SP_STATUS_REG &= ~SP_STATUS_INTR_BREAK; }
@@ -1338,20 +1342,20 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 
 			RunRsp();
 
-			break;
+				break;
 		case 0x0404001C: SP_SEMAPHORE_REG = 0; break;
 		case 0x04080000: SP_PC_REG = Value & 0xFFC; break;
-		default:
+			default:
 			return 0;
 		}
 		break;
 	case 0x04100000:
 		switch (PAddr) {
-		case 0x04100000:
+		case 0x04100000: 
 			DPC_START_REG = Value;
 			DPC_CURRENT_REG = Value;
 			break;
-		case 0x04100004:
+		case 0x04100004: 
 			DPC_END_REG = Value;
 			//if (ProcessRDPList) { ProcessRDPList(); }
 			break;
@@ -1363,38 +1367,38 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			if ( ( Value & DPC_SET_FREEZE ) != 0) { DPC_STATUS_REG |= DPC_STATUS_FREEZE;  }
 			if ( ( Value & DPC_CLR_FLUSH ) != 0) { DPC_STATUS_REG &= ~DPC_STATUS_FLUSH; }
 			if ( ( Value & DPC_SET_FLUSH ) != 0) { DPC_STATUS_REG |= DPC_STATUS_FLUSH;  }
-			if ( ( Value & DPC_CLR_FREEZE ) != 0)
+			if ( ( Value & DPC_CLR_FREEZE ) != 0) 
 			{
 				if ( ( SP_STATUS_REG & SP_STATUS_HALT ) == 0)
 				{
 					if ( ( SP_STATUS_REG & SP_STATUS_BROKE ) == 0 )
 					{
 						RunRsp();
-					}
 				}
+			}
 			}
 			break;
 		default:
 			return 0;
 		}
 		break;
-	case 0x04300000:
+	case 0x04300000: 
 		switch (PAddr) {
-		case 0x04300000:
+		case 0x04300000: 
 			MI_MODE_REG &= ~0x7F;
 			MI_MODE_REG |= (Value & 0x7F);
 			if ( ( Value & MI_CLR_INIT ) != 0 ) { MI_MODE_REG &= ~MI_MODE_INIT; }
 			if ( ( Value & MI_SET_INIT ) != 0 ) { MI_MODE_REG |= MI_MODE_INIT; }
 			if ( ( Value & MI_CLR_EBUS ) != 0 ) { MI_MODE_REG &= ~MI_MODE_EBUS; }
 			if ( ( Value & MI_SET_EBUS ) != 0 ) { MI_MODE_REG |= MI_MODE_EBUS; }
-			if ( ( Value & MI_CLR_DP_INTR ) != 0 ) {
+			if ( ( Value & MI_CLR_DP_INTR ) != 0 ) { 
 				MI_INTR_REG &= ~MI_INTR_DP;
 				CheckInterrupts();
 			}
 			if ( ( Value & MI_CLR_RDRAM ) != 0 ) { MI_MODE_REG &= ~MI_MODE_RDRAM; }
 			if ( ( Value & MI_SET_RDRAM ) != 0 ) { MI_MODE_REG |= MI_MODE_RDRAM; }
 			break;
-		case 0x0430000C:
+		case 0x0430000C: 
 			if ( ( Value & MI_INTR_MASK_CLR_SP ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_SP; }
 			if ( ( Value & MI_INTR_MASK_SET_SP ) != 0 ) { MI_INTR_MASK_REG |= MI_INTR_MASK_SP; }
 			if ( ( Value & MI_INTR_MASK_CLR_SI ) != 0 ) { MI_INTR_MASK_REG &= ~MI_INTR_MASK_SI; }
@@ -1412,27 +1416,27 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			return 0;
 		}
 		break;
-	case 0x04400000:
+	case 0x04400000: 
 		switch (PAddr) {
-		case 0x04400000:
+		case 0x04400000: 
 			//if (VI_STATUS_REG != Value) {
 				VI_STATUS_REG = Value;
 			//	if (ViStatusChanged != NULL ) { ViStatusChanged(); }
 			//}
 			break;
-		case 0x04400004:
+		case 0x04400004: 
 
 			VI_ORIGIN_REG = (Value & 0xFFFFFF);
 			//if (UpdateScreen != NULL ) { UpdateScreen(); }
 			break;
-		case 0x04400008:
+		case 0x04400008: 
 			//if (VI_WIDTH_REG != Value) {
 				VI_WIDTH_REG = Value;
 			//	if (ViWidthChanged != NULL ) { ViWidthChanged(); }
 			//}
 			break;
 		case 0x0440000C: VI_INTR_REG = Value; break;
-		case 0x04400010:
+		case 0x04400010: 
 			MI_INTR_REG &= ~MI_INTR_VI;
 			CheckInterrupts();
 			break;
@@ -1449,10 +1453,10 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			return 0;
 		}
 		break;
-	case 0x04500000:
+	case 0x04500000: 
 		switch (PAddr) {
 		case 0x04500000: AI_DRAM_ADDR_REG = Value; break;
-		case 0x04500004:
+		case 0x04500004: 
 			AI_LEN_REG = Value;
 // 			if (AiLenChanged != NULL){
 			AiLenChanged();
@@ -1460,12 +1464,12 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			break;
 		case 0x04500008: AI_CONTROL_REG = (Value & 0x1); break;
 		case 0x0450000C:
-			/* Clear Interrupt */;
+			/* Clear Interrupt */; 
 			MI_INTR_REG &= ~MI_INTR_AI;
 			AudioIntrReg &= ~MI_INTR_AI;
 			CheckInterrupts();
 			break;
-		case 0x04500010:
+		case 0x04500010: 
 			AI_DACRATE_REG = Value;
 			//if (AiDacrateChanged != NULL) { AiDacrateChanged(SYSTEM_NTSC); }
 			break;
@@ -1474,15 +1478,15 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 			return 0;
 		}
 		break;
-	case 0x04600000:
+	case 0x04600000: 
 		switch (PAddr) {
 		case 0x04600000: PI_DRAM_ADDR_REG = Value; break;
 		case 0x04600004: PI_CART_ADDR_REG = Value; break;
-		case 0x04600008:
+		case 0x04600008: 
 			PI_RD_LEN_REG = Value;
 			PI_DMA_READ();
 			break;
-		case 0x0460000C:
+		case 0x0460000C: 
 			PI_WR_LEN_REG = Value;
 			PI_DMA_WRITE();
 			break;
@@ -1493,10 +1497,14 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 				CheckInterrupts();
 			}
 			break;
-		case 0x04600014: PI_DOMAIN1_REG = (Value & 0xFF); break;
-		case 0x04600018: PI_BSD_DOM1_PWD_REG = (Value & 0xFF); break;
-		case 0x0460001C: PI_BSD_DOM1_PGS_REG = (Value & 0xFF); break;
-		case 0x04600020: PI_BSD_DOM1_RLS_REG = (Value & 0xFF); break;
+		case 0x04600014: PI_DOMAIN1_REG = (Value & 0xFF); break; 
+		case 0x04600018: PI_BSD_DOM1_PWD_REG = (Value & 0xFF); break; 
+		case 0x0460001C: PI_BSD_DOM1_PGS_REG = (Value & 0xFF); break; 
+		case 0x04600020: PI_BSD_DOM1_RLS_REG = (Value & 0xFF); break; 
+		case 0x04600024: PI_DOMAIN2_REG = (Value & 0xFF); break;
+		case 0x04600028: PI_BSD_DOM2_PWD_REG = (Value & 0xFF); break;
+		case 0x0460002C: PI_BSD_DOM2_PGS_REG = (Value & 0xFF); break;
+		case 0x04600030: PI_BSD_DOM2_RLS_REG = (Value & 0xFF); break;
 		default:
 			return 0;
 		}
@@ -1518,15 +1526,15 @@ int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 	case 0x04800000:
 		switch (PAddr) {
 		case 0x04800000: SI_DRAM_ADDR_REG = Value; break;
-		case 0x04800004:
+		case 0x04800004: 
 			SI_PIF_ADDR_RD64B_REG = Value;
 			SI_DMA_READ ();
 			break;
-		case 0x04800010:
+		case 0x04800010: 
 			SI_PIF_ADDR_WR64B_REG = Value;
 			SI_DMA_WRITE();
 			break;
-		case 0x04800018:
+		case 0x04800018: 
 			MI_INTR_REG &= ~MI_INTR_SI;
 			SI_STATUS_REG &= ~SI_STATUS_INTERRUPT;
 			CheckInterrupts();
@@ -1566,10 +1574,10 @@ uint32_t r4300i_SW_VAddr ( uint32_t VAddr, uint32_t Value ) {
 	if((address - (uintptr_t)RDRAM) > RdramSize) {
 		address = address - (uintptr_t)RDRAM;
 		return r4300i_SW_NonMemory(address, Value);
-	}
+		}
 	*(uint32_t *)address = Value;
 	return 1;
-}
+	}
 
 void ResetRecompCode (void) {
 	uint32_t count;
@@ -1583,7 +1591,7 @@ void ResetRecompCode (void) {
 			memset(JumpTable + (count << 10),0,0x1000);
 			*(DelaySlotTable + count) = NULL;
 
-		}
+}
 	}
 
 	if (N64_Blocks.NoOfDMEMBlocks > 0) {
@@ -1602,28 +1610,28 @@ void ResetRecompCode (void) {
 #define __USE_GNU
 #endif
 #include <sys/ucontext.h>
-
+	
 static struct sigaction act;
 static struct sigaction oact;
 static sigset_t sset;
 void sig_handler(int signo, siginfo_t * info, ucontext_t * context);
 
 void InitExceptionHandler(void) {
-
+	
 	sigset_t blockset;
 
     sigemptyset(&blockset);
     sigaddset(&blockset, SIGSEGV);
 
     sigprocmask(SIG_UNBLOCK, &blockset, NULL);
-
+	
 	sigemptyset(&sset);
 	sigaddset(&sset, SIGSEGV);
 
  	act.sa_flags = SA_SIGINFO ;
  	act.sa_mask = sset;
  	act.sa_sigaction = (void (*)(int, siginfo_t*, void*)) sig_handler;
-
+	
  	if(sigaction(SIGSEGV, (const struct sigaction *) &act, &oact))
  		printf("error setting up exception handler\n");
 }
@@ -1644,16 +1652,16 @@ void sig_handler(int signo, siginfo_t * info, ucontext_t * context)
 #ifdef USEX64
 		if(context->uc_mcontext.gregs[REG_R15] != (uintptr_t)TLB_Map) {
 			context->uc_mcontext.gregs[REG_R15] = (uintptr_t)TLB_Map;
-			return;
-		}
+		return;
+	}
 #endif
 		i = r4300i_CPU_MemoryFilter64_2(MemAddress,context);
 		if(i==0)
 			return;
-	}
+		}
 
 	return;
-}
+	}
 
 static int32_t CONV_REG64(int32_t dest_reg) {
 	switch(dest_reg) {
@@ -1685,7 +1693,7 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 
 	if(MemAddress == 0) {
 		return 1;
-	}
+}
 
 	if((*ip & 0x40) && (*(ip+1) == 0xf) && (*(ip+2) == 0xb7)) {
 		uint8_t dest_reg = (*(ip+3) % 0x40) / 8;
@@ -1754,8 +1762,8 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 		//41 8B BF 30 D0 00 01
 
 		if(*ip & 4) dest_reg += 8;
-
-
+	
+		
 		r4300i_LW_NonMemory(MemAddress, &word);
 		context->uc_mcontext.gregs[CONV_REG64(dest_reg)] = word;
 
@@ -1771,17 +1779,17 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 		else if((*(ip+2) & 0xC0) == 0x40)
 			context->uc_mcontext.gregs[REG_RIP]+=1;
 
-
+	
 		return 0;
 
-	}
-
+		}		
+			
 	//asm("int $3");
 	return 1;
-}
+		}
 
 #else
-
+	
 static int32_t CONV_REG(int32_t dest_reg) {
 	switch(dest_reg) {
 		case 0: return 5; break;
@@ -1830,7 +1838,7 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 	} else if((*(ip) ==0x89)) { // MOV [Rxx + Rxx], Exx
 		uint8_t dest_reg = (*(ip+1) % 0x40) / 8;
 		uint32_t dest = 0;
-
+	
 		dest = context->uc_mcontext.gregs[CONV_REG64(dest_reg)];
 
 		r4300i_SW_NonMemory(MemAddress, dest);
@@ -1846,13 +1854,13 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 			context->uc_mcontext.gregs[REG_EIP]+=1;
 
 		return 0;
-
+		
 	} else if((*(ip) ==0xC7)) { // MOV [Rxx + Rxx], Imm32
 		uint32_t imm32 = *(uint32_t*)(ip+2);
 		r4300i_SW_NonMemory(MemAddress, imm32);
 		context->uc_mcontext.gregs[REG_EIP]+=6;
-
-
+		
+		
 		// 40 C7 04 07 0F 00 00 00
 
 		//if(*(ip+2)&0x4)
@@ -1880,7 +1888,7 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 			context->uc_mcontext.gregs[REG_EIP]+=6;
 		else
 			context->uc_mcontext.gregs[REG_EIP]+=2;
-
+	
 		if((*(ip+1) & 0xC0) == 0x80)
 			context->uc_mcontext.gregs[REG_EIP]+=4;
 		else if((*(ip+1) & 0xC0) == 0x40)
@@ -1893,7 +1901,7 @@ int r4300i_CPU_MemoryFilter64_2( uintptr_t MemAddress, ucontext_t * context) {
 
 	return 1;
 
-}
+	}
 
 
 #endif
