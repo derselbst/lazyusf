@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "cpu.h"
 #include "rsp.h"
-#include "registers.h"
+//#include "registers.h"
 
 
 void CheckInterrupts();
@@ -1703,6 +1704,6 @@ void rsp_UnknownOpcode (void) {
 
 	printf("Unhandled RSP opcode (%08x)\n", RSPOpC.Hex);
 	//ExitThread(0);
-	exit(0);
+	exit(-1);
 }
 

@@ -314,7 +314,7 @@ int LoadCPU(void) {
 
 	DMEM = (char*) PageRAM(state->RamSize+0x75C);
 	IMEM = (char*) DMEM + 0x1000;
-	
+
 	RSP_GPR = (REGISTER32 *)(DMEM - (32 * 8));
 	RSP_ACCUM = (REGISTER *)(DMEM + 0x2000);
 	RSP_Vect = (VECTOR *)((char*)RSP_ACCUM + (sizeof(REGISTER)*32));
@@ -512,7 +512,7 @@ void RunRsp (void) {
 			case 2: {
 
 					//do audio HLE
-					if(/*!IsSeeking()*/ 1) {
+					if(/*!IsSeeking()*/ 0) {
 						OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
 						if (audio_ucode(task)!=0)
 							printf("Can't run HLE for audio.\nAudio HLE support is required for no-rsp\n");

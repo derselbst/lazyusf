@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "usf.h"
 #include "memory.h"
+#include "cpu.h"
 #include "rsp.h"
 
 uint32_t NoOfMaps, MapsCRC[MaxMaps], Table,ConditionalMove=0;
