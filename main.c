@@ -53,10 +53,10 @@ void DisplayError (char * Message, ...)
 //	usleep(time * 1000);
 //}
 
-void usage()
+void usage(char filename[])
 {
     printf(
-        "\tUseage: usf filename [OPTIONS]\n"
+        "Usage: %s filename [OPTIONS]\n"
         "\tfilename: A USF or miniUSF file\n"
         "\tThe output is written to filename.au\n\n"
 
@@ -71,6 +71,7 @@ void usage()
         #endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
+	filename,
         RoundFrequ,
         RoundFrequ_LONG,
         FadeType,
@@ -91,7 +92,7 @@ int main(int argc, char** argv)
 {
     if(argc<2)
     {
-        usage();
+        usage(argv[0]);
         return 2;
     }
 
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
     {
         if (((strcmp(argv[i],"-h"))==0) || ((strcmp(argv[i],"--help"))==0) || ((strcmp(argv[i],"--usage"))==0))
         {
-            usage();
+            usage(argv[0]);
             return 0;
         }
         else if (((strcmp(argv[i],FadeType_LONG))==0) || ((strcmp(argv[i],FadeType))==0))
