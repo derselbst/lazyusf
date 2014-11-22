@@ -26,6 +26,8 @@
 #ifndef _TLB_H_
 #define _TLB_H_
 
+#define	TLB_GRAN	12
+
 typedef struct {
 	uint32_t EntryDefined;
 	union {

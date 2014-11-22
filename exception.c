@@ -23,11 +23,13 @@
  * should be forwarded to them so if they want them.
  *
  */
-
+#include <stdio.h>
 #include "cpu.h"
 #include "exception.h"
 #include "tlb.h"
 #include "registers.h"
+
+extern uintptr_t *TLB_Map;
 
 void CheckInterrupts ( void ) {
 
@@ -52,6 +54,9 @@ void CheckInterrupts ( void ) {
 }
 
 void DoAddressError ( uint32_t DelaySlot, uint32_t BadVaddr, uint32_t FromRead) {
+	int address = TLB_Map[BadVaddr >> 12] + BadVaddr;
+	printf("AddressError at %08x (%08x)  Vaddr=%08x %08x %08x\n", PROGRAM_COUNTER, address, BadVaddr, GPR[0x8].UW[0],  GPR[0x9].UW[0]);
+  
 	if (FromRead) {
 		CAUSE_REGISTER = EXC_RADE;
 	} else {
