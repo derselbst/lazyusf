@@ -512,7 +512,7 @@ void RunRsp (void) {
 			case 2: {
 
 					//do audio HLE
-					if(/*!IsSeeking()*/ 0) {
+					if(/*!IsSeeking()*/ 1) {
 						OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
 						if (audio_ucode(task)!=0)
 							printf("Can't run HLE for audio.\nAudio HLE support is required for no-rsp\n");
@@ -531,7 +531,7 @@ void RunRsp (void) {
 				break;
 			}
 
-			real_run_rsp(100);
+// 			real_run_rsp(100);
 		}
 	}
 }
