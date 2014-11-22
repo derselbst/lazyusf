@@ -695,7 +695,7 @@ void StartEmulationFromSave ( void * savestate )
 
 void RefreshScreen (void )
 {
-    static unsigned long OLD_VI_V_SYNC_REG = 0, VI_INTR_TIME = 500000;
+    static uint32_t OLD_VI_V_SYNC_REG = 0, VI_INTR_TIME = 500000;
 
     if (OLD_VI_V_SYNC_REG != VI_V_SYNC_REG)
     {
