@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(lazyusf)
 
-set(CMAKE_C_FLAGS "-g -D_GNU_SOURCE -fPIC -fno-strict-aliasing  -fmessage-length=0 -Wall -fstack-protector -funwind-tables -fasynchronous-unwind-tables")
-set(LD_FLAGS "")
+set(CMAKE_C_FLAGS_DEBUG "-g3 -D_GNU_SOURCE -fPIC -fno-strict-aliasing -fmessage-length=0 -Wall -Wextra -fstack-protector -funwind-tables -fasynchronous-unwind-tables")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_DEBUG}")
+
+# no compiler optimizations, since it breaks recompiler on i586
+set(CMAKE_C_FLAGS_RELEASE "-D_GNU_SOURCE -fPIC -fno-strict-aliasing -fmessage-length=0 -fstack-protector -funwind-tables -fasynchronous-unwind-tables")
 
 find_library(FLAC_LIBRARIES FLAC)
 find_library(AO_LIBRARIES ao)
