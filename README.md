@@ -32,3 +32,8 @@ By default the PCM output is written to "soundtrack name.miniusf.au". For more h
 Q: The output of Donkey Kong 64 is slower than in the original game.
 
 A: DK64 internally samples at 21617 Hz; the output of the game was at 22050 Hz. Enable rounding the samplerate by using the -r option.
+
+## TODO
+* be able to set total playing time
+* be able to set fading time
+* double playing time, if wished
