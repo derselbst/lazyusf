@@ -94,4 +94,6 @@ extern CPU_ACTION * CPU_Action;
 extern SYSTEM_TIMERS * Timers;
 extern OPCODE Opcode;
 extern uint32_t CPURunning;
+
+uint32_t OLD_VI_V_SYNC_REG/* = 0*/, VI_INTR_TIME/* = 500000*/;
 #endif

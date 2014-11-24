@@ -133,8 +133,6 @@ void CheckTimer (void)
     }
 }
 
-
-
 void CloseCpu (void)
 {
     uint32_t count = 0;
@@ -671,6 +669,8 @@ void StartEmulationFromSave ( void * savestate )
         ChangeTimer(AiTimer,IntScheduled);
         AI_STATUS_REG|=0x40000000;
     }
+    
+    OLD_VI_V_SYNC_REG = ~VI_V_SYNC_REG;
 
     cpu_stopped = 0;
     cpu_running = 1;
@@ -695,10 +695,10 @@ void StartEmulationFromSave ( void * savestate )
 
 void RefreshScreen (void )
 {
-    static uint32_t OLD_VI_V_SYNC_REG = 0, VI_INTR_TIME = 500000;
-
     if (OLD_VI_V_SYNC_REG != VI_V_SYNC_REG)
     {
+        OLD_VI_V_SYNC_REG = VI_V_SYNC_REG;
+
         if (VI_V_SYNC_REG == 0)
         {
             VI_INTR_TIME = 500000;
@@ -706,7 +706,7 @@ void RefreshScreen (void )
         else
         {
             VI_INTR_TIME = (VI_V_SYNC_REG + 1) * 1500;
-            if ((VI_V_SYNC_REG % 1) != 0)
+            if ((VI_V_SYNC_REG & 1) != 0)
             {
                 VI_INTR_TIME -= 38;
             }
