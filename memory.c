@@ -966,11 +966,23 @@ uint32_t r4300i_LB_VAddr ( uint32_t VAddr, uint8_t * Value ) {
 	}
 
 uint32_t r4300i_LD_VAddr ( uint32_t VAddr, uint64_t * Value ) {
-	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
-	*((uint32_t *)(Value) + 1) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr);
-	*((uint32_t *)(Value)) = *(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4);
-	return 1;
+	uintptr_t address = TLB_Map[VAddr >> 12];
+	if (address == 0) { return 0; }
+
+	if (address + VAddr + 7 - (uintptr_t)N64MEM >= RdramSize)
+	{
+	    *((uint32_t *)(Value) + 1) = 0;
+	    *((uint32_t *)(Value)) = 0;
+
+	    return 1;
 	}
+
+	*((uint32_t *)(Value) + 1) = *(uint32_t *)(address + VAddr);
+	*((uint32_t *)(Value)) = *(uint32_t *)(address + VAddr + 4);
+
+	return 1;
+}
+
 
 int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend ) {
 	switch (PAddr & 0xFFF00000) {
@@ -983,8 +995,19 @@ int32_t r4300i_LH_NonMemory ( uint32_t PAddr, uint32_t * Value, int32_t SignExte
 	}
 
 uint32_t r4300i_LH_VAddr ( uint32_t VAddr, uint16_t * Value ) {
-	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
-	*Value = *(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2));
+	uintptr_t address = TLB_Map[VAddr >> 12];
+
+	if (address == 0)
+	{
+		return 0;
+	}
+
+	if (address + (VAddr ^ 2) + 1 - (uintptr_t)N64MEM >= RdramSize)
+	{
+		*Value = 0;
+		return 1;
+	}
+	*Value = *(uint16_t *)(address + (VAddr ^ 2));
 	return 1;
 }
 
@@ -1193,11 +1216,22 @@ int32_t r4300i_SB_NonMemory ( uint32_t PAddr, uint8_t Value ) {
 }
 
 uint32_t r4300i_SB_VAddr ( uint32_t VAddr, uint8_t Value ) {
-	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
-	*(uint8_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 3)) = Value;
+	uintptr_t address = TLB_Map[VAddr >> 12];
+
+	if (address == 0)
+	{
+		return 0;
+	}
+
+	if (address + (VAddr ^ 3) - (uintptr_t)N64MEM < RdramSize)
+	{
+		*(uint8_t *)(address + (VAddr ^ 3)) = Value;
+	}
 
 	return 1;
 }
+
+
 
 int32_t r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
 	switch (PAddr & 0xFFF00000) {
@@ -1225,17 +1259,39 @@ int32_t r4300i_SH_NonMemory ( uint32_t PAddr, uint16_t Value ) {
 }
 
 uint32_t r4300i_SD_VAddr ( uint32_t VAddr, uint64_t Value ) {
-	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
-	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr) = *((uint32_t *)(&Value) + 1);
-	*(uint32_t *)(TLB_Map[VAddr >> 12] + VAddr + 4) = *((uint32_t *)(&Value));
-	return 1;
-			}
+	uintptr_t address = TLB_Map[VAddr >> 12];
 
-uint32_t r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value ) {
-	if (TLB_Map[VAddr >> 12] == 0) { return 0; }
-	*(uint16_t *)(TLB_Map[VAddr >> 12] + (VAddr ^ 2)) = Value;
+	if (address == 0)
+	{
+		return 0;
+	}
+
+	if (address + VAddr + 7 - (uintptr_t)N64MEM < RdramSize)
+	{
+		*(uint32_t *)(address + VAddr) = *((uint32_t *)(&Value) + 1);
+		*(uint32_t *)(address + VAddr + 4) = *((uint32_t *)(&Value));
+	}
 	return 1;
 }
+
+
+
+uint32_t r4300i_SH_VAddr ( uint32_t VAddr, uint16_t Value ) {
+	uintptr_t address = TLB_Map[VAddr >> 12];
+
+	if (address == 0)
+	{
+		return 0;
+	}
+
+	if (address + 1 + (VAddr ^ 2) - (uintptr_t)N64MEM < RdramSize)
+	{
+		*(uint16_t *)(address + (VAddr ^ 2)) = Value;
+	}
+	return 1;
+}
+
+
 
 int32_t r4300i_SW_NonMemory ( uint32_t PAddr, uint32_t Value ) {
 	if (PAddr >= 0x10000000 && PAddr < 0x16000000) {
