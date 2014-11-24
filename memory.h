@@ -23,11 +23,11 @@
  * should be forwarded to them so if they want them.
  *
  */
-#define LargeCompileBufferSize	0x03200000
-#define NormalCompileBufferSize	0x01500000
+#define LargeCompileBufferSize  0x03200000
+#define NormalCompileBufferSize 0x01500000
 
-#define RSP_RECOMPMEM_SIZE		0x400000
-#define RSP_SECRECOMPMEM_SIZE	0x200000
+#define RSP_RECOMPMEM_SIZE      0x400000
+#define RSP_SECRECOMPMEM_SIZE   0x200000
 
 #define ROM_IN_MAPSPACE
 

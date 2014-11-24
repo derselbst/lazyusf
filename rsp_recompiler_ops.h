@@ -5,7 +5,7 @@
  * zilmar (zilmar@emulation64.com)
  *
  * pj64 homepage: www.pj64.net
- * 
+ *
  * Permission to use, copy, modify and distribute Project64 in both binary and
  * source form, for non-commercial purposes, is hereby granted without fee,
  * providing that this license information and copyright notice appear with

@@ -33,23 +33,25 @@
 #define EXTREGS
 #endif
 
-typedef struct {
-	int32_t DoSomething;
-	int32_t CloseCPU;
-	int32_t CheckInterrupts;
-	int32_t DoInterrupt;
+typedef struct
+{
+    int32_t DoSomething;
+    int32_t CloseCPU;
+    int32_t CheckInterrupts;
+    int32_t DoInterrupt;
 } CPU_ACTION;
 
-#define MaxTimers				3
-#define CompareTimer			0
-#define ViTimer					1
-#define AiTimer					2
+#define MaxTimers               3
+#define CompareTimer            0
+#define ViTimer                 1
+#define AiTimer                 2
 
-typedef struct {
-	int32_t NextTimer[MaxTimers];
-	int32_t Active[MaxTimers];
-	int32_t CurrentTimerType;
-	int32_t Timer;
+typedef struct
+{
+    int32_t NextTimer[MaxTimers];
+    int32_t Active[MaxTimers];
+    int32_t CurrentTimerType;
+    int32_t Timer;
 } SYSTEM_TIMERS;
 
 void ChangeCompareTimer ( void );
@@ -66,26 +68,27 @@ void RunRsp             ( void );
 void StartEmulation     ( void );
 void TimerDone          ( void );
 void RecompileTimerDone ( void );
-void controlfp			(uint32_t mask);
+void controlfp          (uint32_t mask);
 void StartEmulationFromSave ( void * savestate );
 
-#define NORMAL					0
-#define DO_DELAY_SLOT			1
-#define DO_END_DELAY_SLOT		2
-#define DELAY_SLOT				3
-#define END_DELAY_SLOT			4
-#define LIKELY_DELAY_SLOT		5
-#define JUMP	 				6
-#define DELAY_SLOT_DONE			7
-#define LIKELY_DELAY_SLOT_DONE	8
-#define END_BLOCK 				9
+#define NORMAL                  0
+#define DO_DELAY_SLOT           1
+#define DO_END_DELAY_SLOT       2
+#define DELAY_SLOT              3
+#define END_DELAY_SLOT          4
+#define LIKELY_DELAY_SLOT       5
+#define JUMP                    6
+#define DELAY_SLOT_DONE         7
+#define LIKELY_DELAY_SLOT_DONE  8
+#define END_BLOCK               9
 
-enum SaveType {
-	Auto,
-	Eeprom_4K,
-	Eeprom_16K,
-	Sram,
-	FlashRam
+enum SaveType
+{
+    Auto,
+    Eeprom_4K,
+    Eeprom_16K,
+    Sram,
+    FlashRam
 };
 
 extern uint32_t CPU_Type;

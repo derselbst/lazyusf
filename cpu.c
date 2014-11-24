@@ -137,7 +137,10 @@ void CloseCpu (void)
 {
     uint32_t count = 0;
 
-    if(!MemChunk) return;
+    if(!MemChunk)
+    {
+        return;
+    }
     if (!cpu_running)
     {
         return;
@@ -458,7 +461,9 @@ void DoSomething ( void )
         cpu_running = 0;
         //printf("Stopping?\n");
         if(!(fake_seek_stopping&3))
+        {
             exit(0);
+        }
     }
     if (CPU_Action->CheckInterrupts)
     {
@@ -594,7 +599,7 @@ uint32_t Machine_LoadStateFromRAM(void * savestatespace)
     AI_STATUS_REG = 0;
     AiDacrateChanged(AI_DACRATE_REG);
 
-//	StartAiInterrupt();
+//  StartAiInterrupt();
 
     SetFpuLocations(); // important if FR=1
 
@@ -603,12 +608,12 @@ uint32_t Machine_LoadStateFromRAM(void * savestatespace)
 
 void StartEmulationFromSave ( void * savestate )
 {
-//	if(use_interpreter)
-//		CPU_Type = CPU_Interpreter;
+//  if(use_interpreter)
+//      CPU_Type = CPU_Interpreter;
 
-//	//printf("Starting generic Cpu\n");
+//  //printf("Starting generic Cpu\n");
 //
-//	//CloseCpu();
+//  //CloseCpu();
     memset(N64MEM, 0, RdramSize);
 
     memset(DMEM, 0, 0x1000);
@@ -619,7 +624,7 @@ void StartEmulationFromSave ( void * savestate )
     if(CPU_Type != CPU_Interpreter)
     {
         memset(JumpTable, 0, 0x200000 * sizeof(uintptr_t));
-        memset(RecompCode, 0xcc, NormalCompileBufferSize);	// fill with Breakpoints
+        memset(RecompCode, 0xcc, NormalCompileBufferSize);  // fill with Breakpoints
         memset(DelaySlotTable, 0, ((0x1000000) >> 0xA));
     }
 
@@ -669,7 +674,7 @@ void StartEmulationFromSave ( void * savestate )
         ChangeTimer(AiTimer,IntScheduled);
         AI_STATUS_REG|=0x40000000;
     }
-    
+
     OLD_VI_V_SYNC_REG = ~VI_V_SYNC_REG;
 
     cpu_stopped = 0;
@@ -749,7 +754,9 @@ void RunRsp (void)
 
                 SP_STATUS_REG |= (0x0203 );
                 if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
+                {
                     MI_INTR_REG |= 1;
+                }
 
                 CheckInterrupts();
 
@@ -765,11 +772,15 @@ void RunRsp (void)
                 {
                     OSTask_t *task = (OSTask_t*)(DMEM + 0xFC0);
                     if(audio_ucode(task))
+                    {
                         break;
+                    }
 
                 }
                 else
+                {
                     break;
+                }
 
                 SP_STATUS_REG |= (0x0203 );
                 if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
@@ -788,7 +799,7 @@ void RunRsp (void)
             }
 
 //            if(!is_seeking)
-                real_run_rsp(100);
+            real_run_rsp(100);
             SP_STATUS_REG |= (0x0203 );
             if ((SP_STATUS_REG & SP_STATUS_INTR_BREAK) != 0 )
             {
@@ -806,7 +817,9 @@ void TimerDone (void)
     {
     case CompareTimer:
         if(enablecompare)
+        {
             FAKE_CAUSE_REGISTER |= CAUSE_IP7;
+        }
         CheckInterrupts(); // required because else there would be a short crack after playing about 27 seconds of sparse01a.miniusf from ConkersBFD
         ChangeCompareTimer();
         break;

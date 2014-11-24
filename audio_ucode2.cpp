@@ -12,10 +12,10 @@ static void SPNOOP ()
     char buff[0x100];
 }
 extern "C" {
-    extern u16 AudioInBuffer;		// 0x0000(T8)
-    extern u16 AudioOutBuffer;		// 0x0002(T8)
-    extern u16 AudioCount;			// 0x0004(T8)
-    extern u32 loopval;			// 0x0010(T8)
+    extern u16 AudioInBuffer;       // 0x0000(T8)
+    extern u16 AudioOutBuffer;      // 0x0002(T8)
+    extern u16 AudioCount;          // 0x0004(T8)
+    extern u32 loopval;         // 0x0010(T8)
     extern u32 SEGMENTS[0x10];
     extern u16 adpcmtable[0x88];
     extern u16 ResampleLUT [0x200];
@@ -24,9 +24,9 @@ extern "C" {
 bool isMKABI = false;
 bool isZeldaABI = false;
 
-#define PageRAM2(x)	((uintptr_t) (RDRAM + (x)))
-#define memcpyfn64(a,b,c)	memcpy((a),(void*)((uintptr_t)RDRAM + (uintptr_t)(b)),(c))
-#define memcpy2n64(a,b,c)	memcpy((void*)((uintptr_t)RDRAM + (uintptr_t)(a)),(b),(c))
+#define PageRAM2(x) ((uintptr_t) (RDRAM + (x)))
+#define memcpyfn64(a,b,c)   memcpy((a),(void*)((uintptr_t)RDRAM + (uintptr_t)(b)),(c))
+#define memcpy2n64(a,b,c)   memcpy((void*)((uintptr_t)RDRAM + (uintptr_t)(a)),(b),(c))
 
 static void LOADADPCM2 ()   // Loads an ADPCM table - Works 100% Now 03-13-01
 {
@@ -49,7 +49,7 @@ static void LOADADPCM2 ()   // Loads an ADPCM table - Works 100% Now 03-13-01
 
         adpcmtable[0x7+(x<<3)] = table[6];
         adpcmtable[0x6+(x<<3)] = table[7];
-        //	table += 8;
+        //  table += 8;
     }
 }
 
@@ -60,9 +60,9 @@ static void SETLOOP2 ()
 
 static void SETBUFF2 ()
 {
-    AudioInBuffer   = (u16)(inst1);			 // 0x00
-    AudioOutBuffer	= (u16)((inst2 >> 0x10)); // 0x02
-    AudioCount		= (u16)(inst2);			 // 0x04
+    AudioInBuffer   = (u16)(inst1);          // 0x00
+    AudioOutBuffer  = (u16)((inst2 >> 0x10)); // 0x02
+    AudioCount      = (u16)(inst2);          // 0x04
 }
 
 static void ADPCM2 ()   // Verified to be 100% Accurate...
@@ -115,9 +115,9 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
             /*
             for(int i=0;i<16;i++)
             {
-            	out[i]=*(short *)&rsp.RDRAM[(loopval+i*2)^2];
+                out[i]=*(short *)&rsp.RDRAM[(loopval+i*2)^2];
             }*/
-// orig		memcpyfn64((u8 *)out,(u8 *)loopval,32);
+// orig     memcpyfn64((u8 *)out,(u8 *)loopval,32);
             memcpyfn64(out,(uintptr_t)loopval,32);
         }
         else
@@ -125,7 +125,7 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
             /*
             for(int i=0;i<16;i++)
             {
-            	out[i]=*(short *)&rsp.RDRAM[(Address+i*2)^2];
+                out[i]=*(short *)&rsp.RDRAM[(Address+i*2)^2];
             }*/
 // orig     memcpyfn64((u8 *)out,(u8 *)Address,32);
             memcpyfn64(out,(uintptr_t)Address,32);
@@ -155,19 +155,19 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
             icode=BufferSpace[(AudioInBuffer+inPtr)^3];
             inPtr++;
 
-            inp1[j]=(s16)((icode&mask1) << 8);			// this will in effect be signed
+            inp1[j]=(s16)((icode&mask1) << 8);          // this will in effect be signed
             if(code<srange) inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
             //else int catchme=1;
             j++;
 
             inp1[j]=(s16)((icode&mask2)<<shifter);
-            if(code<srange)	inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
+            if(code<srange) inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
             //else int catchme=1;
             j++;
 
             if (Flags & 4)
             {
-                inp1[j]=(s16)((icode&0xC) << 12);			// this will in effect be signed
+                inp1[j]=(s16)((icode&0xC) << 12);           // this will in effect be signed
                 if(code < 0xE) inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
                 //else int catchme=1;
                 j++;
@@ -193,7 +193,7 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
             j++;
 
             inp2[j]=(s16)((icode&mask2)<<shifter);
-            if(code<srange)	inp2[j]=((int)((int)inp2[j]*(int)vscale)>>16);
+            if(code<srange) inp2[j]=((int)((int)inp2[j]*(int)vscale)>>16);
             //else int catchme=1;
             j++;
 
@@ -274,8 +274,14 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
         for(j=0; j<8; j++)
         {
             a[j^1]>>=11;
-            if(a[j^1]>32767) a[j^1]=32767;
-            else if(a[j^1]<-32768) a[j^1]=-32768;
+            if(a[j^1]>32767)
+            {
+                a[j^1]=32767;
+            }
+            else if(a[j^1]<-32768)
+            {
+                a[j^1]=-32768;
+            }
             *(out++)=a[j^1];
         }
         l1=a[6];
@@ -344,8 +350,14 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
         for(j=0; j<8; j++)
         {
             a[j^1]>>=11;
-            if(a[j^1]>32767) a[j^1]=32767;
-            else if(a[j^1]<-32768) a[j^1]=-32768;
+            if(a[j^1]>32767)
+            {
+                a[j^1]=32767;
+            }
+            else if(a[j^1]<-32768)
+            {
+                a[j^1]=-32768;
+            }
             *(out++)=a[j^1];
         }
         l1=a[6];
@@ -354,7 +366,7 @@ static void ADPCM2 ()   // Verified to be 100% Accurate...
         count-=32;
     }
     out-=16;
-// orig 	memcpy2n64((u8 *)Address,(u8 *)out,32);
+// orig     memcpy2n64((u8 *)Address,(u8 *)out,32);
     memcpy2n64((uintptr_t)Address,out,32);
 }
 
@@ -363,7 +375,9 @@ static void CLEARBUFF2 ()
     u16 addr = (u16)(inst1 & 0xffff);
     u16 count = (u16)(inst2 & 0xffff);
     if (count > 0)
+    {
         memset(BufferSpace+addr, 0, count);
+    }
 }
 
 static void LOADBUFF2 ()   // Needs accuracy verification...
@@ -372,7 +386,7 @@ static void LOADBUFF2 ()   // Needs accuracy verification...
     u32 cnt = (((inst1 >> 0xC)+3)&0xFFC);
     v0 = (inst2 & 0xfffffc);// + SEGMENTS[(inst2>>24)&0xf];
 
-// orig 	memcpyfn64 ((u8 *)BufferSpace+(inst1&0xfffc), (u8 *)v0, (cnt+3)&0xFFFC);
+// orig     memcpyfn64 ((u8 *)BufferSpace+(inst1&0xfffc), (u8 *)v0, (cnt+3)&0xFFFC);
     memcpyfn64 ((u8 *)BufferSpace+(inst1&0xfffc), (uintptr_t)v0, (cnt+3)&0xFFFC);
 }
 
@@ -401,9 +415,13 @@ static void MIXER2 ()   // Needs accuracy verification...
         temp += *(s16 *)(BufferSpace+dmemout+x);
 
         if ((s32)temp > 32767)
+        {
             temp = 32767;
+        }
         if ((s32)temp < -32768)
+        {
             temp = -32768;
+        }
 
         *(u16 *)(BufferSpace+dmemout+x) = (u16)(temp & 0xFFFF);
     }
@@ -429,20 +447,26 @@ static void RESAMPLE2 ()
     s32 accum;
 
     if (addy > (1024*1024*8))
+    {
         addy = (inst2 & 0xffffff);
+    }
 
     srcPtr -= 4;
 
     if ((Flags & 0x1) == 0)
     {
         for (int x=0; x < 4; x++)
+        {
             src[(srcPtr+x)^1] = *(u16*)(PageRAM2(addy+(x^1)));
+        }
         Accum = *(u16 *)(PageRAM2(addy+10));
     }
     else
     {
         for (int x=0; x < 4; x++)
-            src[(srcPtr+x)^1] = 0;//*(u16 *)(rsp.RDRAM+((addy+x)^2));
+        {
+            src[(srcPtr+x)^1] = 0;    //*(u16 *)(rsp.RDRAM+((addy+x)^2));
+        }
     }
 
     for(int i=0; i < ((AudioCount+0xf)&0xFFF0)/2; i++)
@@ -463,8 +487,14 @@ static void RESAMPLE2 ()
         temp = ((s32)*(s16*)(src+((srcPtr+3)^1))*((s32)((s16)lut[3])));
         accum += (s32)(temp >> 15);
 
-        if (accum > 32767) accum = 32767;
-        if (accum < -32768) accum = -32768;
+        if (accum > 32767)
+        {
+            accum = 32767;
+        }
+        if (accum < -32768)
+        {
+            accum = -32768;
+        }
 
         dst[dstPtr^1] = (s16)(accum);
         dstPtr++;
@@ -473,7 +503,9 @@ static void RESAMPLE2 ()
         Accum&=0xffff;
     }
     for (int x=0; x < 4; x++)
+    {
         *(u16*)(PageRAM2(addy+(x^1))) = src[(srcPtr+x)^1];
+    }
 
     *(u16 *)(PageRAM2(addy+10)) = Accum;
 
@@ -484,7 +516,9 @@ static void DMEMMOVE2 ()   // Needs accuracy verification...
     u32 v0, v1;
     u32 cnt;
     if ((inst2 & 0xffff)==0)
+    {
         return;
+    }
     v0 = (inst1 & 0xFFFF);
     v1 = (inst2 >> 0x10);
     //assert ((v1 & 0x3) == 0);
@@ -509,13 +543,13 @@ static void ENVSETUP1 ()
 
     //fprintf (dfile, "ENVSETUP1: inst1 = %08X, inst2 = %08X\n", inst1, inst2);
     t3 = inst1 & 0xFFFF;
-    tmp	= (inst1 >> 0x8) & 0xFF00;
+    tmp = (inst1 >> 0x8) & 0xFF00;
     env[4] = (u16)tmp;
     tmp += t3;
     env[5] = (u16)tmp;
     s5 = inst2 >> 0x10;
     s6 = inst2 & 0xFFFF;
-    //fprintf (dfile, "	t3 = %X / s5 = %X / s6 = %X / env[4] = %X / env[5] = %X\n", t3, s5, s6, env[4], env[5]);
+    //fprintf (dfile, " t3 = %X / s5 = %X / s6 = %X / env[4] = %X / env[5] = %X\n", t3, s5, s6, env[4], env[5]);
 }
 
 static void ENVSETUP2 ()
@@ -531,7 +565,7 @@ static void ENVSETUP2 ()
     env[2] = (u16)tmp;
     tmp += s6;
     env[3] = (u16)tmp;
-    //fprintf (dfile, "	env[0] = %X / env[1] = %X / env[2] = %X / env[3] = %X\n", env[0], env[1], env[2], env[3]);
+    //fprintf (dfile, " env[0] = %X / env[1] = %X / env[2] = %X / env[3] = %X\n", env[0], env[1], env[2], env[3]);
 }
 
 static void ENVMIXER2 ()
@@ -585,35 +619,71 @@ static void ENVMIXER2 ()
             vec9  = (s16)(((s32)buffs3[x^1] * (u32)env[0]) >> 0x10) ^ v2[0];
             vec10 = (s16)(((s32)buffs3[x^1] * (u32)env[2]) >> 0x10) ^ v2[1];
             temp = bufft6[x^1] + vec9;
-            if (temp > 32767)  temp = 32767;
-            if (temp < -32768) temp = -32768;
+            if (temp > 32767)
+            {
+                temp = 32767;
+            }
+            if (temp < -32768)
+            {
+                temp = -32768;
+            }
             bufft6[x^1] = temp;
             temp = bufft7[x^1] + vec10;
-            if (temp > 32767)  temp = 32767;
-            if (temp < -32768) temp = -32768;
+            if (temp > 32767)
+            {
+                temp = 32767;
+            }
+            if (temp < -32768)
+            {
+                temp = -32768;
+            }
             bufft7[x^1] = temp;
             vec9  = (s16)(((s32)vec9  * (u32)env[4]) >> 0x10) ^ v2[2];
             vec10 = (s16)(((s32)vec10 * (u32)env[4]) >> 0x10) ^ v2[3];
             if (inst1 & 0x10)
             {
                 temp = buffs0[x^1] + vec10;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 buffs0[x^1] = temp;
                 temp = buffs1[x^1] + vec9;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 buffs1[x^1] = temp;
             }
             else
             {
                 temp = buffs0[x^1] + vec9;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 buffs0[x^1] = temp;
                 temp = buffs1[x^1] + vec10;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 buffs1[x^1] = temp;
             }
         }
@@ -624,35 +694,71 @@ static void ENVMIXER2 ()
                 vec9  = (s16)(((s32)buffs3[x^1] * (u32)env[1]) >> 0x10) ^ v2[0];
                 vec10 = (s16)(((s32)buffs3[x^1] * (u32)env[3]) >> 0x10) ^ v2[1];
                 temp = bufft6[x^1] + vec9;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 bufft6[x^1] = temp;
                 temp = bufft7[x^1] + vec10;
-                if (temp > 32767)  temp = 32767;
-                if (temp < -32768) temp = -32768;
+                if (temp > 32767)
+                {
+                    temp = 32767;
+                }
+                if (temp < -32768)
+                {
+                    temp = -32768;
+                }
                 bufft7[x^1] = temp;
                 vec9  = (s16)(((s32)vec9  * (u32)env[5]) >> 0x10) ^ v2[2];
                 vec10 = (s16)(((s32)vec10 * (u32)env[5]) >> 0x10) ^ v2[3];
                 if (inst1 & 0x10)
                 {
                     temp = buffs0[x^1] + vec10;
-                    if (temp > 32767)  temp = 32767;
-                    if (temp < -32768) temp = -32768;
+                    if (temp > 32767)
+                    {
+                        temp = 32767;
+                    }
+                    if (temp < -32768)
+                    {
+                        temp = -32768;
+                    }
                     buffs0[x^1] = temp;
                     temp = buffs1[x^1] + vec9;
-                    if (temp > 32767)  temp = 32767;
-                    if (temp < -32768) temp = -32768;
+                    if (temp > 32767)
+                    {
+                        temp = 32767;
+                    }
+                    if (temp < -32768)
+                    {
+                        temp = -32768;
+                    }
                     buffs1[x^1] = temp;
                 }
                 else
                 {
                     temp = buffs0[x^1] + vec9;
-                    if (temp > 32767)  temp = 32767;
-                    if (temp < -32768) temp = -32768;
+                    if (temp > 32767)
+                    {
+                        temp = 32767;
+                    }
+                    if (temp < -32768)
+                    {
+                        temp = -32768;
+                    }
                     buffs0[x^1] = temp;
                     temp = buffs1[x^1] + vec10;
-                    if (temp > 32767)  temp = 32767;
-                    if (temp < -32768) temp = -32768;
+                    if (temp > 32767)
+                    {
+                        temp = 32767;
+                    }
+                    if (temp < -32768)
+                    {
+                        temp = -32768;
+                    }
                     buffs1[x^1] = temp;
                 }
             }
@@ -690,33 +796,33 @@ static void DUPLICATE2()
 }
 /*
 static void INTERL2 () { // Make your own...
-	short Count = inst1 & 0xffff;
-	unsigned short  Out   = inst2 & 0xffff;
-	unsigned short In     = (inst2 >> 16);
+    short Count = inst1 & 0xffff;
+    unsigned short  Out   = inst2 & 0xffff;
+    unsigned short In     = (inst2 >> 16);
 
-	short *src,*dst,tmp;
-	src=(short *)&BufferSpace[In];
-	dst=(short *)&BufferSpace[Out];
-	while(Count)
-	{
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		*(dst++)=*(src++);
-		src++;
-		Count-=8;
-	}
+    short *src,*dst,tmp;
+    src=(short *)&BufferSpace[In];
+    dst=(short *)&BufferSpace[Out];
+    while(Count)
+    {
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        *(dst++)=*(src++);
+        src++;
+        Count-=8;
+    }
 }
 */
 
@@ -777,7 +883,7 @@ static void INTERLEAVE2 ()   // Needs accuracy verification...
 
 static void ADDMIXER ()
 {
-    short Count   = (inst1 >> 12)	 & 0x00ff0;
+    short Count   = (inst1 >> 12)    & 0x00ff0;
     u16 InBuffer  = (inst2 >> 16);
     u16 OutBuffer = inst2 & 0xffff;
 
@@ -788,8 +894,14 @@ static void ADDMIXER ()
     for (int cntr = 0; cntr < Count; cntr+=2)
     {
         temp = *outp + *inp;
-        if (temp > 32767)  temp = 32767;
-        if (temp < -32768) temp = -32768;
+        if (temp > 32767)
+        {
+            temp = 32767;
+        }
+        if (temp < -32768)
+        {
+            temp = -32768;
+        }
         outp++;
         inp++;
     }
@@ -811,8 +923,14 @@ static void HILOGAIN ()
         val = (s32)*src;
         //tmp = ((val * (s32)hi) + ((u64)(val * lo) << 16) >> 16);
         tmp = ((val * (s32)hi) >> 16) + (u32)(val * lo);
-        if ((s32)tmp > 32767) tmp = 32767;
-        else if ((s32)tmp < -32768) tmp = -32768;
+        if ((s32)tmp > 32767)
+        {
+            tmp = 32767;
+        }
+        else if ((s32)tmp < -32768)
+        {
+            tmp = -32768;
+        }
         *src = tmp;
         src++;
         cnt -= 2;
@@ -835,20 +953,20 @@ static void FILTER2 ()
     {
         cnt = (inst1 & 0xFFFF);
         lutt6 = (s16 *)PageRAM2(addy&0xFFFFFF);
-//				memcpy (dmem+0xFE0, rsp.RDRAM+(inst2&0xFFFFFF), 0x10);
+//              memcpy (dmem+0xFE0, rsp.RDRAM+(inst2&0xFFFFFF), 0x10);
         return;
     }
 
     if (t4 == 0)
     {
-//				memcpy (dmem+0xFB0, rsp.RDRAM+(inst2&0xFFFFFF), 0x20);
+//              memcpy (dmem+0xFB0, rsp.RDRAM+(inst2&0xFFFFFF), 0x20);
         lutt5 = (short *)PageRAM2((addy+0x10)&0xFFFFFF);
     }
 
     lutt5 = (short *)PageRAM2((addy+0x10)&0xFFFFFF);
 
-//			lutt5 = (short *)(dmem + 0xFC0);
-//			lutt6 = (short *)(dmem + 0xFE0);
+//          lutt5 = (short *)(dmem + 0xFC0);
+//          lutt6 = (short *)(dmem + 0xFE0);
     for (x = 0; x < 8; x++)
     {
         s32 a;
@@ -948,7 +1066,7 @@ static void FILTER2 ()
         inp2 += 8;
         outp += 8;
     }
-//			memcpy (rsp.RDRAM+(inst2&0xFFFFFF), dmem+0xFB0, 0x20);
+//          memcpy (rsp.RDRAM+(inst2&0xFFFFFF), dmem+0xFB0, 0x20);
     memcpy (save, inp2-8, 0x10);
     memcpy (BufferSpace+(inst1&0xffff), outbuff, cnt);
 }
@@ -1005,5 +1123,5 @@ void (*ABI2[0x20])() = {
 /* NOTES:
 
   FILTER/SEGMENT - Still needs to be finished up... add FILTER?
-  UNKNOWWN #27	 - Is this worth doing?  Looks like a pain in the ass just for WaveRace64
+  UNKNOWWN #27   - Is this worth doing?  Looks like a pain in the ass just for WaveRace64
 */

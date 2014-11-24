@@ -142,11 +142,17 @@ int LoadUSF(const char * fn)
             int pathlength = 0;
 
             if(strrchr(fn, '/')) //linux
+            {
                 pathlength = strrchr(fn, '/') - fn + 1;
+            }
             else if(strrchr(fn, '\\')) //windows
+            {
                 pathlength = strrchr(fn, '\\') - fn + 1;
+            }
             else //no path
+            {
                 pathlength = strlen(fn);
+            }
 
             strncpy(path, fn, pathlength);
             path[pathlength] = 0;
@@ -203,11 +209,17 @@ int LoadUSF(const char * fn)
             int pathlength = 0;
 
             if(strrchr(fn, '/')) //linux
+            {
                 pathlength = strrchr(fn, '/') - fn + 1;
+            }
             else if(strrchr(fn, '\\')) //windows
+            {
                 pathlength = strrchr(fn, '\\') - fn + 1;
+            }
             else //no path
+            {
                 pathlength = 7;
+            }
 
             strcpy(title, &fn[pathlength]);
 
@@ -311,7 +323,9 @@ int LoadUSF(const char * fn)
         savestatespace = realloc(savestatespace, 0x40275c);
     }
     else if(*(uint32_t*)(savestatespace + 4) == 0x800000)
+    {
         RdramSize = 0x800000;
+    }
 
     fclose(fil);
 
@@ -333,31 +347,31 @@ void usf_destroy()
 
 //void usf_seek(InputPlayback * context, gint time)
 //{
-//	usf_mseek(time * 1000);
+//  usf_mseek(time * 1000);
 //}
 
 
 //void usf_mseek(InputPlayback * context, gulong millisecond)
 //{
-//	if(millisecond < play_time) {
-//		is_paused = 0;
+//  if(millisecond < play_time) {
+//      is_paused = 0;
 //
-//		fake_seek_stopping = 1;
-//		CloseCpu();
+//      fake_seek_stopping = 1;
+//      CloseCpu();
 //
-//		while(!cpu_stopped)
-//			usleep(1);
+//      while(!cpu_stopped)
+//          usleep(1);
 //
-//		is_seeking = 1;
-//		seek_time = (double)millisecond;
+//      is_seeking = 1;
+//      seek_time = (double)millisecond;
 //
-//		fake_seek_stopping = 2;
-//	} else {
-//		is_seeking = 1;
-//		seek_time = (double)millisecond;
-//	}
+//      fake_seek_stopping = 2;
+//  } else {
+//      is_seeking = 1;
+//      seek_time = (double)millisecond;
+//  }
 //
-//	context->output->flush(millisecond/1000);
+//  context->output->flush(millisecond/1000);
 //}
 
 int usf_play(char * fn)
@@ -400,9 +414,14 @@ int usf_play(char * fn)
 
                 printf("Start Emulation\n");
                 StartEmulationFromSave(savestatespace);
-                if(!fake_seek_stopping) break;
+                if(!fake_seek_stopping)
+                {
+                    break;
+                }
                 while(fake_seek_stopping != 2)
+                {
                     usleep(1);
+                }
                 fake_seek_stopping = 4;
             }
         }
@@ -415,17 +434,17 @@ int usf_play(char * fn)
 //void usf_stop(InputPlayback *context)
 //{
 //
-//	is_paused = 0;
+//  is_paused = 0;
 //
-//	if(!cpu_running)
-//		return;
+//  if(!cpu_running)
+//      return;
 //
-//	CloseCpu();
-//	g_thread_join(decode_thread);
+//  CloseCpu();
+//  g_thread_join(decode_thread);
 //
-//	Release_Memory();
+//  Release_Memory();
 //
-//	context->output->close_audio();
+//  context->output->close_audio();
 //
 //}
 
@@ -434,25 +453,31 @@ unsigned int usf_is_our_file(char *pFile)
     const char *pExt;
 
     if (!pFile)
+    {
         return 0;
+    }
 
     /* get extension */
     pExt = strrchr(pFile,'.');
     if (!pExt)
+    {
         return 0;
+    }
     /* skip past period */
     ++pExt;
 
     if ((strcasecmp(pExt,"usf") == 0) ||
             (strcasecmp(pExt,"miniusf") == 0))
+    {
         return 1;
+    }
 
     return 0;
 }
 
 //void usf_pause(InputPlayback *context, gshort paused)
 //{
-//	is_paused = paused;//is_paused?0:1;
+//  is_paused = paused;//is_paused?0:1;
 //}
 
 const char *usf_exts [] =

@@ -50,7 +50,7 @@ void DisplayError (char * Message, ...)
 
 //void UsfSleep(int32_t time)
 //{
-//	usleep(time * 1000);
+//  usleep(time * 1000);
 //}
 
 void usage(char filename[])
@@ -63,25 +63,25 @@ void usage(char filename[])
         "\tOptions:\n"
         "\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n"
         "\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n"
-        #ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
         "\t \t%s\t\t\t output is written to FLAC file\n"
-        #endif // FLAC_SUPPORT
-        #ifdef PLAYBACK_SUPPORT
+#endif // FLAC_SUPPORT
+#ifdef PLAYBACK_SUPPORT
         "\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n"
-        #endif // PLAYBACK_SUPPORT
+#endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
-	filename,
+        filename,
         RoundFrequ,
         RoundFrequ_LONG,
         FadeType,
         FadeType_LONG,
-        #ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
         toFLAC,
-        #endif // FLAC_SUPPORT
-        #ifdef PLAYBACK_SUPPORT
+#endif // FLAC_SUPPORT
+#ifdef PLAYBACK_SUPPORT
         playback,
-        #endif
+#endif
         useAudioHle,
         useInterpreterCPU);
 }
@@ -115,18 +115,18 @@ int main(int argc, char** argv)
         {
             round_frequency=1;
         }
-        #ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
         else if (((strcmp(argv[i],toFLAC))==0))
         {
             useFlac=1;
         }
-        #endif // FLAC_SUPPORT
-        #ifdef PLAYBACK_SUPPORT
+#endif // FLAC_SUPPORT
+#ifdef PLAYBACK_SUPPORT
         else if (((strcmp(argv[i],playback))==0))
         {
             playingback=1;
         }
-        #endif // PLAYBACK_SUPPORT
+#endif // PLAYBACK_SUPPORT
         else if (((strcmp(argv[i],useAudioHle))==0))
         {
             use_audiohle=1;

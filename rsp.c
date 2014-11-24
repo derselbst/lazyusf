@@ -107,42 +107,42 @@ void real_run_rsp(uint32_t cycles)
             /*      int32_t last = -1, count = 0, el, del;
 
                     if(*PrgCount == 0x100) {
-            		int32_t i= 0;
-            			FILE *fil4 = fopen("sc2000i.dmem","wb");
-            			for(i = 0; i < 0x2000;i+=4) {
-            				uint32_t dat = 0;
-            				dat = *(int32_t*)(DMEM + i);
-            				DoBswap(&dat);
-            				fwrite(&dat,1,4,fil4);
-            			}
-            			fclose(fil4);
-                    	printf("RSP: %x\n", RSP_GPR[26].UW);
+                    int32_t i= 0;
+                        FILE *fil4 = fopen("sc2000i.dmem","wb");
+                        for(i = 0; i < 0x2000;i+=4) {
+                            uint32_t dat = 0;
+                            dat = *(int32_t*)(DMEM + i);
+                            DoBswap(&dat);
+                            fwrite(&dat,1,4,fil4);
+                        }
+                        fclose(fil4);
+                        printf("RSP: %x\n", RSP_GPR[26].UW);
             //            Int3();
-            //			RSPBreakPoint();
-            		}*/
+            //          RSPBreakPoint();
+                    }*/
             /*
-            			if(!qfil) qfil = fopen("rsplogi.log","wb");
-            	fprintf(qfil,"PC = %08x    ", *PrgCount);
-            			fprintf(qfil,"r0=%08x at=%08x v0=%08x v1=%08x a0=%08x a1=%08x a2=%08x a3=%08x t0=%08x t1=%08x t2=%08x t3=%08x t4=%08x t5=%08x t6=%08x t7=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x s5=%08x s6=%08x s7=%08x t8=%08x t9=%08x k0=%08x k1=%08x gp=%08x sp=%08x s8=%08x ra=%08x\n",
-            				RSP_GPR[0].UW,RSP_GPR[1].UW,RSP_GPR[2].UW,RSP_GPR[3].UW,
-            			RSP_GPR[4].UW,RSP_GPR[5].UW,RSP_GPR[6].UW,RSP_GPR[7].UW,
-            			RSP_GPR[8].UW,RSP_GPR[9].UW,RSP_GPR[10].UW,RSP_GPR[11].UW,RSP_GPR[12].UW,
-            			RSP_GPR[13].UW,RSP_GPR[14].UW,RSP_GPR[15].UW,RSP_GPR[16].UW,
-            			RSP_GPR[17].UW,RSP_GPR[18].UW,RSP_GPR[19].UW,RSP_GPR[20].UW,
-            			RSP_GPR[21].UW,RSP_GPR[22].UW,RSP_GPR[23].UW,RSP_GPR[24].UW,
-            			RSP_GPR[25].UW,RSP_GPR[26].UW,RSP_GPR[27].UW,RSP_GPR[28].UW,
-            			RSP_GPR[29].UW,RSP_GPR[30].UW,RSP_GPR[31].UW);
+                        if(!qfil) qfil = fopen("rsplogi.log","wb");
+                fprintf(qfil,"PC = %08x    ", *PrgCount);
+                        fprintf(qfil,"r0=%08x at=%08x v0=%08x v1=%08x a0=%08x a1=%08x a2=%08x a3=%08x t0=%08x t1=%08x t2=%08x t3=%08x t4=%08x t5=%08x t6=%08x t7=%08x s0=%08x s1=%08x s2=%08x s3=%08x s4=%08x s5=%08x s6=%08x s7=%08x t8=%08x t9=%08x k0=%08x k1=%08x gp=%08x sp=%08x s8=%08x ra=%08x\n",
+                            RSP_GPR[0].UW,RSP_GPR[1].UW,RSP_GPR[2].UW,RSP_GPR[3].UW,
+                        RSP_GPR[4].UW,RSP_GPR[5].UW,RSP_GPR[6].UW,RSP_GPR[7].UW,
+                        RSP_GPR[8].UW,RSP_GPR[9].UW,RSP_GPR[10].UW,RSP_GPR[11].UW,RSP_GPR[12].UW,
+                        RSP_GPR[13].UW,RSP_GPR[14].UW,RSP_GPR[15].UW,RSP_GPR[16].UW,
+                        RSP_GPR[17].UW,RSP_GPR[18].UW,RSP_GPR[19].UW,RSP_GPR[20].UW,
+                        RSP_GPR[21].UW,RSP_GPR[22].UW,RSP_GPR[23].UW,RSP_GPR[24].UW,
+                        RSP_GPR[25].UW,RSP_GPR[26].UW,RSP_GPR[27].UW,RSP_GPR[28].UW,
+                        RSP_GPR[29].UW,RSP_GPR[30].UW,RSP_GPR[31].UW);
             */
             /*if((RSPOpC.op == 18) && (RSPOpC.rs & 0x10)) {
-            	for (count = 0; count < 8; count ++ ) {
-            		el = Indx[RSPOpC.rs].B[count];
-            		del = EleSpec[RSPOpC.rs].B[el];
-            		if((last >= 0) && (last != del))
-            			printf("not same!\t%d\n", RSPOpC.funct);
+                for (count = 0; count < 8; count ++ ) {
+                    el = Indx[RSPOpC.rs].B[count];
+                    del = EleSpec[RSPOpC.rs].B[el];
+                    if((last >= 0) && (last != del))
+                        printf("not same!\t%d\n", RSPOpC.funct);
                     // 16,19,20,22
                     // funct: 0,16,6,14,44,15,7
-            		last = del;
-            	}
+                    last = del;
+                }
             }*/
 
             //if(RSPOpC.rs < 0x10) printf("%d\n", RSPOpC.rs);
@@ -217,7 +217,7 @@ void RSP_SP_DMA_READ (void)
     {
         for (i = 0 ; i < Length; i++)
         {
-//orig:			*(uint8_t *)(((uint32_t)Dest + j * Length + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + j * Skip + i) ^ 3);
+//orig:         *(uint8_t *)(((uint32_t)Dest + j * Length + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + j * Skip + i) ^ 3);
             /*should fix compiler warning*/
             *(uint8_t *)(((uintptr_t)Dest + j * Length + i) ^ 3) = *(uint8_t *)(((uintptr_t)Source + j * Skip + i) ^ 3);
         }
@@ -238,7 +238,7 @@ void RSP_SP_DMA_READ (void)
         {
             for (i = 0 ; i < Length; i++)
             {
-//orig:				*(uint8_t *)(((uint32_t)Dest + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + i) ^ 3);
+//orig:             *(uint8_t *)(((uint32_t)Dest + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + i) ^ 3);
                 /*should fix compiler warning*/
                 *(uint8_t *)(((uintptr_t)Dest + i) ^ 3) = *(uint8_t *)(((uintptr_t)Source + i) ^ 3);
             }
@@ -286,7 +286,7 @@ void RSP_SP_DMA_WRITE (void)
     {
         for (i = 0 ; i < Length; i++)
         {
-//orig:		*(uint8_t *)(((uint32_t)Dest + j * Skip + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + j * Length + i) ^ 3);
+//orig:     *(uint8_t *)(((uint32_t)Dest + j * Skip + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + j * Length + i) ^ 3);
             /*should fix compiler warning*/
             *(uint8_t *)(((uintptr_t)Dest + j * Skip + i) ^ 3) = *(uint8_t *)(((uintptr_t)Source + j * Length + i) ^ 3);
         }
@@ -307,7 +307,7 @@ void RSP_SP_DMA_WRITE (void)
         {
             for (i = 0 ; i < Length; i++)
             {
-//orig: 		*(uint8_t *)(((uint32_t)Dest + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + i) ^ 3);
+//orig:         *(uint8_t *)(((uint32_t)Dest + i) ^ 3) = *(uint8_t *)(((uint32_t)Source + i) ^ 3);
                 /*should fix compiler warning*/
                 *(uint8_t *)(((uintptr_t)Dest + i) ^ 3) = *(uint8_t *)(((uintptr_t)Source + i) ^ 3);
             }
@@ -1145,7 +1145,9 @@ void init_rsp(void)
     Compiler.mmx = CpuFeatures & 0x800000;
 
     if(!RSP_Cpu)
+    {
         BuildRecompilerCPU();
+    }
 
     ClearAllx86Code();
 
@@ -1161,7 +1163,7 @@ void RSPSetJumpTable (void)
         CRC += *(uint32_t *)(IMEM + count);
     }
 
-    for (count = 0; count <	NoOfMaps; count++ )
+    for (count = 0; count < NoOfMaps; count++ )
     {
         if (CRC == MapsCRC[count])
         {

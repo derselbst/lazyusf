@@ -37,20 +37,20 @@ extern "C" {
 }
 /*
 static void SETVOL3 () { // Swapped Rate_Left and Vol
-	u8 Flags = (u8)(inst1 >> 0x10);
-	if (Flags & 0x4) { // 288
-		if (Flags & 0x2) { // 290
-			VolTrg_Left  = *(s16*)&inst1;
-			VolRamp_Left = *(s32*)&inst2;
-		} else {
-			VolTrg_Right  = *(s16*)&inst1;
-			VolRamp_Right = *(s32*)&inst2;
-		}
-	} else {
-		Vol_Left	= *(s16*)&inst1;
-		Env_Dry		= (s16)(*(s32*)&inst2 >> 0x10);
-		Env_Wet		= *(s16*)&inst2;
-	}
+    u8 Flags = (u8)(inst1 >> 0x10);
+    if (Flags & 0x4) { // 288
+        if (Flags & 0x2) { // 290
+            VolTrg_Left  = *(s16*)&inst1;
+            VolRamp_Left = *(s32*)&inst2;
+        } else {
+            VolTrg_Right  = *(s16*)&inst1;
+            VolRamp_Right = *(s32*)&inst2;
+        }
+    } else {
+        Vol_Left    = *(s16*)&inst1;
+        Env_Dry     = (s16)(*(s32*)&inst2 >> 0x10);
+        Env_Wet     = *(s16*)&inst2;
+    }
 }
 */
 static void SETVOL3 ()
@@ -61,8 +61,8 @@ static void SETVOL3 ()
         if (Flags & 0x2)   // 290
         {
             Vol_Left  = *(s16*)&inst1; // 0x50
-            Env_Dry		= (s16)(*(s32*)&inst2 >> 0x10); // 0x4E
-            Env_Wet		= *(s16*)&inst2; // 0x4C
+            Env_Dry     = (s16)(*(s32*)&inst2 >> 0x10); // 0x4E
+            Env_Wet     = *(s16*)&inst2; // 0x4C
         }
         else
         {
@@ -144,13 +144,13 @@ static void ENVMIXER3 ()
         RSig   = *(s16 *)(hleMixerWorkArea + 22); // 22-23
         //u32 test  = *(s32 *)(hleMixerWorkArea + 24); // 22-23
         //if (test != 0x13371337)
-        //	__asm int 3;
+        //  __asm int 3;
     }
 
 
     //if(!(flags&A_AUX)) {
-    //	AuxIncRate=0;
-    //	aux2=aux3=zero;
+    //  AuxIncRate=0;
+    //  aux2=aux3=zero;
     //}
 
     for (y = 0; y < (0x170/2); y++)
@@ -210,11 +210,23 @@ static void ENVMIXER3 ()
 
 // ****************************************************************
 
-        if(o1>32767) o1=32767;
-        else if(o1<-32768) o1=-32768;
+        if(o1>32767)
+        {
+            o1=32767;
+        }
+        else if(o1<-32768)
+        {
+            o1=-32768;
+        }
 
-        if(a1>32767) a1=32767;
-        else if(a1<-32768) a1=-32768;
+        if(a1>32767)
+        {
+            a1=32767;
+        }
+        else if(a1<-32768)
+        {
+            a1=-32768;
+        }
 
 // ****************************************************************
 
@@ -232,11 +244,23 @@ static void ENVMIXER3 ()
         a2+=((i1*AuxL)+0x4000)>>15;
         a3+=((i1*AuxR)+0x4000)>>15;
 
-        if(a2>32767) a2=32767;
-        else if(a2<-32768) a2=-32768;
+        if(a2>32767)
+        {
+            a2=32767;
+        }
+        else if(a2<-32768)
+        {
+            a2=-32768;
+        }
 
-        if(a3>32767) a3=32767;
-        else if(a3<-32768) a3=-32768;
+        if(a3>32767)
+        {
+            a3=32767;
+        }
+        else if(a3<-32768)
+        {
+            a3=-32768;
+        }
 
         aux2[y^1]=a2;
         aux3[y^1]=a3;
@@ -280,9 +304,13 @@ static void MIXER3 ()   // Needs accuracy verification...
         temp += *(s16 *)(BufferSpace+dmemout+x);
 
         if ((s32)temp > 32767)
+        {
             temp = 32767;
+        }
         if ((s32)temp < -32768)
+        {
             temp = -32768;
+        }
 
         *(u16 *)(BufferSpace+dmemout+x) = (u16)(temp & 0xFFFF);
     }
@@ -393,33 +421,37 @@ static void ADPCM3 ()   // Verified to be 100% Accurate...
 
         code=BufferSpace[(0x4f0+inPtr)^3];
         index=code&0xf;
-        index<<=4;									// index into the adpcm code table
+        index<<=4;                                  // index into the adpcm code table
         book1=(short *)&adpcmtable[index];
         book2=book1+8;
-        code>>=4;									// upper nibble is scale
-        vscale=(0x8000>>((12-code)-1));			// very strange. 0x8000 would be .5 in 16:16 format
+        code>>=4;                                   // upper nibble is scale
+        vscale=(0x8000>>((12-code)-1));         // very strange. 0x8000 would be .5 in 16:16 format
         // so this appears to be a fractional scale based
         // on the 12 based inverse of the scale value.  note
         // that this could be negative, in which case we do
         // not use the calculated vscale value... see the
         // if(code>12) check below
 
-        inPtr++;									// coded adpcm data lies next
+        inPtr++;                                    // coded adpcm data lies next
         j=0;
-        while(j<8)									// loop of 8, for 8 coded nibbles from 4 bytes
+        while(j<8)                                  // loop of 8, for 8 coded nibbles from 4 bytes
             // which yields 8 short pcm values
         {
             icode=BufferSpace[(0x4f0+inPtr)^3];
             inPtr++;
 
-            inp1[j]=(s16)((icode&0xf0)<<8);			// this will in effect be signed
+            inp1[j]=(s16)((icode&0xf0)<<8);         // this will in effect be signed
             if(code<12)
+            {
                 inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
+            }
             j++;
 
             inp1[j]=(s16)((icode&0xf)<<12);
             if(code<12)
+            {
                 inp1[j]=((int)((int)inp1[j]*(int)vscale)>>16);
+            }
             j++;
         }
         j=0;
@@ -428,14 +460,18 @@ static void ADPCM3 ()   // Verified to be 100% Accurate...
             icode=BufferSpace[(0x4f0+inPtr)^3];
             inPtr++;
 
-            inp2[j]=(short)((icode&0xf0)<<8);			// this will in effect be signed
+            inp2[j]=(short)((icode&0xf0)<<8);           // this will in effect be signed
             if(code<12)
+            {
                 inp2[j]=((int)((int)inp2[j]*(int)vscale)>>16);
+            }
             j++;
 
             inp2[j]=(short)((icode&0xf)<<12);
             if(code<12)
+            {
                 inp2[j]=((int)((int)inp2[j]*(int)vscale)>>16);
+            }
             j++;
         }
 
@@ -502,8 +538,14 @@ static void ADPCM3 ()   // Verified to be 100% Accurate...
         for(j=0; j<8; j++)
         {
             a[j^1]>>=11;
-            if(a[j^1]>32767) a[j^1]=32767;
-            else if(a[j^1]<-32768) a[j^1]=-32768;
+            if(a[j^1]>32767)
+            {
+                a[j^1]=32767;
+            }
+            else if(a[j^1]<-32768)
+            {
+                a[j^1]=-32768;
+            }
             *(out++)=a[j^1];
         }
 
@@ -573,8 +615,14 @@ static void ADPCM3 ()   // Verified to be 100% Accurate...
         for(j=0; j<8; j++)
         {
             a[j^1]>>=11;
-            if(a[j^1]>32767) a[j^1]=32767;
-            else if(a[j^1]<-32768) a[j^1]=-32768;
+            if(a[j^1]>32767)
+            {
+                a[j^1]=32767;
+            }
+            else if(a[j^1]<-32768)
+            {
+                a[j^1]=-32768;
+            }
             *(out++)=a[j^1];
         }
         l1=a[6];
@@ -617,17 +665,21 @@ static void RESAMPLE3 ()
     if ((Flags & 0x1) == 0)
     {
         for (int x=0; x < 4; x++) //memcpy (src+srcPtr, rsp.RDRAM+addy, 0x8);
+        {
             src[(srcPtr+x)^1] = ((u16 *)RDRAM)[((addy/2)+x)^1];
+        }
         Accum = *(u16 *)(RDRAM+addy+10);
     }
     else
     {
         for (int x=0; x < 4; x++)
-            src[(srcPtr+x)^1] = 0;//*(u16 *)(rsp.RDRAM+((addy+x)^2));
+        {
+            src[(srcPtr+x)^1] = 0;    //*(u16 *)(rsp.RDRAM+((addy+x)^2));
+        }
     }
 
     //if ((Flags & 0x2))
-    //	__asm int 3;
+    //  __asm int 3;
 
     for(int i=0; i < 0x170/2; i++)
     {
@@ -647,8 +699,14 @@ static void RESAMPLE3 ()
         temp = ((s32)*(s16*)(src+((srcPtr+3)^1))*((s32)((s16)lut[3])));
         accum += (s32)(temp >> 15);
 
-        if (accum > 32767) accum = 32767;
-        if (accum < -32768) accum = -32768;
+        if (accum > 32767)
+        {
+            accum = 32767;
+        }
+        if (accum < -32768)
+        {
+            accum = -32768;
+        }
 
         dst[dstPtr^1] = (accum);
         dstPtr++;
@@ -657,7 +715,9 @@ static void RESAMPLE3 ()
         Accum&=0xffff;
     }
     for (int x=0; x < 4; x++)
+    {
         ((u16 *)RDRAM)[((addy/2)+x)^1] = src[(srcPtr+x)^1];
+    }
     *(u16 *)(RDRAM+addy+10) = Accum;
 }
 
@@ -716,7 +776,7 @@ extern "C" {
 
     void (*ABI3[0x20])() =
     {
-        DISABLE , ADPCM3 , CLEARBUFF3,	ENVMIXER3  , LOADBUFF3, RESAMPLE3  , SAVEBUFF3, MP3,
+        DISABLE , ADPCM3 , CLEARBUFF3,  ENVMIXER3  , LOADBUFF3, RESAMPLE3  , SAVEBUFF3, MP3,
         MP3ADDY, SETVOL3, DMEMMOVE3 , LOADADPCM3 , MIXER3   , INTERLEAVE3, WHATISTHIS   , SETLOOP3,
         SPNOOP , SPNOOP, SPNOOP   , SPNOOP    , SPNOOP  , SPNOOP    , SPNOOP  , SPNOOP,
         SPNOOP , SPNOOP, SPNOOP   , SPNOOP    , SPNOOP  , SPNOOP    , SPNOOP  , SPNOOP

@@ -31,66 +31,100 @@ void ProcessControllerCommand ( int32_t Control, uint8_t * Command);
 
 uint8_t *PIF_Ram = 0;
 
-void PifRamRead (void) {
-	int32_t Channel, CurPos;
+void PifRamRead (void)
+{
+    int32_t Channel, CurPos;
 
-	Channel = 0;
-	CurPos  = 0;
+    Channel = 0;
+    CurPos  = 0;
 
-	do {
-		switch(PIF_Ram[CurPos]) {
-		case 0x00:
-			Channel += 1;
-			if (Channel > 6) { CurPos = 0x40; }
-			break;
-		case 0xFE: CurPos = 0x40; break;
-		case 0xFF: break;
-		case 0xB4: case 0x56: case 0xB8: break; /* ??? */
-		default:
-			if ((PIF_Ram[CurPos] & 0xC0) == 0) {
-				CurPos += PIF_Ram[CurPos] + (PIF_Ram[CurPos + 1] & 0x3F) + 1;
-				Channel += 1;
-			} else {
-				CurPos = 0x40;
-			}
-			break;
-		}
-		CurPos += 1;
-	} while( CurPos < 0x40 );
+    do
+    {
+        switch(PIF_Ram[CurPos])
+        {
+        case 0x00:
+            Channel += 1;
+            if (Channel > 6)
+            {
+                CurPos = 0x40;
+            }
+            break;
+        case 0xFE:
+            CurPos = 0x40;
+            break;
+        case 0xFF:
+            break;
+        case 0xB4:
+        case 0x56:
+        case 0xB8:
+            break; /* ??? */
+        default:
+            if ((PIF_Ram[CurPos] & 0xC0) == 0)
+            {
+                CurPos += PIF_Ram[CurPos] + (PIF_Ram[CurPos + 1] & 0x3F) + 1;
+                Channel += 1;
+            }
+            else
+            {
+                CurPos = 0x40;
+            }
+            break;
+        }
+        CurPos += 1;
+    }
+    while( CurPos < 0x40 );
 }
 
-void PifRamWrite (void) {
-	int Channel, CurPos;
+void PifRamWrite (void)
+{
+    int Channel, CurPos;
 
-	Channel = 0;
+    Channel = 0;
 
-	for (CurPos = 0; CurPos < 0x40; CurPos++){
-		switch(PIF_Ram[CurPos]) {
-		case 0x00:
-			Channel += 1;
-			if (Channel > 6) { CurPos = 0x40; }
-			break;
-		case 0xFE: CurPos = 0x40; break;
-		case 0xFF: break;
-		case 0xB4: case 0x56: case 0xB8: break; /* ??? */
-		default:
-			if ((PIF_Ram[CurPos] & 0xC0) == 0) {
-				if (Channel < 4) {
-					ProcessControllerCommand(Channel,&PIF_Ram[CurPos]);
-				}
-				CurPos += PIF_Ram[CurPos] + (PIF_Ram[CurPos + 1] & 0x3F) + 1;
-				Channel += 1;
-			} else
-				CurPos = 0x40;
+    for (CurPos = 0; CurPos < 0x40; CurPos++)
+    {
+        switch(PIF_Ram[CurPos])
+        {
+        case 0x00:
+            Channel += 1;
+            if (Channel > 6)
+            {
+                CurPos = 0x40;
+            }
+            break;
+        case 0xFE:
+            CurPos = 0x40;
+            break;
+        case 0xFF:
+            break;
+        case 0xB4:
+        case 0x56:
+        case 0xB8:
+            break; /* ??? */
+        default:
+            if ((PIF_Ram[CurPos] & 0xC0) == 0)
+            {
+                if (Channel < 4)
+                {
+                    ProcessControllerCommand(Channel,&PIF_Ram[CurPos]);
+                }
+                CurPos += PIF_Ram[CurPos] + (PIF_Ram[CurPos + 1] & 0x3F) + 1;
+                Channel += 1;
+            }
+            else
+            {
+                CurPos = 0x40;
+            }
 
-			break;
-		}
-	}
-	PIF_Ram[0x3F] = 0;
+            break;
+        }
+    }
+    PIF_Ram[0x3F] = 0;
 }
 
 // always return failure
-void ProcessControllerCommand ( int32_t Control, uint8_t * Command) {
-	Command[1] |= 0x80;
+void ProcessControllerCommand ( int32_t Control, uint8_t * Command)
+{
+    Command[1] |= 0x80;
 }
 

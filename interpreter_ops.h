@@ -162,11 +162,11 @@ void  r4300i_COP1_S_ABS     ( void );
 void  r4300i_COP1_S_MOV     ( void );
 void  r4300i_COP1_S_NEG     ( void );
 void  r4300i_COP1_S_TRUNC_L ( void );
-void  r4300i_COP1_S_CEIL_L  ( void );	//added by Witten
-void  r4300i_COP1_S_FLOOR_L ( void );	//added by Witten
+void  r4300i_COP1_S_CEIL_L  ( void );   //added by Witten
+void  r4300i_COP1_S_FLOOR_L ( void );   //added by Witten
 void  r4300i_COP1_S_ROUND_W ( void );
 void  r4300i_COP1_S_TRUNC_W ( void );
-void  r4300i_COP1_S_CEIL_W  ( void );	//added by Witten
+void  r4300i_COP1_S_CEIL_W  ( void );   //added by Witten
 void  r4300i_COP1_S_FLOOR_W ( void );
 void  r4300i_COP1_S_CVT_D   ( void );
 void  r4300i_COP1_S_CVT_W   ( void );
@@ -182,13 +182,13 @@ void  r4300i_COP1_D_SQRT    ( void );
 void  r4300i_COP1_D_ABS     ( void );
 void  r4300i_COP1_D_MOV     ( void );
 void  r4300i_COP1_D_NEG     ( void );
-void  r4300i_COP1_D_TRUNC_L ( void );	//added by Witten
-void  r4300i_COP1_D_CEIL_L  ( void );	//added by Witten
-void  r4300i_COP1_D_FLOOR_L ( void );	//added by Witten
+void  r4300i_COP1_D_TRUNC_L ( void );   //added by Witten
+void  r4300i_COP1_D_CEIL_L  ( void );   //added by Witten
+void  r4300i_COP1_D_FLOOR_L ( void );   //added by Witten
 void  r4300i_COP1_D_ROUND_W ( void );
 void  r4300i_COP1_D_TRUNC_W ( void );
-void  r4300i_COP1_D_CEIL_W  ( void );	//added by Witten
-void  r4300i_COP1_D_FLOOR_W ( void );	//added by Witten
+void  r4300i_COP1_D_CEIL_W  ( void );   //added by Witten
+void  r4300i_COP1_D_FLOOR_W ( void );   //added by Witten
 void  r4300i_COP1_D_CVT_S   ( void );
 void  r4300i_COP1_D_CVT_W   ( void );
 void  r4300i_COP1_D_CVT_L   ( void );

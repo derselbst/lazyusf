@@ -60,7 +60,7 @@ void Compile_R4300i_LW             ( BLOCK_SECTION * Section );
 void Compile_R4300i_LBU            ( BLOCK_SECTION * Section );
 void Compile_R4300i_LHU            ( BLOCK_SECTION * Section );
 void Compile_R4300i_LWR            ( BLOCK_SECTION * Section );
-void Compile_R4300i_LWU            ( BLOCK_SECTION * Section );		//added by Witten
+void Compile_R4300i_LWU            ( BLOCK_SECTION * Section );     //added by Witten
 void Compile_R4300i_SB             ( BLOCK_SECTION * Section );
 void Compile_R4300i_SH             ( BLOCK_SECTION * Section );
 void Compile_R4300i_SWL            ( BLOCK_SECTION * Section );
@@ -154,11 +154,11 @@ void Compile_R4300i_COP1_S_NEG     ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_SQRT    ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_MOV     ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_TRUNC_L ( BLOCK_SECTION * Section );
-void Compile_R4300i_COP1_S_CEIL_L  ( BLOCK_SECTION * Section );			//added by Witten
-void Compile_R4300i_COP1_S_FLOOR_L ( BLOCK_SECTION * Section );			//added by Witten
+void Compile_R4300i_COP1_S_CEIL_L  ( BLOCK_SECTION * Section );         //added by Witten
+void Compile_R4300i_COP1_S_FLOOR_L ( BLOCK_SECTION * Section );         //added by Witten
 void Compile_R4300i_COP1_S_ROUND_W ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_TRUNC_W ( BLOCK_SECTION * Section );
-void Compile_R4300i_COP1_S_CEIL_W  ( BLOCK_SECTION * Section );			//added by Witten
+void Compile_R4300i_COP1_S_CEIL_W  ( BLOCK_SECTION * Section );         //added by Witten
 void Compile_R4300i_COP1_S_FLOOR_W ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_CVT_D   ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_S_CVT_W   ( BLOCK_SECTION * Section );
@@ -174,13 +174,13 @@ void Compile_R4300i_COP1_D_ABS     ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_NEG     ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_SQRT    ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_MOV     ( BLOCK_SECTION * Section );
-void Compile_R4300i_COP1_D_TRUNC_L ( BLOCK_SECTION * Section );			//added by Witten
-void Compile_R4300i_COP1_D_CEIL_L  ( BLOCK_SECTION * Section );			//added by Witten
-void Compile_R4300i_COP1_D_FLOOR_L ( BLOCK_SECTION * Section );			//added by Witten
+void Compile_R4300i_COP1_D_TRUNC_L ( BLOCK_SECTION * Section );         //added by Witten
+void Compile_R4300i_COP1_D_CEIL_L  ( BLOCK_SECTION * Section );         //added by Witten
+void Compile_R4300i_COP1_D_FLOOR_L ( BLOCK_SECTION * Section );         //added by Witten
 void Compile_R4300i_COP1_D_ROUND_W ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_TRUNC_W ( BLOCK_SECTION * Section );
-void Compile_R4300i_COP1_D_CEIL_W  ( BLOCK_SECTION * Section );			//added by Witten
-void Compile_R4300i_COP1_D_FLOOR_W ( BLOCK_SECTION * Section );			//added by Witten
+void Compile_R4300i_COP1_D_CEIL_W  ( BLOCK_SECTION * Section );         //added by Witten
+void Compile_R4300i_COP1_D_FLOOR_W ( BLOCK_SECTION * Section );         //added by Witten
 void Compile_R4300i_COP1_D_CVT_S   ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_CVT_W   ( BLOCK_SECTION * Section );
 void Compile_R4300i_COP1_D_CVT_L   ( BLOCK_SECTION * Section );

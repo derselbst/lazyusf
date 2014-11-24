@@ -36,283 +36,287 @@
 
 #ifdef USEX64
 
-#define x64_Reg		0x10
-#define X64_Reg		0x10
-#define X64_Ext		0x20
+#define x64_Reg     0x10
+#define X64_Reg     0x10
+#define X64_Ext     0x20
 
 extern uint8_t Index[9];
 
-enum x86RegValues {
+enum x86RegValues
+{
 
-    x86_Any	= 0,
+    x86_Any = 0,
     x86_EAX,x86_ECX,x86_EDX,x86_EBX,x86_ESP,x86_EBP,x86_ESI,x86_EDI,x86_Any8Bit=0x40,x64_Any = 0x40,
 
     x86_RAX = 0x11,x86_RCX,x86_RDX,x86_RBX,x86_RSP,x86_RBP,x86_RSI,x86_RDI,
 
-	x86_R8D = 0x21,x86_R9D,x86_R10D,x86_R11D,x86_R12D,x86_R13D,x86_R14D,x86_R15D,
+    x86_R8D = 0x21,x86_R9D,x86_R10D,x86_R11D,x86_R12D,x86_R13D,x86_R14D,x86_R15D,
 
-	x86_R8 = 0x31,x86_R9,x86_R10,x86_R11,x86_R12,x86_R13,x86_R14,x86_R15,
+    x86_R8 = 0x31,x86_R9,x86_R10,x86_R11,x86_R12,x86_R13,x86_R14,x86_R15,
 
 };
 
-enum x86FpuValues {
-	x86_ST0,x86_ST1,x86_ST2,x86_ST3,x86_ST4,x86_ST5,x86_ST6,x86_ST7
+enum x86FpuValues
+{
+    x86_ST0,x86_ST1,x86_ST2,x86_ST3,x86_ST4,x86_ST5,x86_ST6,x86_ST7
 };
 
-#define	x86_TEMP		x86_R8
-#define	x86_TEMPD		x86_R8D
+#define x86_TEMP        x86_R8
+#define x86_TEMPD       x86_R8D
 
-#define OP_D0	1
-#define OP_D1	2
-#define OP_D2	3
-#define OP_D3	4
-#define OP_D4	5
-#define OP_D5	6
-#define OP_D6	7
-#define OP_D7	8
+#define OP_D0   1
+#define OP_D1   2
+#define OP_D2   3
+#define OP_D3   4
+#define OP_D4   5
+#define OP_D5   6
+#define OP_D6   7
+#define OP_D7   8
 
-#define	LOAD_VARIABLE(reg,variable) \
-	PUTDST8(RecompPos, (0x48) | (((reg)&0x20)>>5)); \
-	PUTDST8(RecompPos, (0xB8) | (((reg)-1)&0xf)); \
-	PUTDST64(RecompPos,variable);
+#define LOAD_VARIABLE(reg,variable) \
+    PUTDST8(RecompPos, (0x48) | (((reg)&0x20)>>5)); \
+    PUTDST8(RecompPos, (0xB8) | (((reg)-1)&0xf)); \
+    PUTDST64(RecompPos,variable);
 
-// 	// 43 0F B6 0C 0D 40 83 C7 04 movzx       ecx,byte ptr [r9+4C78340h]
+//  // 43 0F B6 0C 0D 40 83 C7 04 movzx       ecx,byte ptr [r9+4C78340h]
 
 #define OPCODE_REG_REG(oplen,opcode,reg,rm) \
-	PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | ((((rm|reg))&0x10)>>1) | (((reg)&0x20)>>3)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0xC0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3));
+    PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | ((((rm|reg))&0x10)>>1) | (((reg)&0x20)>>3)); \
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0xC0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3));
 
 #define OPCODE_REG_MREG(oplen,opcode,reg,rm) \
-	PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((rm)&0xf)==0x6) { \
-		PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, 0); \
-	} else if(((rm)&0xf)==0x5) { \
-		PUTDST8(RecompPos, (0x0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, 0x24); \
-	} else { \
-		PUTDST8(RecompPos, (0x00) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	}
+    PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((rm)&0xf)==0x6) { \
+        PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, 0); \
+    } else if(((rm)&0xf)==0x5) { \
+        PUTDST8(RecompPos, (0x0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, 0x24); \
+    } else { \
+        PUTDST8(RecompPos, (0x00) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    }
 
 #define OPCODE_REG_MREG_IMM32(oplen,opcode,reg,rm,imm32) \
-	PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((rm)&0xf)==0x5) { \
-		PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, (0x24)); \
-	} else { \
-		PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	} \
-	PUTDST32(RecompPos,imm32);
+    PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((rm)&0xf)==0x5) { \
+        PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, (0x24)); \
+    } else { \
+        PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    } \
+    PUTDST32(RecompPos,imm32);
 
 #define OPCODE_REG_BASE_INDEX(oplen,opcode,reg,base,index) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((base)&0xf)!=0x6) { \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	} else {\
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, 0); \
-	}
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((base)&0xf)!=0x6) { \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    } else {\
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, 0); \
+    }
 
 #define OPCODE_REG_MREG_IMM8(oplen,opcode,reg,rm,imm8) \
-	PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST32(RecompPos,imm8);
+    PUTDST8(RecompPos, (0x40) | (((rm)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)); \
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST32(RecompPos,imm8);
 
 /*scale is: 0=1,0x40=2,0x80=4,0xc0=8 ??*/
 
 #define OPCODE_REG_INDEX_SCALE(oplen,opcode,reg,base,index,scale) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((scale)-1)*0x40) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((scale)-1)*0x40) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
 
 #define OPCODE_REG_BASE_INDEX_SCALE(oplen,opcode,reg,base,index,scale) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
 
 #define OPCODE_REG_BASE_INDEX_SCALE_IMM32(oplen,opcode,reg,base,index,scale,imm32) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x84) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x84) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST32(RecompPos,imm32);
 
 #define OPCODE_REG_BASE_INDEX_SCALE_IMM8(oplen,opcode,reg,base,index,scale,imm32) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST32(RecompPos,imm32);
 
 
 #define OPCODE_REG_BASE_INDEX_IMM8(oplen,opcode,reg,base,index,imm8) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, imm8);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, imm8);
 
 #define OPCODE_REG_BASE_INDEX_IMM32(oplen,opcode,reg,base,index,imm32) \
     PUTDST8(RecompPos, (0x40) | (((base)&0x20)>>5) | (((reg)&0x10)>>1) | (((reg)&0x20)>>3)| (((index)&0x20)>>4)); \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, imm32);
 
 #else /* !USEX64 */
 
-#define x64_Reg		0
-#define X64_Reg		0
-#define X64_Ext		0
+#define x64_Reg     0
+#define X64_Reg     0
+#define X64_Ext     0
 
 
 extern uint8_t Index[9];
 
-enum x86RegValues {
+enum x86RegValues
+{
 
-    x64_Any = 0, x86_Any	= 0,
+    x64_Any = 0, x86_Any    = 0,
     x86_EAX,x86_ECX,x86_EDX,x86_EBX,x86_ESP,x86_EBP,x86_ESI,x86_EDI,x86_Any8Bit=0x40,
 
 };
 
-enum x86FpuValues {
-	x86_ST0,x86_ST1,x86_ST2,x86_ST3,x86_ST4,x86_ST5,x86_ST6,x86_ST7
+enum x86FpuValues
+{
+    x86_ST0,x86_ST1,x86_ST2,x86_ST3,x86_ST4,x86_ST5,x86_ST6,x86_ST7
 };
 
-#define OP_D0	1
-#define OP_D1	2
-#define OP_D2	3
-#define OP_D3	4
-#define OP_D4	5
-#define OP_D5	6
-#define OP_D6	7
-#define OP_D7	8
+#define OP_D0   1
+#define OP_D1   2
+#define OP_D2   3
+#define OP_D3   4
+#define OP_D4   5
+#define OP_D5   6
+#define OP_D6   7
+#define OP_D7   8
 
-// 	// 43 0F B6 0C 0D 40 83 C7 04 movzx       ecx,byte ptr [r9+4C78340h]
+//  // 43 0F B6 0C 0D 40 83 C7 04 movzx       ecx,byte ptr [r9+4C78340h]
 
 #define OPCODE_REG_DISP(oplen,opcode,reg,disp32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x5) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST32(RecompPos,disp32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x5) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST32(RecompPos,disp32);
 
 #define OPCODE_REG_REG(oplen,opcode,reg,rm) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0xC0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3));
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0xC0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3));
 
 #define OPCODE_REG_MREG(oplen,opcode,reg,rm) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((rm)&0xf)==0x6) { \
-		PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, 0); \
-	} else if(((rm)&0xf)==0x5) { \
-		PUTDST8(RecompPos, (0x0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, (0x24)); \
-	} else { \
-		PUTDST8(RecompPos, (0x00) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	}
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((rm)&0xf)==0x6) { \
+        PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, 0); \
+    } else if(((rm)&0xf)==0x5) { \
+        PUTDST8(RecompPos, (0x0) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, (0x24)); \
+    } else { \
+        PUTDST8(RecompPos, (0x00) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    }
 
 #define OPCODE_REG_MREG_IMM32(oplen,opcode,reg,rm,imm32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((rm)&0xf)==0x5) { \
-		PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-		PUTDST8(RecompPos, (0x24)); \
-	} else { \
-		PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	} \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((rm)&0xf)==0x5) { \
+        PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+        PUTDST8(RecompPos, (0x24)); \
+    } else { \
+        PUTDST8(RecompPos, (0x80) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    } \
+    PUTDST32(RecompPos,imm32);
 
 #define OPCODE_REG_BASE_INDEX(oplen,opcode,reg,base,index) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	if(((base)&0xf)!=0x6) { \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	} else {\
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, 0); \
-	}
+    PUTDST##oplen  (RecompPos, opcode); \
+    if(((base)&0xf)!=0x6) { \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    } else {\
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (0x00) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, 0); \
+    }
 
 #define OPCODE_REG_MREG_IMM8(oplen,opcode,reg,rm,imm8) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST32(RecompPos,imm8);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x40) | (((rm)-1)&0x7) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST32(RecompPos,imm8);
 
 /*scale is: 0=1,0x40=2,0x80=4,0xc0=8 ??*/
 
 #define OPCODE_REG_INDEX_SCALE(oplen,opcode,reg,base,index,scale) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((scale)-1)*0x40) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((scale)-1)*0x40) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
 
 #define OPCODE_REG_BASE_INDEX_SCALE(oplen,opcode,reg,base,index,scale) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x04) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) );
 
 #define OPCODE_REG_BASE_INDEX_SCALE_IMM32(oplen,opcode,reg,base,index,scale,imm32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x84) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x84) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST32(RecompPos,imm32);
 
 #define OPCODE_REG_BASE_INDEX_SCALE_IMM8(oplen,opcode,reg,base,index,scale,imm32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (scale) | (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST32(RecompPos,imm32);
 
 
 #define OPCODE_REG_BASE_INDEX_IMM8(oplen,opcode,reg,base,index,imm8) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, imm8);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, imm8);
 
 #define OPCODE_REG_BASE_INDEX_IMM32(oplen,opcode,reg,base,index,imm32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST8(RecompPos, imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x44) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (((base)-1)&0x7) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST8(RecompPos, imm32);
 
 #define OPCODE_REG_INDEX_SCALE_IMM32(oplen,opcode,reg,index,scale,imm32) \
-	PUTDST##oplen  (RecompPos, opcode); \
-	PUTDST8(RecompPos, (0x4) | ((((reg)-1)&0x7) << 3)); \
-	PUTDST8(RecompPos, (0x5) | (scale) | ((((index)-1)&0x7) << 3) ); \
-	PUTDST32(RecompPos,imm32);
+    PUTDST##oplen  (RecompPos, opcode); \
+    PUTDST8(RecompPos, (0x4) | ((((reg)-1)&0x7) << 3)); \
+    PUTDST8(RecompPos, (0x5) | (scale) | ((((index)-1)&0x7) << 3) ); \
+    PUTDST32(RecompPos,imm32);
 
 #endif
 
 #ifndef USEX64
 
 #define OPCODE_REG_VARIABLE(PREFIX,oplen,opcode,reg,variable) \
-	PREFIX \
-	OPCODE_REG_DISP(oplen,opcode,reg,variable);
+    PREFIX \
+    OPCODE_REG_DISP(oplen,opcode,reg,variable);
 #else
 
 #define OPCODE_REG_VARIABLE(PREFIX,oplen,opcode,reg,Variable) \
-	if(((uintptr_t)(Variable) - (uintptr_t)TLB_Map) < 0x7FFFFFFF) { \
-		PREFIX \
-		OPCODE_REG_MREG_IMM32(oplen,opcode,reg,x86_R15,((uintptr_t)(Variable) - (uintptr_t)TLB_Map)); \
+    if(((uintptr_t)(Variable) - (uintptr_t)TLB_Map) < 0x7FFFFFFF) { \
+        PREFIX \
+        OPCODE_REG_MREG_IMM32(oplen,opcode,reg,x86_R15,((uintptr_t)(Variable) - (uintptr_t)TLB_Map)); \
     } else { \
-    	LOAD_VARIABLE(x86_TEMP, (Variable)); \
-    	PREFIX \
-    	OPCODE_REG_MREG(oplen,opcode,reg,x86_TEMP); \
+        LOAD_VARIABLE(x86_TEMP, (Variable)); \
+        PREFIX \
+        OPCODE_REG_MREG(oplen,opcode,reg,x86_TEMP); \
     }
 #endif
 
 #ifdef USEX64
-	#define LOAD_FROM_TLB(dstreg,srcreg) MoveX86RegDispToX86Reg(dstreg, x86_R15, srcreg, 8);
+#define LOAD_FROM_TLB(dstreg,srcreg) MoveX86RegDispToX86Reg(dstreg, x86_R15, srcreg, 8);
 #else
-	#define LOAD_FROM_TLB(dstreg,srcreg) MoveVariableDispToX86Reg(TLB_Map,dstreg,srcreg,4);
+#define LOAD_FROM_TLB(dstreg,srcreg) MoveVariableDispToX86Reg(TLB_Map,dstreg,srcreg,4);
 #endif
 
 
@@ -343,7 +347,7 @@ void Call_Indirect                   ( void * FunctAddress);
 void CompConstToVariable             ( uint32_t Const, void * Variable );
 void CompConstToX86reg               ( int32_t x86Reg, uint32_t Const );
 void CompX86regToVariable            ( int32_t x86Reg, void * Variable );
-void CompVariableToX86reg	         ( int32_t x86Reg, void * Variable );
+void CompVariableToX86reg            ( int32_t x86Reg, void * Variable );
 void CompX86RegToX86Reg              ( int32_t Destination, int32_t Source );
 void DecX86reg                       ( int32_t x86Reg );
 void DivX86reg                       ( int32_t x86reg );
@@ -366,8 +370,8 @@ void JleLabel8                       ( uint8_t Value );
 void JleLabel32                      ( uint32_t Value );
 void JlLabel8                        ( uint8_t Value );
 void JlLabel32                       ( uint32_t Value );
-void JzLabel8						 ( uint8_t Value );
-void JnzLabel8						 ( uint8_t Value );
+void JzLabel8                        ( uint8_t Value );
+void JnzLabel8                       ( uint8_t Value );
 void JmpDirectReg                    ( int32_t x86reg );
 void JmpIndirectLabel32              ( uint32_t location );
 void JmpIndirectReg                  ( int32_t x86reg );
@@ -438,8 +442,8 @@ void OrX86RegToVariable              ( void * Variable, int32_t x86Reg );
 void OrX86RegToX86Reg                ( int32_t Destination, int32_t Source );
 void Popad                           ( void );
 void Pushad                          ( void );
-void Push					         ( int32_t x86reg );
-void Pop					         ( int32_t x86reg );
+void Push                            ( int32_t x86reg );
+void Pop                             ( int32_t x86reg );
 void PushImm32                       ( uint32_t Value );
 void Ret                             ( void );
 void Seta                            ( int32_t x86reg );
@@ -451,8 +455,8 @@ void Setg                            ( int32_t x86reg );
 void SetgVariable                    ( void * Variable );
 void Setl                            ( int32_t x86reg );
 void SetlVariable                    ( void * Variable );
-void Setz					         ( int32_t x86reg );
-void Setnz					         ( int32_t x86reg );
+void Setz                            ( int32_t x86reg );
+void Setnz                           ( int32_t x86reg );
 void ShiftLeftDouble                 ( int32_t Destination, int32_t Source );
 void ShiftLeftDoubleImmed            ( int32_t Destination, int32_t Source, uint8_t Immediate );
 void ShiftLeftSign                   ( int32_t x86reg );
@@ -473,44 +477,44 @@ void SubX86RegToX86Reg               ( int32_t Destination, int32_t Source );
 void TestConstToX86Reg               ( uint32_t Const, int32_t x86reg );
 void TestVariable                    ( uint32_t Const, void * Variable );
 void TestX86RegToX86Reg              ( int32_t Destination, int32_t Source );
-void TestVariableToX86Reg			 ( uint32_t x86reg, void * Variable);
+void TestVariableToX86Reg            ( uint32_t x86reg, void * Variable);
 void XorConstToX86Reg                ( int32_t x86Reg, uint32_t Const );
 void XorX86RegToX86Reg               ( int32_t Source, int32_t Destination );
 void XorVariableToX86reg             ( void *Variable, int32_t x86reg );
 
 
-void fpuAbs					         ( void );
-void fpuAddDword			         ( void *Variable );
+void fpuAbs                          ( void );
+void fpuAddDword                     ( void *Variable );
 void fpuAddDwordRegPointer           ( int32_t x86Pointer );
-void fpuAddQword			         ( void *Variable );
+void fpuAddQword                     ( void *Variable );
 void fpuAddQwordRegPointer           ( int32_t x86Pointer );
-void fpuAddReg				         ( int32_t x86reg );
-void fpuAddRegPop			         ( int32_t * StackPos, int32_t x86reg );
-void fpuComDword			         ( void *Variable, uint32_t Pop );
+void fpuAddReg                       ( int32_t x86reg );
+void fpuAddRegPop                    ( int32_t * StackPos, int32_t x86reg );
+void fpuComDword                     ( void *Variable, uint32_t Pop );
 void fpuComDwordRegPointer           ( int32_t x86Pointer, uint32_t Pop );
-void fpuComQword			         ( void *Variable, uint32_t Pop );
+void fpuComQword                     ( void *Variable, uint32_t Pop );
 void fpuComQwordRegPointer           ( int32_t x86Pointer, uint32_t Pop );
 void fpuComReg                       ( int32_t x86reg, uint32_t Pop );
-void fpuDivDword			         ( void *Variable );
+void fpuDivDword                     ( void *Variable );
 void fpuDivDwordRegPointer           ( int32_t x86Pointer );
-void fpuDivQword			         ( void *Variable );
+void fpuDivQword                     ( void *Variable );
 void fpuDivQwordRegPointer           ( int32_t x86Pointer );
 void fpuDivReg                       ( int32_t Reg );
-void fpuDivRegPop			         ( int32_t x86reg );
+void fpuDivRegPop                    ( int32_t x86reg );
 void fpuExchange                     ( int32_t Reg );
 void fpuFree                         ( int32_t Reg );
 void fpuDecStack                     ( int32_t * StackPos );
 void fpuIncStack                     ( int32_t * StackPos );
-void fpuLoadControl			         ( void *Variable );
-void fpuLoadDword			         ( int32_t * StackPos, void *Variable );
+void fpuLoadControl                  ( void *Variable );
+void fpuLoadDword                    ( int32_t * StackPos, void *Variable );
 void fpuLoadDwordFromX86Reg          ( int32_t * StackPos, int32_t x86reg );
 void fpuLoadDwordFromN64Mem          ( int32_t * StackPos, int32_t x86reg );
 void fpuLoadInt32bFromN64Mem         ( int32_t * StackPos, int32_t x86reg );
-void fpuLoadIntegerDword	         ( int32_t * StackPos, void *Variable );
+void fpuLoadIntegerDword             ( int32_t * StackPos, void *Variable );
 void fpuLoadIntegerDwordFromX86Reg   ( int32_t * StackPos,int32_t x86Reg );
-void fpuLoadIntegerQword	         ( int32_t * StackPos, void *Variable );
+void fpuLoadIntegerQword             ( int32_t * StackPos, void *Variable );
 void fpuLoadIntegerQwordFromX86Reg   ( int32_t * StackPos,int32_t x86Reg );
-void fpuLoadQword			         ( int32_t * StackPos, void *Variable );
+void fpuLoadQword                    ( int32_t * StackPos, void *Variable );
 void fpuLoadQwordFromX86Reg          ( int32_t * StackPos, int32_t x86Reg );
 void fpuLoadQwordFromN64Mem          ( int32_t * StackPos, int32_t x86reg );
 void fpuLoadReg                      ( int32_t * StackPos, int32_t Reg );
@@ -520,27 +524,27 @@ void fpuMulQword                     ( void *Variable);
 void fpuMulQwordRegPointer           ( int32_t x86Pointer );
 void fpuMulReg                       ( int32_t x86reg );
 void fpuMulRegPop                    ( int32_t x86reg );
-void fpuNeg					         ( void );
-void fpuRound				         ( void );
-void fpuSqrt				         ( void );
-void fpuStoreControl		         ( void *Variable );
-void fpuStoreDword			         ( int32_t * StackPos, void *Variable, uint32_t pop );
+void fpuNeg                          ( void );
+void fpuRound                        ( void );
+void fpuSqrt                         ( void );
+void fpuStoreControl                 ( void *Variable );
+void fpuStoreDword                   ( int32_t * StackPos, void *Variable, uint32_t pop );
 void fpuStoreDwordFromX86Reg         ( int32_t * StackPos,int32_t x86Reg, uint32_t pop );
-void fpuStoreDwordToN64Mem	         ( int32_t * StackPos, int32_t x86reg, uint32_t Pop );
+void fpuStoreDwordToN64Mem           ( int32_t * StackPos, int32_t x86reg, uint32_t Pop );
 void fpuStoreIntegerDword            ( int32_t * StackPos, void *Variable, uint32_t pop );
 void fpuStoreIntegerDwordFromX86Reg  ( int32_t * StackPos,int32_t x86Reg, uint32_t pop );
 void fpuStoreIntegerQword            ( int32_t * StackPos, void *Variable, uint32_t pop );
 void fpuStoreIntegerQwordFromX86Reg  ( int32_t * StackPos, int32_t x86Reg, uint32_t pop );
-void fpuStoreQword			         ( int32_t * StackPos, void *Variable, uint32_t pop );
+void fpuStoreQword                   ( int32_t * StackPos, void *Variable, uint32_t pop );
 void fpuStoreQwordFromX86Reg         ( int32_t * StackPos, int32_t x86Reg, uint32_t pop );
-void fpuStoreStatus			         ( void );
-void fpuSubDword			         ( void *Variable );
+void fpuStoreStatus                  ( void );
+void fpuSubDword                     ( void *Variable );
 void fpuSubDwordRegPointer           ( int32_t x86Pointer );
 void fpuSubDwordReverse              ( void *Variable );
-void fpuSubQword			         ( void *Variable );
+void fpuSubQword                     ( void *Variable );
 void fpuSubQwordRegPointer           ( int32_t x86Pointer );
 void fpuSubQwordReverse              ( void *Variable );
-void fpuSubReg				         ( int32_t x86reg );
-void fpuSubRegPop			         ( int32_t x86reg );
+void fpuSubReg                       ( int32_t x86reg );
+void fpuSubRegPop                    ( int32_t x86reg );
 
 void MoveVariable64ToX86reg(void *Variable, int32_t x86reg);

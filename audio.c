@@ -22,26 +22,26 @@
 
 typedef struct
 {
-    uint32_t 	magic;
+    uint32_t    magic;
     /* magic number */
 
-    uint32_t 	hdr_size;
+    uint32_t    hdr_size;
     /* size of this header */
 
-    uint32_t  	data_size;
+    uint32_t    data_size;
     /* length of data (optional) */
 
-    uint32_t  	encoding;
+    uint32_t    encoding;
     /* data encoding format */
 
-    uint32_t  	sample_rate;
+    uint32_t    sample_rate;
     /* samples per second */
 
-    uint32_t  	channels;
+    uint32_t    channels;
     /* number of interleaved channels */
 } audioFileHeader;
 
-int fd;	/* sound device file descriptor */
+int fd; /* sound device file descriptor */
 int8_t useFlac = 0;
 
 #ifdef FLAC_SUPPORT
@@ -245,14 +245,16 @@ void AddBuffer(unsigned char *buf, unsigned int length)
 {
     int32_t i = 0;
 
-    #ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
     int32_t out = 0;
-    #endif // FLAC_SUPPORT
+#endif // FLAC_SUPPORT
 
     double vol = 1.0;
 
     if(!cpu_running)
+    {
         return;
+    }
 
 //    if(is_seeking)
 //    {
@@ -361,7 +363,9 @@ void AiLenChanged(void)
     length = AI_LEN_REG & 0x3FFF8;
 
     while(is_paused && cpu_running)
+    {
         usleep(10000);
+    }
 
 
     AddBuffer(RDRAM+address, length);
@@ -380,7 +384,9 @@ void AiLenChanged(void)
     if(enableFIFOfull)
     {
         if(AI_STATUS_REG&0x40000000)
+        {
             AI_STATUS_REG|=0x80000000;
+        }
     }
 
     AI_STATUS_REG|=0x40000000;

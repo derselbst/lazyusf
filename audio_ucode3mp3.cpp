@@ -318,7 +318,7 @@ static void InnerLoop ()
     RSP_Vect[0].DW[0] = 0x0002D4130005A827;
     */
     if ((t1 | t2 | t3 | t5 | t6) & 0x1)
-//					__asm int 3;
+//                  __asm int 3;
         do {}
         while (0);
 
@@ -660,32 +660,56 @@ static void InnerLoop ()
     s32 v;
     /*
     if (hi0 & 0xffff)
-    	__asm int 3;
+        __asm int 3;
     if (hi1 & 0xffff)
-    	__asm int 3;*/
+        __asm int 3;*/
     hi0 = (int)hi0 >> 0x10;
     hi1 = (int)hi1 >> 0x10;
     for (i = 0; i < 8; i++)
     {
         // v0
         v = (*(s16 *)(mp3data+((tmp-0x40)^2)) * hi0);
-        if (v > 32767) v = 32767;
-        else if (v < -32767) v = -32767;
+        if (v > 32767)
+        {
+            v = 32767;
+        }
+        else if (v < -32767)
+        {
+            v = -32767;
+        }
         *(s16 *)((u8 *)mp3data+((tmp-0x40)^2)) = (s16)v;
         // v17
         v = (*(s16 *)(mp3data+((tmp-0x30)^2)) * hi0);
-        if (v > 32767) v = 32767;
-        else if (v < -32767) v = -32767;
+        if (v > 32767)
+        {
+            v = 32767;
+        }
+        else if (v < -32767)
+        {
+            v = -32767;
+        }
         *(s16 *)((u8 *)mp3data+((tmp-0x30)^2)) = v;
         // v2
         v = (*(s16 *)(mp3data+((tmp-0x1E)^2)) * hi1);
-        if (v > 32767) v = 32767;
-        else if (v < -32767) v = -32767;
+        if (v > 32767)
+        {
+            v = 32767;
+        }
+        else if (v < -32767)
+        {
+            v = -32767;
+        }
         *(s16 *)((u8 *)mp3data+((tmp-0x1E)^2)) = v;
         // v4
         v = (*(s16 *)(mp3data+((tmp-0xE)^2)) * hi1);
-        if (v > 32767) v = 32767;
-        else if (v < -32767) v = -32767;
+        if (v > 32767)
+        {
+            v = 32767;
+        }
+        else if (v < -32767)
+        {
+            v = -32767;
+        }
         *(s16 *)((u8 *)mp3data+((tmp-0xE)^2)) = v;
         tmp += 2;
     }

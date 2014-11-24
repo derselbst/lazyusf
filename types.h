@@ -35,44 +35,47 @@
 
 typedef uint64_t QWORD;
 
-typedef union tagVect {
-	double				FD[2];
-	int64_t				DW[2];
-	uint64_t			UDW[2];
-	int32_t				W[4];
-	float				FS[4];
-	uint32_t			UW[4];
-	int16_t				HW[8];
-	uint16_t			UHW[8];
-	int8_t				B[16];
-	uint8_t				UB[16];
+typedef union tagVect
+{
+    double              FD[2];
+    int64_t             DW[2];
+    uint64_t            UDW[2];
+    int32_t             W[4];
+    float               FS[4];
+    uint32_t            UW[4];
+    int16_t             HW[8];
+    uint16_t            UHW[8];
+    int8_t              B[16];
+    uint8_t             UB[16];
 } VECTOR;
 
-typedef union tagUWORD {
-	int32_t		W;
-	uint32_t	UW;
-	int16_t		HW[2];
-	uint16_t	UHW[2];
-	int8_t		B[4];
-	uint8_t		UB[4];
-	float F;
+typedef union tagUWORD
+{
+    int32_t     W;
+    uint32_t    UW;
+    int16_t     HW[2];
+    uint16_t    UHW[2];
+    int8_t      B[4];
+    uint8_t     UB[4];
+    float F;
 } MIPS_WORD;
 
-typedef union tagUDWORD {
-	double				D;
-	int64_t				DW;
-	uint64_t			UDW;
-	int32_t				W[2];
-	uint32_t			UW[2];
-	int16_t				HW[4];
-	uint16_t			UHW[4];
-	int8_t				B[8];
-	uint8_t				UB[8];
-	float 				F[2];
+typedef union tagUDWORD
+{
+    double              D;
+    int64_t             DW;
+    uint64_t            UDW;
+    int32_t             W[2];
+    uint32_t            UW[2];
+    int16_t             HW[4];
+    uint16_t            UHW[4];
+    int8_t              B[8];
+    uint8_t             UB[8];
+    float               F[2];
 } MIPS_DWORD;
 
-typedef MIPS_WORD	MIPSUWORD;
-typedef MIPS_DWORD	MIPSUDWORD;
+typedef MIPS_WORD   MIPSUWORD;
+typedef MIPS_DWORD  MIPSUDWORD;
 
 
 #endif
