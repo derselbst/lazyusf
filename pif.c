@@ -38,7 +38,7 @@ void PifRamRead (void)
     Channel = 0;
     CurPos  = 0;
 
-    do
+    for(CurPos = 0; CurPos < 0x40; CurPos++)
     {
         switch(PIF_Ram[CurPos])
         {
@@ -70,9 +70,7 @@ void PifRamRead (void)
             }
             break;
         }
-        CurPos += 1;
     }
-    while( CurPos < 0x40 );
 }
 
 void PifRamWrite (void)
