@@ -23,9 +23,6 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include "recompiler_memory.h"
-#include "interpreter_memory.h"
-
 #define LargeCompileBufferSize  0x03200000
 #define NormalCompileBufferSize 0x01500000
 
@@ -43,11 +40,15 @@ extern void ** JumpTable, ** DelaySlotTable;
 extern uint8_t *RecompCode, *RecompPos;
 extern uint32_t WrittenToRom, MemoryState;
 
-/* Memory Control */
-int  Allocate_ROM                ( void );
-int  Allocate_Memory             ( void );
-void Release_Memory              ( void );
-int PreAllocate_Memory(void);
-
-void *malloc_exec(uint32_t bytes);
-void *jmalloc(uint32_t bytes);
+/* Recompiler Memory Functions */
+void Compile_LB                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );
+void Compile_LH                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );
+void Compile_LW                  ( int32_t Reg, uint32_t Addr );
+void Compile_SB_Const            ( uint8_t Value, uint32_t Addr );
+void Compile_SB_Register         ( int32_t x86Reg, uint32_t Addr );
+void Compile_SH_Const            ( uint16_t Value, uint32_t Addr );
+void Compile_SH_Register         ( int32_t x86Reg, uint32_t Addr );
+void Compile_SW_Const            ( uint32_t Value, uint32_t Addr );
+void Compile_SW_Register         ( int32_t x86Reg, uint32_t Addr );
+void ResetRecompCode             ( void );
+void InitExceptionHandler        ( void );

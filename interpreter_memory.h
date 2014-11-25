@@ -23,9 +23,6 @@
  * should be forwarded to them so if they want them.
  *
  */
-#include "recompiler_memory.h"
-#include "interpreter_memory.h"
-
 #define LargeCompileBufferSize  0x03200000
 #define NormalCompileBufferSize 0x01500000
 
@@ -43,11 +40,23 @@ extern void ** JumpTable, ** DelaySlotTable;
 extern uint8_t *RecompCode, *RecompPos;
 extern uint32_t WrittenToRom, MemoryState;
 
-/* Memory Control */
-int  Allocate_ROM                ( void );
-int  Allocate_Memory             ( void );
-void Release_Memory              ( void );
-int PreAllocate_Memory(void);
+/* CPU memory functions */
+//int  r4300i_Command_MemoryFilter ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
+//int  r4300i_CPU_MemoryFilter     ( uint32_t dwExptCode, LPEXCEPTION_POINTERS lpEP );
+int32_t  r4300i_LB_NonMemory         ( uint32_t PAddr, uint32_t * Value, uint32_t SignExtend );
+uint32_t r4300i_LB_VAddr             ( uint32_t VAddr, uint8_t * Value );
+uint32_t r4300i_LD_VAddr             ( uint32_t VAddr, uint64_t * Value );
+int32_t  r4300i_LH_NonMemory         ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend );
+uint32_t r4300i_LH_VAddr             ( uint32_t VAddr, uint16_t * Value );
+int32_t  r4300i_LW_NonMemory         ( uint32_t PAddr, uint32_t * Value );
+void r4300i_LW_PAddr             ( uint32_t PAddr, uint32_t * Value );
+uint32_t r4300i_LW_VAddr             ( uint32_t VAddr, uint32_t * Value );
+int32_t  r4300i_SB_NonMemory         ( uint32_t PAddr, uint8_t Value );
+uint32_t r4300i_SB_VAddr             ( uint32_t VAddr, uint8_t Value );
+uint32_t r4300i_SD_VAddr            ( uint32_t VAddr, uint64_t Value );
+int32_t  r4300i_SH_NonMemory         ( uint32_t PAddr, uint16_t Value );
+uint32_t r4300i_SH_VAddr             ( uint32_t VAddr, uint16_t Value );
+int32_t  r4300i_SW_NonMemory         ( uint32_t PAddr, uint32_t Value );
+uint32_t r4300i_SW_VAddr             ( uint32_t VAddr, uint32_t Value );
 
-void *malloc_exec(uint32_t bytes);
-void *jmalloc(uint32_t bytes);
+uint8_t * PageROM(uint32_t addr);
