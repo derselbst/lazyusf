@@ -38,6 +38,7 @@ set(LAZYUSF_SRC
     exception.c
     interpreter_cpu.c
     interpreter_ops.c
+    interpreter_memory.c
     main.c
     memory.c
     pif.c
@@ -45,6 +46,7 @@ set(LAZYUSF_SRC
     recompiler_cpu.c
     recompiler_fpu_ops.c
     recompiler_ops.c
+    recompiler_memory.c
     registers.c
     rsp.c
     rsp_interpreter_cpu.c

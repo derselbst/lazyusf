@@ -49,7 +49,7 @@ uint32_t r4300i_LD_VAddr             ( uint32_t VAddr, uint64_t * Value );
 int32_t  r4300i_LH_NonMemory         ( uint32_t PAddr, uint32_t * Value, int32_t SignExtend );
 uint32_t r4300i_LH_VAddr             ( uint32_t VAddr, uint16_t * Value );
 int32_t  r4300i_LW_NonMemory         ( uint32_t PAddr, uint32_t * Value );
-void r4300i_LW_PAddr             ( uint32_t PAddr, uint32_t * Value );
+void     r4300i_LW_PAddr             ( uint32_t PAddr, uint32_t * Value );
 uint32_t r4300i_LW_VAddr             ( uint32_t VAddr, uint32_t * Value );
 int32_t  r4300i_SB_NonMemory         ( uint32_t PAddr, uint8_t Value );
 uint32_t r4300i_SB_VAddr             ( uint32_t VAddr, uint8_t Value );
