@@ -36,46 +36,46 @@ typedef struct
         uint32_t Hex;
         uint8_t Ascii[4];
 
-        struct
+        struct // in case opcode is of type Immediate
         {
-            unsigned offset : 16;
-            unsigned rt : 5;
-            unsigned rs : 5;
-            unsigned op : 6;
+            unsigned offset : 16;    // 16 bit branch displacement or address displacement
+            unsigned rt : 5;         // 5-bit target register or branch condition
+            unsigned rs : 5;         // 5-bit source register specifier
+            unsigned op : 6;         // 6-bit opcode
         };
 
-        struct
+        struct // in case opcode is of type Immediate
         {
-            unsigned immediate : 16;
-            unsigned : 5;
-            unsigned base : 5;
-            unsigned : 6;
+            unsigned immediate : 16; // 16 bit immediate value, branch displacement or address displacement
+            unsigned : 5;            // == rt
+            unsigned base : 5;       // 5-bit value
+            unsigned : 6;            // == op
         };
 
-        struct
+        struct // in case opcode is of type Jump
         {
-            unsigned target : 26;
-            unsigned : 6;
+            unsigned target : 26;    // 26 bit jump target address 
+            unsigned : 6;            // == op
         };
 
-        struct
+        struct // in case opcode is of type Register
         {
-            unsigned funct : 6;
-            unsigned sa : 5;
-            unsigned rd : 5;
-            unsigned : 5;
-            unsigned : 5;
-            unsigned : 6;
+            unsigned funct : 6;      // 5-bit function field
+            unsigned sa : 5;         // 5-bit shift amount
+            unsigned rd : 5;         // 5-bit destination register specifier
+            unsigned : 5;            // == rt
+            unsigned : 5;            // == rs
+            unsigned : 6;            // == op
         };
 
-        struct
+        struct // in case opcode = COP0 or opcode = COP1
         {
-            unsigned : 6;
-            unsigned fd : 5;
-            unsigned fs : 5;
-            unsigned ft : 5;
-            unsigned fmt : 5;
-            unsigned : 6;
+            unsigned : 6;            // == funct
+            unsigned fd : 5;         // 5-bit floating point destination register specifier 
+            unsigned fs : 5;         // 5-bit floating point source register specifier
+            unsigned ft : 5;         // 5-bit floating point target (source/destination) register or branch condition
+            unsigned fmt : 5;        // 5-bit field containing instructions for coprocessor(s)
+            unsigned : 6;            // == op
         };
     };
 
