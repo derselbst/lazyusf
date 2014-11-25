@@ -36,6 +36,8 @@ A: DK64 internally samples at 21617 Hz; the output of the game was at 22050 Hz. 
 ## TODO
 * be able to set total playing time
 * be able to set fading time
+* be able to specify multiple files to play sequentially
+* be able to switch between those files
 * double playing time, if wished
 * play forever, if wished
 * on SIGINT, StopEmulation, ReleaseMemory, fade out
