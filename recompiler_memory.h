@@ -29,16 +29,7 @@
 #define RSP_RECOMPMEM_SIZE      0x400000
 #define RSP_SECRECOMPMEM_SIZE   0x200000
 
-#define ROM_IN_MAPSPACE
-
-extern uint32_t RdramSize, SystemRdramSize, RomFileSize;
-extern uintptr_t *TLB_Map;
-extern uint8_t * MemChunk;
-
-extern uint8_t *N64MEM, *RDRAM, *DMEM, *IMEM, * ROMPages[0x400], *savestatespace, * NOMEM;
-extern void ** JumpTable, ** DelaySlotTable;
-extern uint8_t *RecompCode, *RecompPos;
-extern uint32_t WrittenToRom, MemoryState;
+extern uint8_t *RecompPos;
 
 /* Recompiler Memory Functions */
 void Compile_LB                  ( int32_t Reg, uint32_t Addr, uint32_t SignExtend );
