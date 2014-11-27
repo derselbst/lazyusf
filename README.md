@@ -42,3 +42,4 @@ A: DK64 internally samples at 21617 Hz; the output of the game was at 22050 Hz. 
 * play forever, if wished
 * on SIGINT, StopEmulation, ReleaseMemory, fade out
 * on SIGTERM, StopEmulation, ReleaseMemory
+* be able to set output filename format
