@@ -22,6 +22,8 @@ const char playback[]="--playback";
 const char useAudioHle[]="--hle";
 const char useInterpreterCPU[]="--interpreter";
 
+const char forever[]="--forever";
+
 int InitalizeApplication ( void )
 {
     return 1;
@@ -70,6 +72,7 @@ void usage(char filename[])
         "\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n"
 #endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
+	"\t \t%s\t\t play forever\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
         RoundFrequ,
@@ -83,6 +86,7 @@ void usage(char filename[])
         playback,
 #endif
         useAudioHle,
+        forever,
         useInterpreterCPU);
 }
 
@@ -96,66 +100,76 @@ int main(int argc, char** argv)
         return 2;
     }
 
-    uint8_t i;
-    for (i = 2; i < argc; i++)
+    if(usf_init(argv[1]))
     {
-        if (((strcmp(argv[i],"-h"))==0) || ((strcmp(argv[i],"--help"))==0) || ((strcmp(argv[i],"--usage"))==0))
-        {
-            usage(argv[0]);
-            return 0;
-        }
-        else if (((strcmp(argv[i],FadeType_LONG))==0) || ((strcmp(argv[i],FadeType))==0))
-        {
-            if (argv[i+1]!=NULL)
-            {
-                fade_type=atoi(argv[++i]);
-            }
-        }
-        else if (((strcmp(argv[i],RoundFrequ_LONG))==0) || ((strcmp(argv[i],RoundFrequ))==0))
-        {
-            round_frequency=1;
-        }
-#ifdef FLAC_SUPPORT
-        else if (((strcmp(argv[i],toFLAC))==0))
-        {
-            useFlac=1;
-        }
-#endif // FLAC_SUPPORT
-#ifdef PLAYBACK_SUPPORT
-        else if (((strcmp(argv[i],playback))==0))
-        {
-            playingback=1;
-        }
-#endif // PLAYBACK_SUPPORT
-        else if (((strcmp(argv[i],useAudioHle))==0))
-        {
-            use_audiohle=1;
-        }
-        else if (((strcmp(argv[i],useInterpreterCPU))==0))
-        {
-            CPU_Type = CPU_Interpreter;
-            RSP_Cpu = CPU_Interpreter;
-        }
-        else
-        {
-            printf("Warning: Unknown commandline option %s\n", argv[i]);
-        }
-    }
+	uint8_t i;
+      for (i = 2; i < argc; i++)
+      {
+	  if (((strcmp(argv[i],"-h"))==0) || ((strcmp(argv[i],"--help"))==0) || ((strcmp(argv[i],"--usage"))==0))
+	  {
+	      usage(argv[0]);
+	      return 0;
+	  }
+	  else if (((strcmp(argv[i],FadeType_LONG))==0) || ((strcmp(argv[i],FadeType))==0))
+	  {
+	      if (argv[i+1]!=NULL)
+	      {
+		  fade_type=atoi(argv[++i]);
+	      }
+	  }
+	  else if (((strcmp(argv[i],RoundFrequ_LONG))==0) || ((strcmp(argv[i],RoundFrequ))==0))
+	  {
+	      round_frequency=1;
+	  }
+  #ifdef FLAC_SUPPORT
+	  else if (((strcmp(argv[i],toFLAC))==0))
+	  {
+	      useFlac=1;
+	  }
+  #endif // FLAC_SUPPORT
+  #ifdef PLAYBACK_SUPPORT
+	  else if (((strcmp(argv[i],playback))==0))
+	  {
+	      playingback=1;
+	  }
+  #endif // PLAYBACK_SUPPORT
+	  else if (((strcmp(argv[i],useAudioHle))==0))
+	  {
+	      use_audiohle=1;
+	  }
+	  else if (((strcmp(argv[i],useInterpreterCPU))==0))
+	  {
+	      CPU_Type = CPU_Interpreter;
+	      RSP_Cpu = CPU_Interpreter;
+	  }
+	  else if (((strcmp(argv[i],forever))==0))
+	  {
+	      track_time |= 1 << (sizeof(uint32_t)*8 -1);
+	  }
+	  else
+	  {
+	      printf("Warning: Unknown commandline option %s\n", argv[i]);
+	  }
+      }
 
-    strcpy(filename,argv[1]);
+      strcpy(filename,argv[1]);
 
-    if(useFlac)
-    {
-        strcat(filename,".flac");
+      if(useFlac)
+      {
+	  strcat(filename,".flac");
+      }
+      else
+      {
+	  strcat(filename,".au");
+      }
+        if(!usf_play())
+        {
+            printf("An Error occured while play.\n");
+        }
     }
     else
     {
-        strcat(filename,".au");
-    }
-
-    if(!usf_play(argv[1]))
-    {
-        printf("An Error occured while playing.\n");
+        printf("An Error occured while init.\n");
     }
 
     return 0;

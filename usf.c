@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -27,6 +26,7 @@ uint32_t fade_time = 10000;
 int8_t round_frequency = 0;
 
 // default track time: 360000 ms = 360 s = 6 min
+// if MSB set: play forever
 uint32_t track_time = 360000;
 double play_time = 0.0;
 
@@ -369,7 +369,7 @@ bool usf_init(char fn[])
             enableFIFOfull = 0;
         }
 
-        return usf_play();
+        return true;
     }
     
     return false;
