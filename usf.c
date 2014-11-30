@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -333,11 +334,45 @@ int LoadUSF(const char * fn)
 }
 
 
-void usf_init()
+bool usf_init(char fn[])
 {
-    use_audiohle = 0;
-    CPU_Type = CPU_Recompiler;
-    RSP_Cpu = CPU_Recompiler;
+//     use_audiohle = 0;
+//     CPU_Type = CPU_Recompiler;
+//     RSP_Cpu = CPU_Recompiler;
+    
+    if(!fn)
+    {
+        return false;
+    }
+
+    // Defaults (which would be overriden by Tags / playing
+    savestatespace = NULL;
+    cpu_running = is_paused = fake_seek_stopping = 0;
+    cpu_stopped = 1;
+    is_fading = 0;
+    play_time = 0.0;
+
+    // Allocate main memory after usf loads (to determine ram size)
+
+    if (PreAllocate_Memory())
+    {
+        if(!LoadUSF(fn))
+        {
+            Release_Memory();
+            return false;
+        }
+
+        // in case they are still unset, e.g. both files miniusf and usflib have no tag area, set them to 0 (default)
+        if(enablecompare == -1 || enableFIFOfull == -1)
+        {
+            enablecompare = 0;
+            enableFIFOfull = 0;
+        }
+
+        return usf_play();
+    }
+    
+    return false;
 }
 
 void usf_destroy()
@@ -374,37 +409,8 @@ void usf_destroy()
 //  context->output->flush(millisecond/1000);
 //}
 
-int usf_play(char * fn)
+bool usf_play()
 {
-    if(!fn)
-    {
-        return 0;
-    }
-
-    // Defaults (which would be overriden by Tags / playing
-    savestatespace = NULL;
-    cpu_running = is_paused = fake_seek_stopping = 0;
-    cpu_stopped = 1;
-    is_fading = 0;
-    play_time = 0.0;
-
-    // Allocate main memory after usf loads  (to determine ram size)
-
-    if (PreAllocate_Memory())
-    {
-        if(!LoadUSF(fn))
-        {
-            Release_Memory();
-            return 0;
-        }
-
-        // in case they are still unset, e.g. both files miniusf and usflib have no tag area, set them to 0 (default)
-        if(enablecompare == -1 || enableFIFOfull == -1)
-        {
-            enablecompare = 0;
-            enableFIFOfull = 0;
-        }
-
         if(Allocate_Memory() != 0 )
         {
             while(1)
@@ -425,10 +431,14 @@ int usf_play(char * fn)
                 fake_seek_stopping = 4;
             }
         }
-    }
-    Release_Memory();
+        else
+        {
+            return false;
+        }
 
-    return 1;
+        Release_Memory();
+
+        return true;
 }
 
 //void usf_stop(InputPlayback *context)
