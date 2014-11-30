@@ -243,8 +243,6 @@ void CloseSound(void)
 
 void AddBuffer(unsigned char *buf, unsigned int length)
 {
-    int32_t i = 0;
-
 #ifdef FLAC_SUPPORT
     int32_t out = 0;
 #endif // FLAC_SUPPORT
@@ -293,6 +291,7 @@ void AddBuffer(unsigned char *buf, unsigned int length)
         }
     }
 
+    uint32_t i = 0;
     for(i = 0; i<length; i+=2)
     {
         uint8_t byte0 = buf[i];
