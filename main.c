@@ -24,6 +24,8 @@ const char useInterpreterCPU[]="--interpreter";
 
 const char forever[]="--forever";
 
+const char doubleLen[]="--double";
+
 int InitalizeApplication ( void )
 {
     return 1;
@@ -73,6 +75,7 @@ void usage(char filename[])
 #endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
 	"\t \t%s\t\t play forever\n"
+	"\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
         RoundFrequ,
@@ -87,6 +90,7 @@ void usage(char filename[])
 #endif
         useAudioHle,
         forever,
+        doubleLen,
         useInterpreterCPU);
 }
 
@@ -145,6 +149,10 @@ int main(int argc, char** argv)
 	  else if (((strcmp(argv[i],forever))==0))
 	  {
 	      track_time |= 1 << (sizeof(uint32_t)*8 -1);
+	  }
+	  else if (((strcmp(argv[i],doubleLen))==0))
+	  {
+	      track_time *= 2;
 	  }
 	  else
 	  {
