@@ -3,6 +3,8 @@
 #define CPU_Interpreter             1
 #define CPU_Recompiler              0
 
+extern char filename[512];
+
 int InitalizeApplication ( void );
 void DisplayError (char * Message, ...);
 void StopEmulation(void);

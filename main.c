@@ -13,6 +13,8 @@ const char RoundFrequ_LONG[]="--round-frequency";
 const char FadeType[]="-f";
 const char FadeType_LONG[]="--fade-type";
 
+const char outFileNameFormatParam[]="-o";
+
 #ifdef FLAC_SUPPORT
 const char toFLAC[]="--flac";
 #endif // FLAC_SUPPORT
@@ -25,6 +27,8 @@ const char useInterpreterCPU[]="--interpreter";
 const char forever[]="--forever";
 
 const char doubleLen[]="--double";
+
+char filename[512];
 
 int InitalizeApplication ( void )
 {
@@ -106,6 +110,8 @@ int main(int argc, char** argv)
 
     if(usf_init(argv[1]))
     {
+      strcpy(filename, argv[1]);
+
 	uint8_t i;
       for (i = 2; i < argc; i++)
       {
@@ -154,13 +160,58 @@ int main(int argc, char** argv)
 	  {
 	      track_time *= 2;
 	  }
+      else if (((strcmp(argv[i],outFileNameFormatParam))==0))
+	  {
+	      //TODO: preserve path to file!!!
+
+if(!argv[++i])
+    continue;
+
+            memset(filename,'\0', sizeof(filename));
+	         strcpy(filename, argv[i+1]);
+
+    struct asdf
+    {
+        char wildcard[12];
+        char * replacement;
+    };
+
+    struct asdf wildcards[6]=  {
+                                {"%game%", game},
+                                {"%genre%", genre},
+                                {"%title%", title},
+                                {"%artist%", artist},
+                                {"%copyright%", copyright},
+                                {"%year%", year}
+                                };
+
+    unsigned short i;
+    for(i = 0; i<6; i++)
+    {
+        // find placeholder
+        char * pch = strstr (filename, wildcards[i].wildcard);
+        if(pch)
+        {
+            size_t lenrepl = strlen(wildcards[i].replacement);
+            size_t lenwildc= strlen(wildcards[i].wildcard);
+
+                char buf[512];
+            strcpy(buf, pch+lenwildc);
+                strncpy(pch, wildcards[i].replacement, lenrepl);
+
+            memset(pch+lenrepl,'\0', sizeof(filename)-lenrepl);
+                strcat(pch,buf);
+        }
+    }
+
+    puts(filename);
+
+	  }
 	  else
 	  {
 	      printf("Warning: Unknown commandline option %s\n", argv[i]);
 	  }
       }
-
-      strcpy(filename,argv[1]);
 
       if(useFlac)
       {
