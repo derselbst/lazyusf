@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 
                 //TODO: preserve path to file!!!
                 memset(filename,'\0', sizeof(filename));
-                strcpy(filename, argv[i+1]);
+                strcpy(filename, argv[i]);
 
                 struct
                 {
