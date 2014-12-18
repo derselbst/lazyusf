@@ -10,7 +10,6 @@
 #include "memory.h"
 #include "usf.h"
 
-char filename[512];
 uint32_t cpu_running = 0;
 uint32_t use_audiohle = 0;
 uint32_t is_paused = 0;
@@ -35,12 +34,12 @@ int8_t enablecompare = -1;
 int8_t enableFIFOfull = -1;
 
 /* METADATA VARs */
-char title[100];
-char genre[100];
-char artist[100];
-char copyright[100];
-char game[100];
-char year[25];
+char title[100]="UNKNOWNTITLE";
+char genre[100]="UNKNOWNGENRE";
+char artist[100]="UNKNOWNARTIST";
+char copyright[100]="UNKNOWNCOPYRIGHT";
+char game[100]="UNKNOWNCOPYRIGHT";
+char year[25]="UNKNOWNYear";
 
 extern int32_t RSP_Cpu;
 
@@ -339,7 +338,7 @@ bool usf_init(char fn[])
 //     use_audiohle = 0;
 //     CPU_Type = CPU_Recompiler;
 //     RSP_Cpu = CPU_Recompiler;
-    
+
     if(!fn)
     {
         return false;
@@ -371,7 +370,7 @@ bool usf_init(char fn[])
 
         return true;
     }
-    
+
     return false;
 }
 
