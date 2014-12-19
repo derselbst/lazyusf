@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <libgen.h>
 
 #include "main.h"
 #include "usf.h"
@@ -193,15 +194,19 @@ int main(int argc, char** argv)
                     continue;
                 }
 
-                //TODO: preserve path to file!!!
+                char * dir = dirname(argv[1]);
+                size_t lendir = strlen(dir);
+
                 memset(filename,'\0', sizeof(filename));
-                strcpy(filename, argv[i]);
+                strcpy(filename, dir);
+                strcat(filename, "/");
+                strcat(filename+lendir, argv[i]);
 
                 unsigned short i;
                 for(i = 0; i<6; i++)
                 {
                     // find placeholder
-                    char * pch = strstr (filename, wildcards[i].wildcard);
+                    char * pch = strstr (filename+lendir, wildcards[i].wildcard);
                     if(pch)
                     {
                         size_t lenrepl = strlen(wildcards[i].replacement);
