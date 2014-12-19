@@ -29,6 +29,9 @@ const char forever[]="--forever";
 
 const char doubleLen[]="--double";
 
+const char TotalPlayTime[]="--play-time";
+const char TotalFadeTime[]="--fade-time";
+
 static const struct
 {
     char wildcard[12];
@@ -86,6 +89,8 @@ void usage(char filename[])
 #endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n"
         "\t \t%s\t\t play forever\n"
+	"\t \t%s SEC\t\t set playing duration to SEC seconds\n"
+	"\t \t%s SEC\t\t set fading duration to SEC seconds\n"
         "\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
@@ -102,6 +107,8 @@ void usage(char filename[])
 #endif // PLAYBACK_SUPPORT
         useAudioHle,
         forever,
+        TotalPlayTime,
+        TotalFadeTime,
         doubleLen,
         useInterpreterCPU);
     
@@ -176,6 +183,14 @@ int main(int argc, char** argv)
             else if (((strcmp(argv[i],doubleLen))==0))
             {
                 track_time *= 2;
+            }
+            else if(((strcmp(argv[i],TotalPlayTime))==0))
+            {
+                track_time=atoi(argv[++i])*1000;
+            }
+            else if(((strcmp(argv[i],TotalFadeTime))==0))
+            {
+                fade_time=atoi(argv[++i])*1000;
             }
             else if (((strcmp(argv[i],outFileNameFormatParam))==0))
             {
