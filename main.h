@@ -5,7 +5,5 @@
 
 extern char filename[512];
 
-int InitalizeApplication ( void );
 void DisplayError (char * Message, ...);
 void StopEmulation(void);
-void UsfSleep(int32_t);

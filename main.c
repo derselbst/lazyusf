@@ -29,27 +29,22 @@ const char forever[]="--forever";
 
 const char doubleLen[]="--double";
 
-char filename[512];
-
-static struct
+static const struct
 {
-                    char wildcard[12];
-                    char * replacement;
+    char wildcard[12];
+    char * replacement;
 } wildcards[7] =
 {
-                    {"%game%", game},
-                    {"%genre%", genre},
-                    {"%title%", title},
-                    {"%artist%", artist},
-                    {"%copyright%", copyright},
-                    {"%year%", year},
-		    {"", NULL}
+    {"%game%", game},
+    {"%genre%", genre},
+    {"%title%", title},
+    {"%artist%", artist},
+    {"%copyright%", copyright},
+    {"%year%", year},
+    {"", NULL} // terminal
 };
 
-int InitalizeApplication ( void )
-{
-    return 1;
-}
+char filename[512];
 
 void StopEmulation(void)
 {
@@ -71,11 +66,6 @@ void DisplayError (char * Message, ...)
 
     printf("Error: %s\n", Msg);
 }
-
-//void UsfSleep(int32_t time)
-//{
-//  usleep(time * 1000);
-//}
 
 void usage(char filename[])
 {
@@ -99,7 +89,7 @@ void usage(char filename[])
         "\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
-	outFileNameFormatParam,
+        outFileNameFormatParam,
         RoundFrequ,
         RoundFrequ_LONG,
         FadeType,
@@ -109,7 +99,7 @@ void usage(char filename[])
 #endif // FLAC_SUPPORT
 #ifdef PLAYBACK_SUPPORT
         playback,
-#endif
+#endif // PLAYBACK_SUPPORT
         useAudioHle,
         forever,
         doubleLen,
