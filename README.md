@@ -34,10 +34,7 @@ Q: The output of Donkey Kong 64 is slower than in the original game.
 A: DK64 internally samples at 21617 Hz; the output of the game was at 22050 Hz. Enable rounding the samplerate by using the -r option.
 
 ## TODO
-* be able to set total playing time
-* be able to set fading time
 * be able to specify multiple files to play sequentially
 * be able to switch between those files
 * on SIGINT, StopEmulation, ReleaseMemory, fade out
 * on SIGTERM, StopEmulation, ReleaseMemory
-* be able to set output filename format
