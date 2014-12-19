@@ -30,6 +30,21 @@ const char doubleLen[]="--double";
 
 char filename[512];
 
+static struct
+{
+                    char wildcard[12];
+                    char * replacement;
+} wildcards[7] =
+{
+                    {"%game%", game},
+                    {"%genre%", genre},
+                    {"%title%", title},
+                    {"%artist%", artist},
+                    {"%copyright%", copyright},
+                    {"%year%", year},
+		    {"", NULL}
+};
+
 int InitalizeApplication ( void )
 {
     return 1;
@@ -69,6 +84,7 @@ void usage(char filename[])
         "\tThe output is written to filename.au\n\n"
 
         "\tOptions:\n"
+	"\t%s\t\t\t\t specifies output filename (e.g. \"%%game%% - %%title%%\")\n"
         "\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n"
         "\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n"
 #ifdef FLAC_SUPPORT
@@ -82,6 +98,7 @@ void usage(char filename[])
         "\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
+	outFileNameFormatParam,
         RoundFrequ,
         RoundFrequ_LONG,
         FadeType,
@@ -96,6 +113,15 @@ void usage(char filename[])
         forever,
         doubleLen,
         useInterpreterCPU);
+    
+    puts("Avialable Placeholders for output filename format:");
+    
+    unsigned short i;
+    for(i=0; wildcards[i].replacement!=NULL; i++)
+    {
+	printf("\t%s\n",wildcards[i].wildcard);
+    }
+    puts("");
 }
 
 extern uint32_t CPU_Type;
@@ -170,20 +196,6 @@ int main(int argc, char** argv)
                 //TODO: preserve path to file!!!
                 memset(filename,'\0', sizeof(filename));
                 strcpy(filename, argv[i]);
-
-                struct
-                {
-                    char wildcard[12];
-                    char * replacement;
-                } wildcards[6] =
-                {
-                    {"%game%", game},
-                    {"%genre%", genre},
-                    {"%title%", title},
-                    {"%artist%", artist},
-                    {"%copyright%", copyright},
-                    {"%year%", year}
-                };
 
                 unsigned short i;
                 for(i = 0; i<6; i++)
