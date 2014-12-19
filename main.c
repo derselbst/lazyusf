@@ -85,7 +85,7 @@ void usage(char filename[])
         "\tThe output is written to filename.au\n\n"
 
         "\tOptions:\n"
-	"\t%s\t\t\t\t specifies output filename (e.g. \"%%game%% - %%title%%\")\n"
+	"\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n"
         "\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n"
         "\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n"
 #ifdef FLAC_SUPPORT
@@ -94,7 +94,7 @@ void usage(char filename[])
 #ifdef PLAYBACK_SUPPORT
         "\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n"
 #endif // PLAYBACK_SUPPORT
-        "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs. \n"
+        "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n"
         "\t \t%s\t\t play forever\n"
         "\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
@@ -115,7 +115,7 @@ void usage(char filename[])
         doubleLen,
         useInterpreterCPU);
     
-    puts("Avialable Placeholders for output filename format:");
+    puts("Avialable placeholders for output filename: (each placeholder should only appear once)");
     
     unsigned short i;
     for(i=0; wildcards[i].replacement!=NULL; i++)
