@@ -347,7 +347,7 @@ void AddBuffer(unsigned char *buf, unsigned int length)
     play_time += (((double)(length >> 2) / (double)SampleRate) * 1000.0);
     printf("\r%f",(play_time/60000));
 
-    if(!(track_time >> (sizeof(uint32_t)*8 -1)) && play_time > (track_time + fade_time))
+    if((!(track_time >> (sizeof(uint32_t)*8 -1))) && (play_time > (track_time + fade_time)))
     {
         cpu_running = 0;
         printf("\n");

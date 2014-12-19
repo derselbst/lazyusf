@@ -6,7 +6,6 @@ void AiLenChanged(void);
 void AiDacrateChanged(uint32_t value);
 void OpenSound(void);
 void CloseSound(void);
-unsigned char createWaveFilefromRAWPCM();
 
 extern int8_t useFlac;
 extern int8_t playingback;

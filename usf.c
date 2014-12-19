@@ -39,7 +39,7 @@ char genre[100]="UNKNOWNGENRE";
 char artist[100]="UNKNOWNARTIST";
 char copyright[100]="UNKNOWNCOPYRIGHT";
 char game[100]="UNKNOWNCOPYRIGHT";
-char year[25]="UNKNOWNYear";
+char year[25]="UNKNOWNYEAR";
 
 extern int32_t RSP_Cpu;
 

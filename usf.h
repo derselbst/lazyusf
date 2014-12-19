@@ -7,7 +7,7 @@
 
 extern int8_t round_frequency;
 extern uint32_t cpu_running, use_audiohle, is_paused, cpu_stopped, fake_seek_stopping;
-extern uint32_t is_fading, fade_type, fade_time, is_seeking, seek_backwards, track_time;
+extern uint32_t is_fading, fade_type, fade_time /*time in miliseconds*/, is_seeking, seek_backwards, track_time /*time in miliseconds*/;
 extern double seek_time, play_time, rel_volume;
 
 extern int8_t enablecompare, enableFIFOfull;
