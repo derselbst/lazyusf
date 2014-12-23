@@ -4,6 +4,8 @@
 #include <string.h>
 #include <libgen.h>
 
+#include <signal.h>
+
 #include "main.h"
 #include "usf.h"
 #include "audio.h"
@@ -70,6 +72,62 @@ void DisplayError (char * Message, ...)
     printf("Error: %s\n", Msg);
 }
 
+void sig(int signo)//, siginfo_t * info, ucontext_t * context)
+{
+    switch(signo)
+    {
+    case SIGUSR1:
+        puts("sigusr1");
+        play_time = track_time;
+        break;
+    case SIGINT:
+        puts("\nReceived SIGINT. Fading out...");
+        play_time = track_time;
+        break;
+    case SIGTERM:
+        track_time = 0;
+        fade_time = 0;
+        break;
+    }
+
+    return;
+}
+
+void InitSigHandler(void)
+{
+    sigset_t blockset;
+    sigemptyset(&blockset);
+    sigaddset(&blockset, SIGUSR1);
+    sigaddset(&blockset, SIGINT);
+    sigaddset(&blockset, SIGTERM);
+    sigprocmask(SIG_UNBLOCK, &blockset, NULL);
+
+    sigset_t sset;
+    sigemptyset(&sset);
+    sigaddset(&sset, SIGUSR1);
+    sigaddset(&sset, SIGINT);
+    sigaddset(&sset, SIGTERM);
+
+    struct sigaction act;
+//    act.sa_flags = SA_SIGINFO;
+//    act.sa_sigaction = (void (*)(int, siginfo_t*, void*)) sig;
+    act.sa_mask = sset;
+    act.sa_handler = sig;
+
+    if(sigaction(SIGUSR1, &act, NULL))
+    {
+        printf("error setting up exception handler\n");
+    }
+    if(sigaction(SIGTERM, &act, NULL))
+    {
+        printf("error setting up exception handler\n");
+    }
+    if(sigaction(SIGINT, &act, NULL))
+    {
+        printf("error setting up exception handler\n");
+    }
+}
+
 void usage(char filename[])
 {
     printf(
@@ -78,7 +136,7 @@ void usage(char filename[])
         "\tThe output is written to filename.au\n\n"
 
         "\tOptions:\n"
-	"\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n"
+        "\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n"
         "\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n"
         "\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n"
 #ifdef FLAC_SUPPORT
@@ -89,8 +147,8 @@ void usage(char filename[])
 #endif // PLAYBACK_SUPPORT
         "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n"
         "\t \t%s\t\t play forever\n"
-	"\t \t%s SEC\t\t set playing duration to SEC seconds\n"
-	"\t \t%s SEC\t\t set fading duration to SEC seconds\n"
+        "\t \t%s SEC\t\t set playing duration to SEC seconds\n"
+        "\t \t%s SEC\t\t set fading duration to SEC seconds\n"
         "\t \t%s\t\t double the playing length read from usf\n"
         "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
         filename,
@@ -111,13 +169,13 @@ void usage(char filename[])
         TotalFadeTime,
         doubleLen,
         useInterpreterCPU);
-    
+
     puts("Avialable placeholders for output filename: (each placeholder should only appear once)");
-    
+
     unsigned short i;
     for(i=0; wildcards[i].replacement!=NULL; i++)
     {
-	printf("\t%s\n",wildcards[i].wildcard);
+        printf("\t%s\n",wildcards[i].wildcard);
     }
     puts("");
 }
@@ -131,6 +189,8 @@ int main(int argc, char** argv)
         usage(argv[0]);
         return 2;
     }
+
+    InitSigHandler();
 
     if(usf_init(argv[1]))
     {
