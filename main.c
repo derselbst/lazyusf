@@ -74,6 +74,8 @@ void DisplayError (char * Message, ...)
 
 void sig(int signo)//, siginfo_t * info, ucontext_t * context)
 {
+    static bool firstTime=true;
+
     switch(signo)
     {
     case SIGUSR1:
@@ -81,9 +83,20 @@ void sig(int signo)//, siginfo_t * info, ucontext_t * context)
         play_time = track_time;
         break;
     case SIGINT:
-        puts("\nReceived SIGINT. Fading out...");
-        play_time = track_time;
-        break;
+        if(firstTime)
+        {
+            firstTime=false;
+            puts("\nReceived SIGINT.");
+            if(fade_type==1 || fade_type==2 || fade_type==3)
+            {
+                puts("Fading out...");
+            }
+            //disable playing forever
+            track_time &= 0x7FFFFFFF;
+            play_time = track_time;
+            break;
+        }
+        else
     case SIGTERM:
         track_time = 0;
         fade_time = 0;
