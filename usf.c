@@ -410,34 +410,50 @@ void usf_destroy()
 
 bool usf_play()
 {
-        if(Allocate_Memory() != 0 )
+    if(Allocate_Memory() != 0 )
+    {
+        while(1)
         {
-            while(1)
+            is_fading = 0;
+            play_time = 0;
+
+            printf("Start Emulation using ");
+            if(CPU_Type==CPU_Interpreter && RSP_Cpu==CPU_Interpreter)
             {
-                is_fading = 0;
-                play_time = 0;
-
-                printf("Start Emulation\n");
-                StartEmulationFromSave(savestatespace);
-                if(!fake_seek_stopping)
-                {
-                    break;
-                }
-                while(fake_seek_stopping != 2)
-                {
-                    usleep(1);
-                }
-                fake_seek_stopping = 4;
+                printf("Interpreter\n");
             }
-        }
-        else
-        {
-            return false;
-        }
+            else if (CPU_Type==CPU_Recompiler && RSP_Cpu==CPU_Recompiler)
+            {
+                printf("Recompiler\n");
+            }
+            else
+            {
+                printf("different or unknown Main-CPU-Type and RSP-CPU-Type:\n");
+                printf("Main-CPU-Type: %d\n", CPU_Type);
+                printf("RSP-CPU-Type : %d\n", RSP_Cpu);
+            }
 
-        Release_Memory();
 
-        return true;
+            StartEmulationFromSave(savestatespace);
+            if(!fake_seek_stopping)
+            {
+                break;
+            }
+            while(fake_seek_stopping != 2)
+            {
+                usleep(1);
+            }
+            fake_seek_stopping = 4;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    Release_Memory();
+
+    return true;
 }
 
 //void usf_stop(InputPlayback *context)

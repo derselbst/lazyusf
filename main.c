@@ -314,6 +314,31 @@ int main(int argc, char** argv)
         {
             strcat(filename,".au");
         }
+
+        puts("");
+        printf("Game     : %s\n", game);
+        printf("Title    : %s\n", title);
+        printf("Artist   : %s\n", artist);
+        printf("Genre    : %s\n", genre);
+        printf("Copyright: %s\n", copyright);
+        printf("Year     : %s\n", year);
+
+        puts("");
+        if(track_time >> (sizeof(uint32_t)*8 -1))
+        {
+            puts("Playing forever");
+        }
+        else
+        {
+            printf("Playing for %f min\n", track_time/1000/60.0);
+
+        }
+
+        puts("");
+        printf("enablecompare: %d\n", enablecompare);
+        printf("enableFIFOfull: %d\n\n", enableFIFOfull);
+
+
         if(!usf_play())
         {
             printf("An Error occured while play.\n");
