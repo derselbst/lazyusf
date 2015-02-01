@@ -54,7 +54,7 @@ typedef struct
 
         struct // in case opcode is of type Jump
         {
-            unsigned target : 26;    // 26 bit jump target address 
+            unsigned target : 26;    // 26 bit jump target address
             unsigned : 6;            // == op
         };
 
@@ -71,7 +71,7 @@ typedef struct
         struct // in case opcode = COP0 or opcode = COP1
         {
             unsigned : 6;            // == funct
-            unsigned fd : 5;         // 5-bit floating point destination register specifier 
+            unsigned fd : 5;         // 5-bit floating point destination register specifier
             unsigned fs : 5;         // 5-bit floating point source register specifier
             unsigned ft : 5;         // 5-bit floating point target (source/destination) register or branch condition
             unsigned fmt : 5;        // 5-bit field containing instructions for coprocessor(s)
