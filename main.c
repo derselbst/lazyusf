@@ -4,6 +4,9 @@
 #include <string.h>
 #include <libgen.h>
 
+#include <getopt.h>
+#include <linux/limits.h>
+
 #include <signal.h>
 
 #include "main.h"
@@ -97,7 +100,7 @@ void sig(int signo)//, siginfo_t * info, ucontext_t * context)
             break;
         }
         else
-    case SIGTERM:
+        case SIGTERM:
         track_time = 0;
         fade_time = 0;
         break;
@@ -141,6 +144,37 @@ void InitSigHandler(void)
     }
 }
 
+void formatOutFileName(char* filename, char* format)
+{
+    char * dir = dirname(filename);
+    size_t lendir = strlen(dir);
+
+    memset(filename,'\0', PATH_MAX);
+    strcpy(filename, dir);
+    strcat(filename, "/");
+    strcat(filename+lendir, format);
+
+    unsigned short i;
+    for(i = 0; i<6; i++)
+    {
+        // find placeholder
+        char * pch = strstr (filename+lendir, wildcards[i].wildcard);
+        if(pch)
+        {
+            size_t lenrepl = strlen(wildcards[i].replacement);
+            size_t lenwildc= strlen(wildcards[i].wildcard);
+
+            char buf[512];
+            strcpy(buf, pch+lenwildc);
+            strncpy(pch, wildcards[i].replacement, lenrepl);
+
+            memset(pch+lenrepl,'\0', PATH_MAX-lenrepl);
+            strcat(pch,buf);
+        }
+    }
+}
+
+
 void usage(char progName[])
 {
     printf("Usage: %s [OPTIONS] filename\n",progName);
@@ -176,6 +210,30 @@ void usage(char progName[])
 
 extern uint32_t CPU_Type;
 extern int32_t RSP_Cpu;
+
+static struct option long_options[] =
+{
+    /* These options set a flag. */
+    {"hle",             no_argument, &use_audiohle, 1},
+#ifdef FLAC_SUPPORT
+    {"flac",            no_argument, &useFlac, 1}, // set useFlac to 1 if flac specified
+#endif
+    /* These options don’t set a flag.
+       We distinguish them by their indices. */
+    {"fade-type",       required_argument, NULL, 'f'},
+    {"play-time",       required_argument, NULL, 0},
+    {"fade-time",       required_argument, NULL, 0},
+
+    {"round-frequency", no_argument,       NULL, 'r'},
+#ifdef PLAYBACK_SUPPORT
+    {"playback",        no_argument,       NULL, 'p'},
+#endif
+    {"interpreter",     no_argument,       NULL, 'i'},
+    {"forever",         no_argument,       NULL, 'e'},
+    {"double",          no_argument,       NULL, 'd'},
+    {0, 0, 0, 0}
+};
+
 int main(int argc, char** argv)
 {
     if(argc<2)
@@ -185,154 +243,155 @@ int main(int argc, char** argv)
     }
 
     InitSigHandler();
-    
-    if(!realpath(argv[argc-1],filename))
+
+
+
+    /* getopt_long stores the option index here. */
+    int option_index = 0;
+
+    char* formatStr = NULL;
+    bool playForever = false, doublePlayLength = false;
+
+    int ch;
+    while((ch = getopt_long(argc, argv, "o:f:rpied", long_options, &option_index)) != -1)
     {
-        printf("Failed to get the full path of %s. Does it exist?\n", argv[argc-1]);
-	return 1;
-    }
-    
-    if(usf_init(filename))
-    {
-        uint8_t i;
-        for (i = 1; i < argc-1; i++)
+        switch (ch)
         {
-            if (((strcmp(argv[i],"-h"))==0) || ((strcmp(argv[i],"--help"))==0) || ((strcmp(argv[i],"--usage"))==0))
-            {
-                usage(argv[0]);
-                return 1;
-            }
-            else if (((strcmp(argv[i],FadeType_LONG))==0) || ((strcmp(argv[i],FadeType))==0))
-            {
-                if (argv[i+1]!=NULL)
-                {
-                    fade_type=atoi(argv[++i]);
-                }
-            }
-            else if (((strcmp(argv[i],RoundFrequ_LONG))==0) || ((strcmp(argv[i],RoundFrequ))==0))
-            {
-                round_frequency=1;
-            }
-#ifdef FLAC_SUPPORT
-            else if (((strcmp(argv[i],toFLAC))==0))
-            {
-                useFlac=1;
-            }
-#endif // FLAC_SUPPORT
-#ifdef PLAYBACK_SUPPORT
-            else if (((strcmp(argv[i],playback))==0))
-            {
-                playingback=1;
-            }
-#endif // PLAYBACK_SUPPORT
-            else if (((strcmp(argv[i],useAudioHle))==0))
-            {
-                use_audiohle=1;
-            }
-            else if (((strcmp(argv[i],useInterpreterCPU))==0))
-            {
-                CPU_Type = CPU_Interpreter;
-                RSP_Cpu = CPU_Interpreter;
-            }
-            else if (((strcmp(argv[i],forever))==0))
+        case 0:
+            /* If this option set a flag, do nothing else now. */
+            if (long_options[option_index].flag != 0)
+                break;
+            printf ("option %s", long_options[option_index].name);
+            if (optarg)
+                printf (" with arg %s", optarg);
+            printf ("\n");
+            break;
+
+        case 'r':
+            round_frequency=1;
+            break;
+
+        case 'p':
+            playingback=1;
+            break;
+
+        case 'i':
+            CPU_Type = CPU_Interpreter;
+            RSP_Cpu = CPU_Interpreter;
+            break;
+
+        case 'e': // play forever
+            playForever = true;
+            break;
+
+        case 'd': // double length
+            doublePlayLength = true;
+            break;
+
+        case 'f':
+            fade_type=atoi(optarg);
+            break;
+
+        case 'o':
+            formatStr = malloc(strlen(optarg)+1);
+            strcpy(formatStr, optarg);
+            // format outfilename
+
+        case '?':
+            /* getopt_long already printed an error message. */
+            break;
+
+        default:
+            abort();
+        }
+    }
+
+    /* Instead of reporting ‘--verbose’
+       and ‘--brief’ as they are encountered,
+       we report the final status resulting from them. */
+//    if (verbose_flag)
+//        puts ("verbose flag is set");
+
+    /* Print any remaining command line arguments (not options). */
+//    if (optind < argc)
+//    {
+//        printf ("non-option ARGV-elements: ");
+//        while (optind < argc)
+//            printf ("%s ", argv[optind++]);
+//        putchar ('\n');
+//    }
+
+    do
+    {
+
+        if(!realpath(argv[optind],filename))
+        {
+            printf("Failed to get the full path of %s. Does it exist?\n", argv[optind]);
+            continue;
+        }
+
+        if(usf_init(filename))
+        {
+
+            puts("");
+            printf("Game     : %s\n", game);
+            printf("Title    : %s\n", title);
+            printf("Artist   : %s\n", artist);
+            printf("Genre    : %s\n", genre);
+            printf("Copyright: %s\n", copyright);
+            printf("Year     : %s\n", year);
+
+            puts("");
+
+            if(playForever)
             {
                 track_time |= 1 << (sizeof(uint32_t)*8 -1);
-            }
-            else if (((strcmp(argv[i],doubleLen))==0))
-            {
-                track_time *= 2;
-            }
-            else if(((strcmp(argv[i],TotalPlayTime))==0))
-            {
-                track_time=atoi(argv[++i])*1000;
-            }
-            else if(((strcmp(argv[i],TotalFadeTime))==0))
-            {
-                fade_time=atoi(argv[++i])*1000;
-            }
-            else if (((strcmp(argv[i],outFileNameFormatParam))==0))
-            {
-                if(!argv[++i])
-                {
-                    continue;
-                }
-
-                char * dir = dirname(argv[argc-1]);
-                size_t lendir = strlen(dir);
-
-                memset(filename,'\0', sizeof(filename));
-                strcpy(filename, dir);
-                strcat(filename, "/");
-                strcat(filename+lendir, argv[i]);
-
-                unsigned short i;
-                for(i = 0; i<6; i++)
-                {
-                    // find placeholder
-                    char * pch = strstr (filename+lendir, wildcards[i].wildcard);
-                    if(pch)
-                    {
-                        size_t lenrepl = strlen(wildcards[i].replacement);
-                        size_t lenwildc= strlen(wildcards[i].wildcard);
-
-                        char buf[512];
-                        strcpy(buf, pch+lenwildc);
-                        strncpy(pch, wildcards[i].replacement, lenrepl);
-
-                        memset(pch+lenrepl,'\0', sizeof(filename)-lenrepl);
-                        strcat(pch,buf);
-                    }
-                }
-//                puts(filename);
+                puts("Playing forever");
             }
             else
             {
-                printf("Warning: Unknown commandline option %s\n", argv[i]);
+                printf("Playing for %f min\n", track_time/1000/60.0);
+
+            }
+
+            if(doublePlayLength)
+            {
+                track_time *= 2;
+            }
+
+            if(formatStr)
+            {
+                formatOutFileName(filename, formatStr);
+            }
+
+            if(useFlac)
+            {
+                strcat(filename,".flac");
+            }
+            else
+            {
+                strcat(filename,".au");
+            }
+
+
+            puts("");
+            printf("enablecompare: %d\n", enablecompare);
+            printf("enableFIFOfull: %d\n\n", enableFIFOfull);
+
+
+            if(!usf_play())
+            {
+                printf("An Error occured while play.\n");
             }
         }
-
-        if(useFlac)
-        {
-            strcat(filename,".flac");
-        }
         else
         {
-            strcat(filename,".au");
+            printf("An Error occured while init.\n");
         }
 
-        puts("");
-        printf("Game     : %s\n", game);
-        printf("Title    : %s\n", title);
-        printf("Artist   : %s\n", artist);
-        printf("Genre    : %s\n", genre);
-        printf("Copyright: %s\n", copyright);
-        printf("Year     : %s\n", year);
 
-        puts("");
-        if(track_time >> (sizeof(uint32_t)*8 -1))
-        {
-            puts("Playing forever");
-        }
-        else
-        {
-            printf("Playing for %f min\n", track_time/1000/60.0);
-
-        }
-
-        puts("");
-        printf("enablecompare: %d\n", enablecompare);
-        printf("enableFIFOfull: %d\n\n", enableFIFOfull);
-
-
-        if(!usf_play())
-        {
-            printf("An Error occured while play.\n");
-        }
     }
-    else
-    {
-        printf("An Error occured while init.\n");
-    }
+    while(++optind < argc);
 
     return 0;
 }
