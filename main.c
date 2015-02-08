@@ -141,9 +141,9 @@ void InitSigHandler(void)
     }
 }
 
-void usage(char filename[])
+void usage(char progName[])
 {
-    printf("Usage: %s filename [OPTIONS]\n",filename);
+    printf("Usage: %s [OPTIONS] filename\n",progName);
     printf("\tfilename: A USF or miniUSF file\n");
     printf("\tThe output is written to filename.au\n\n");
 
@@ -181,22 +181,26 @@ int main(int argc, char** argv)
     if(argc<2)
     {
         usage(argv[0]);
-        return 2;
+        return 1;
     }
 
     InitSigHandler();
-
-    if(usf_init(argv[1]))
+    
+    if(!realpath(argv[argc-1],filename))
     {
-        strcpy(filename, argv[1]);
-
+        printf("Failed to get the full path of %s. Does it exist?\n", argv[argc-1]);
+	return 1;
+    }
+    
+    if(usf_init(filename))
+    {
         uint8_t i;
-        for (i = 2; i < argc; i++)
+        for (i = 1; i < argc-1; i++)
         {
             if (((strcmp(argv[i],"-h"))==0) || ((strcmp(argv[i],"--help"))==0) || ((strcmp(argv[i],"--usage"))==0))
             {
                 usage(argv[0]);
-                return 0;
+                return 1;
             }
             else if (((strcmp(argv[i],FadeType_LONG))==0) || ((strcmp(argv[i],FadeType))==0))
             {
@@ -253,7 +257,7 @@ int main(int argc, char** argv)
                     continue;
                 }
 
-                char * dir = dirname(argv[1]);
+                char * dir = dirname(argv[argc-1]);
                 size_t lendir = strlen(dir);
 
                 memset(filename,'\0', sizeof(filename));
