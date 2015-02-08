@@ -143,45 +143,26 @@ void InitSigHandler(void)
 
 void usage(char filename[])
 {
-    printf(
-        "Usage: %s filename [OPTIONS]\n"
-        "\tfilename: A USF or miniUSF file\n"
-        "\tThe output is written to filename.au\n\n"
+    printf("Usage: %s filename [OPTIONS]\n",filename);
+    printf("\tfilename: A USF or miniUSF file\n");
+    printf("\tThe output is written to filename.au\n\n");
 
-        "\tOptions:\n"
-        "\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n"
-        "\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n"
-        "\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n"
+    printf("\tOptions:\n");
+    printf("\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n",outFileNameFormatParam);
+    printf("\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n",RoundFrequ,RoundFrequ_LONG);
+    printf("\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n",FadeType,FadeType_LONG);
 #ifdef FLAC_SUPPORT
-        "\t \t%s\t\t\t output is written to FLAC file\n"
+    printf("\t \t%s\t\t\t output is written to FLAC file\n",toFLAC);
 #endif // FLAC_SUPPORT
 #ifdef PLAYBACK_SUPPORT
-        "\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n"
+    printf("\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n",playback);
 #endif // PLAYBACK_SUPPORT
-        "\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n"
-        "\t \t%s\t\t play forever\n"
-        "\t \t%s SEC\t\t set playing duration to SEC seconds\n"
-        "\t \t%s SEC\t\t set fading duration to SEC seconds\n"
-        "\t \t%s\t\t double the playing length read from usf\n"
-        "\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",
-        filename,
-        outFileNameFormatParam,
-        RoundFrequ,
-        RoundFrequ_LONG,
-        FadeType,
-        FadeType_LONG,
-#ifdef FLAC_SUPPORT
-        toFLAC,
-#endif // FLAC_SUPPORT
-#ifdef PLAYBACK_SUPPORT
-        playback,
-#endif // PLAYBACK_SUPPORT
-        useAudioHle,
-        forever,
-        TotalPlayTime,
-        TotalFadeTime,
-        doubleLen,
-        useInterpreterCPU);
+    printf("\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n",useAudioHle);
+    printf("\t \t%s\t\t play forever\n",forever);
+    printf("\t \t%s SEC\t\t set playing duration to SEC seconds\n",TotalPlayTime);
+    printf("\t \t%s SEC\t\t set fading duration to SEC seconds\n",TotalFadeTime);
+    printf("\t \t%s\t\t double the playing length read from usf\n",doubleLen);
+    printf("\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",useInterpreterCPU);
 
     puts("Avialable placeholders for output filename: (each placeholder should only appear once)");
 
