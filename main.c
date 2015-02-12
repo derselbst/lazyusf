@@ -13,30 +13,6 @@
 #include "usf.h"
 #include "audio.h"
 
-const char RoundFrequ[]="-r";
-const char RoundFrequ_LONG[]="--round-frequency";
-
-const char FadeType[]="-f";
-const char FadeType_LONG[]="--fade-type";
-
-const char outFileNameFormatParam[]="-o";
-
-#ifdef FLAC_SUPPORT
-const char toFLAC[]="--flac";
-#endif // FLAC_SUPPORT
-#ifdef PLAYBACK_SUPPORT
-const char playback[]="--playback";
-#endif // PLAYBACK_SUPPORT
-const char useAudioHle[]="--hle";
-const char useInterpreterCPU[]="--interpreter";
-
-const char forever[]="--forever";
-
-const char doubleLen[]="--double";
-
-const char TotalPlayTime[]="--play-time";
-const char TotalFadeTime[]="--fade-time";
-
 static const struct
 {
     char wildcard[12];
@@ -173,6 +149,29 @@ void formatOutFileName(char* path, char* format)
 }
 
 
+static struct option long_options[] =
+{
+    /* These options set a flag. */
+    {"hle",             no_argument, &use_audiohle, 1},
+//#ifdef FLAC_SUPPORT
+    {"flac",            no_argument, &useFlac, 1}, // set useFlac to 1 if flac specified
+//#endif
+    /* These options don’t set a flag.
+       We distinguish them by their indices. */
+    {"fade-type",       required_argument, NULL, 'f'},
+    {"play-time",       required_argument, NULL, 0},
+    {"fade-time",       required_argument, NULL, 0},
+
+    {"round-frequency", no_argument,       NULL, 'r'},
+//#ifdef PLAYBACK_SUPPORT
+    {"playback",        no_argument,       NULL, 'p'},
+//#endif
+    {"interpreter",     no_argument,       NULL, 'i'},
+    {"forever",         no_argument,       NULL, 'e'},
+    {"double",          no_argument,       NULL, 'd'},
+    {0, 0, 0, 0}
+};
+
 void usage(char progName[])
 {
     printf("Usage: %s [OPTIONS] filename\n",progName);
@@ -180,23 +179,23 @@ void usage(char progName[])
     printf("\tThe output is written to filename.au\n\n");
 
     printf("\tOptions:\n");
-    printf("\t%s\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n",outFileNameFormatParam);
-    printf("\t%s\t%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n",RoundFrequ,RoundFrequ_LONG);
-    printf("\t%s NUM\t%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n",FadeType,FadeType_LONG);
+    printf("\t-o\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n");
+    printf("\t-%c\t--%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n",(char)long_options[5].val,long_options[5].name);
+    printf("\t-%c NUM\t--%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n",(char)long_options[2].val,long_options[2].name);
 #ifdef FLAC_SUPPORT
-    printf("\t \t%s\t\t\t output is written to FLAC file\n",toFLAC);
+    printf("\t \t--%s\t\t\t output is written to FLAC file\n",long_options[1].name);
 #endif // FLAC_SUPPORT
 #ifdef PLAYBACK_SUPPORT
-    printf("\t \t%s\t\t on-the-fly playback, you might hear some interrupts\n",playback);
+    printf("\t \t--%s\t\t on-the-fly playback, you might hear some interrupts\n",long_options[6].name);
 #endif // PLAYBACK_SUPPORT
-    printf("\t \t%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n",useAudioHle);
-    printf("\t \t%s\t\t play forever\n",forever);
-    printf("\t \t%s SEC\t\t set playing duration to SEC seconds\n",TotalPlayTime);
-    printf("\t \t%s SEC\t\t set fading duration to SEC seconds\n",TotalFadeTime);
-    printf("\t \t%s\t\t double the playing length read from usf\n",doubleLen);
-    printf("\t \t%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",useInterpreterCPU);
+    printf("\t \t--%s\t\t\t use high level audio emulation, will speed up emulation, at the expense of accuracy, and potential emulation bugs\n",long_options[0].name);
+    printf("\t \t--%s\t\t play forever\n",long_options[8].name);
+    printf("\t \t--%s SEC\t\t set playing duration to SEC seconds\n",long_options[3].name);
+    printf("\t \t--%s SEC\t\t set fading duration to SEC seconds\n",long_options[4].name);
+    printf("\t \t--%s\t\t double the playing length read from usf\n",long_options[9].name);
+    printf("\t \t--%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",long_options[7].name);
 
-    puts("Avialable placeholders for output filename: (each placeholder should only appear once)");
+    puts("Avialable placeholders for output filename: (each placeholder should only appear once in your output filename)");
 
     unsigned short i;
     for(i=0; wildcards[i].replacement!=NULL; i++)
@@ -208,30 +207,6 @@ void usage(char progName[])
 
 extern uint32_t CPU_Type;
 extern int32_t RSP_Cpu;
-
-static struct option long_options[] =
-{
-    /* These options set a flag. */
-    {"hle",             no_argument, &use_audiohle, 1},
-#ifdef FLAC_SUPPORT
-    {"flac",            no_argument, &useFlac, 1}, // set useFlac to 1 if flac specified
-#endif
-    /* These options don’t set a flag.
-       We distinguish them by their indices. */
-    {"fade-type",       required_argument, NULL, 'f'},
-    {"play-time",       required_argument, NULL, 0},
-    {"fade-time",       required_argument, NULL, 0},
-
-    {"round-frequency", no_argument,       NULL, 'r'},
-#ifdef PLAYBACK_SUPPORT
-    {"playback",        no_argument,       NULL, 'p'},
-#endif
-    {"interpreter",     no_argument,       NULL, 'i'},
-    {"forever",         no_argument,       NULL, 'e'},
-    {"double",          no_argument,       NULL, 'd'},
-    {0, 0, 0, 0}
-};
-
 int main(int argc, char** argv)
 {
     if(argc<2)
@@ -241,8 +216,6 @@ int main(int argc, char** argv)
     }
 
     InitSigHandler();
-
-
 
     /* getopt_long stores the option index here. */
     int option_index = 0;
