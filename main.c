@@ -28,7 +28,7 @@ static const struct
     {"", NULL} // terminal
 };
 
-char filename[PATH_MAX];
+char filename[PATH_MAX+1];
 
 void StopEmulation(void)
 {
@@ -120,13 +120,13 @@ void InitSigHandler(void)
     }
 }
 
-void formatOutFileName(char* path, char* format)
+void formatOutFileName(char* path, const char *const format)
 {
     path = dirname(path);
     strcat(path, "/");
     size_t lendir = strlen(path);
 
-    strcat(path+lendir, format);
+    strcat(path, format);
 
     unsigned short i;
     for(i = 0; wildcards[i].replacement!=NULL; i++)
@@ -138,16 +138,25 @@ void formatOutFileName(char* path, char* format)
             size_t lenrepl = strlen(wildcards[i].replacement);
             size_t lenwildc= strlen(wildcards[i].wildcard);
 
-            char buf[512];
+            // backup of everything that follows the wildcard
+            char buf[PATH_MAX];
             strcpy(buf, pch+lenwildc);
+
+            // write the replacement for the current wildcard to the path
             strncpy(pch, wildcards[i].replacement, lenrepl);
 
-            memset(pch+lenrepl,'\0', PATH_MAX-lenrepl);
+            // clear everything after the replacement
+            char * h=pch+lenrepl;
+            while(h++ < path + PATH_MAX+1)
+            {
+                *h='\0';
+            }
+
+            // append the backup the path
             strcat(pch,buf);
         }
     }
 }
-
 
 static struct option long_options[] =
 {
