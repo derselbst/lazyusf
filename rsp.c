@@ -812,10 +812,10 @@ void init_rsp(void)
     pLastPrimary = NULL;
     RSPBlockID = 1;
 
-    memset(RSP_GPR,0,sizeof(RSP_GPR));
-    memset(RSP_Vect,0,sizeof(RSP_Vect));
-    memset(RSP_ACCUM,0,sizeof(RSP_ACCUM));
-    memset(RSP_Flags,0,sizeof(RSP_Flags));
+    memset(RSP_GPR,0,sizeof(*RSP_GPR));
+    memset(RSP_Vect,0,sizeof(*RSP_Vect));
+    memset(RSP_ACCUM,0,sizeof(*RSP_ACCUM));
+    memset(RSP_Flags,0,sizeof(*RSP_Flags));
 
     for(i = 0; i < 64; i++)
     {
@@ -1082,8 +1082,8 @@ void init_rsp(void)
         RSPReInitMemory();
     }
 
-    memset(RSP_GPR,0,sizeof(RSP_GPR));
-    memset(RSP_Vect,0,sizeof(RSP_Vect));
+    memset(RSP_GPR,0,sizeof(*RSP_GPR));
+    memset(RSP_Vect,0,sizeof(*RSP_Vect));
 
 #ifndef USEX64
     asm volatile("push %%ebx; mov $1, %%eax; cpuid; pop %%ebx" : : "a"(CpuFeatures) : "edx","ecx");

@@ -12,6 +12,7 @@
 #include "main.h"
 #include "usf.h"
 #include "audio.h"
+#include "memory.h"
 
 static const struct
 {

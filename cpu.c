@@ -620,7 +620,7 @@ void StartEmulationFromSave ( void * savestate )
         memset(DelaySlotTable, 0, ((0x1000000) >> 0xA));
     }
 
-    memset(CPU_Action,0,sizeof(CPU_Action));
+    memset(CPU_Action,0,sizeof(CPU_ACTION));
     WrittenToRom = 0;
 
     InitilizeTLB();
