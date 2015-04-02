@@ -76,10 +76,11 @@ void sig(int signo)//, siginfo_t * info, ucontext_t * context)
             break;
         }
         else
-        /*fall through*/
-        case SIGTERM:
-        track_time = 0;
-        fade_time = 0;
+        {
+            StopEmulation();
+            Release_Memory();
+            exit(0);
+        }
         break;
     }
 
@@ -92,14 +93,12 @@ void InitSigHandler(void)
     sigemptyset(&blockset);
     sigaddset(&blockset, SIGUSR1);
     sigaddset(&blockset, SIGINT);
-    sigaddset(&blockset, SIGTERM);
     sigprocmask(SIG_UNBLOCK, &blockset, NULL);
 
     sigset_t sset;
     sigemptyset(&sset);
     sigaddset(&sset, SIGUSR1);
     sigaddset(&sset, SIGINT);
-    sigaddset(&sset, SIGTERM);
 
     struct sigaction act;
 //    act.sa_flags = SA_SIGINFO;
@@ -108,10 +107,6 @@ void InitSigHandler(void)
     act.sa_handler = sig;
 
     if(sigaction(SIGUSR1, &act, NULL))
-    {
-        printf("error setting up exception handler\n");
-    }
-    if(sigaction(SIGTERM, &act, NULL))
     {
         printf("error setting up exception handler\n");
     }
