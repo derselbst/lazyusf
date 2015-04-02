@@ -123,7 +123,7 @@ void formatOutFileName(char* path, const char *const format)
     for(i = 0; wildcards[i].replacement!=NULL; i++)
     {
         // find placeholder
-        char * pch = strstr (path+lendir, wildcards[i].wildcard);
+        char * pch = strstr(path+lendir, wildcards[i].wildcard);
         if(pch)
         {
             size_t lenrepl = strlen(wildcards[i].replacement);
@@ -131,6 +131,7 @@ void formatOutFileName(char* path, const char *const format)
 
             // backup of everything that follows the wildcard
             char buf[PATH_MAX];
+            memset(buf, '\0', PATH_MAX);
             strcpy(buf, pch+lenwildc);
 
             // write the replacement for the current wildcard to the path
@@ -138,6 +139,7 @@ void formatOutFileName(char* path, const char *const format)
 
             // clear everything after the replacement
             char * h=pch+lenrepl;
+            h-=1;
             while(h++ < path + PATH_MAX+1)
             {
                 *h='\0';
@@ -330,7 +332,6 @@ int main(int argc, char** argv)
             if(formatStr)
             {
                 formatOutFileName(filename, formatStr);
-                free(formatStr);
             }
 
             if(useFlac)
@@ -357,6 +358,8 @@ int main(int argc, char** argv)
         }
     }
     while(++optind < argc);
+
+    free(formatStr);
 
     return 0;
 }
