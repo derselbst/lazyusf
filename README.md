@@ -22,7 +22,7 @@ make
 
 ## Usage
 ```bash
-lazyusf ./"soundtrack name.miniusf" [OPTIONS]
+lazyusf [OPTIONS] "soundtrack name.miniusf"
 ```
 By default the PCM output is written to "soundtrack name.miniusf.au". For more help run lazyusf without any parameters.
 
