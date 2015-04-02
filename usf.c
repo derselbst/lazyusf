@@ -433,7 +433,6 @@ bool usf_play()
                 printf("RSP-CPU-Type : %d\n", RSP_Cpu);
             }
 
-
             StartEmulationFromSave(savestatespace);
             if(!fake_seek_stopping)
             {

@@ -76,6 +76,7 @@ void sig(int signo)//, siginfo_t * info, ucontext_t * context)
             break;
         }
         else
+        /*fall through*/
         case SIGTERM:
         track_time = 0;
         fade_time = 0;
@@ -158,7 +159,7 @@ void formatOutFileName(char* path, const char *const format)
     }
 }
 
-static struct option long_options[] =
+static const struct option long_options[] =
 {
     /* These options set a flag. */
     {"hle",             no_argument, &use_audiohle, 1},
@@ -178,6 +179,7 @@ static struct option long_options[] =
     {"interpreter",     no_argument,       NULL, 'i'},
     {"forever",         no_argument,       NULL, 'e'},
     {"double",          no_argument,       NULL, 'd'},
+    {"help",            no_argument,       NULL, 'h'},
     {0, 0, 0, 0}
 };
 
@@ -204,7 +206,7 @@ void usage(char progName[])
     printf("\t \t--%s\t\t double the playing length read from usf\n",long_options[9].name);
     printf("\t \t--%s\t\t use interpreter, slows down emulation; use it if recompiler (default) fails\n\n",long_options[7].name);
 
-    puts("Avialable placeholders for output filename: (each placeholder should only appear once in your output filename)");
+    puts("Available placeholders for output filename: (each placeholder should only appear once in your output filename)");
 
     unsigned short i;
     for(i=0; wildcards[i].replacement!=NULL; i++)
@@ -233,7 +235,7 @@ int main(int argc, char** argv)
     bool playForever = false, doublePlayLength = false;
 
     int ch;
-    while((ch = getopt_long(argc, argv, "o:f:rpied", long_options, &option_index)) != -1)
+    while((ch = getopt_long(argc, argv, "o:f:rpiedh", long_options, &option_index)) != -1)
     {
         switch (ch)
         {
@@ -281,6 +283,11 @@ int main(int argc, char** argv)
             strcpy(formatStr, optarg);
             break;
 
+        case 'h':
+            usage(argv[0]);
+            return 0;
+            break;
+
         case '?':
             /* getopt_long already printed an error message. */
             break;
@@ -307,10 +314,15 @@ int main(int argc, char** argv)
 
     do
     {
+        if(!argv[optind])
+        {
+            puts("No path was specified");
+            continue;
+        }
 
         if(!realpath(argv[optind],filename))
         {
-            printf("Failed to get the full path of %s. Does it exist?\n", argv[optind]);
+            printf("Failed to get the full path of \"%s\". Does it exist?\n", argv[optind]);
             continue;
         }
 
