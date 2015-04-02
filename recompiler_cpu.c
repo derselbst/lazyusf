@@ -2326,11 +2326,6 @@ void FreeSection (BLOCK_SECTION * Section, BLOCK_SECTION * Parent)
     }
 }
 
-void GenerateBasicSectionLinkage (BLOCK_SECTION * Section)
-{
-    //_asm int 3
-}
-
 void GenerateSectionLinkage (BLOCK_SECTION * Section)
 {
     BLOCK_SECTION * TargetSection[2], *Parent;
@@ -4008,18 +4003,12 @@ void CallBlock(void (*block)(void))
 #endif
 
 }
-//#include <windows.h>
-//int r4300i_CPU_MemoryFilter64( DWORD dwExptCode, LPEXCEPTION_POINTERS lpEP);
-
 uint32_t lastgood = 0;
-
 
 void StartRecompilerCPU (void )
 {
     uintptr_t Addr;
     void (*Block)(void) = 0;
-
-//  printf("Starting recompiler cpu %d\n", cpu_running);
 
     InitExceptionHandler();
 
@@ -4027,9 +4016,6 @@ void StartRecompilerCPU (void )
     memset(&N64_Blocks,0,sizeof(N64_Blocks));
     NextInstruction = NORMAL;
 
-    //__try {
-
-    //for (;;) {
     while(cpu_running)
     {
 
@@ -4066,7 +4052,6 @@ void StartRecompilerCPU (void )
             continue;
         }
 
-
         if (Addr > 0x10000000)
         {
             if (PROGRAM_COUNTER >= 0xB0000000 && PROGRAM_COUNTER < (RomFileSize | 0xB0000000))
@@ -4086,7 +4071,6 @@ void StartRecompilerCPU (void )
 
         Block = *(JumpTable + (Addr >> 2));
 
-
         if (Block == NULL)
         {
             Block = (void*)Compiler4300iBlock();
@@ -4096,11 +4080,9 @@ void StartRecompilerCPU (void )
             NextInstruction = NORMAL;
         }
 
-
         CallBlock(Block);
     }
 
-    cpu_stopped = 1;
     printf("Cpu stopped\n");
 }
 

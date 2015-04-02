@@ -360,9 +360,6 @@ void r4300i_LW (void)
 {
     uint32_t Address =  GPR[Opcode.base].UW[0] + (int16_t)Opcode.offset;
 
-
-//  if ((Address & 3) != 0) { ADDRESS_ERROR_EXCEPTION(Address,1); }
-
     if (Opcode.rt == 0)
     {
         return;
@@ -517,10 +514,6 @@ void r4300i_SW (void)
     {
         DisplayError("SW TLB: %X",Address);
     }
-    //TranslateVaddr(&Address);
-    //if (Address == 0x00090AA0) {
-    //  LogMessage("%X: Write %X to %X",PROGRAM_COUNTER,GPR[Opcode.rt].UW[0],GPR[Opcode.base].UW[0] + (int16_t)Opcode.offset);
-    //}
 }
 
 uint64_t SDL_MASK[8] = { 0,0xFF00000000000000ULL,

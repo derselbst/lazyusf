@@ -2376,9 +2376,7 @@ void RSP_Opcode_SWV ( void )
 
 void rsp_UnknownOpcode (void)
 {
-
     printf("Unhandled RSP opcode (%08x)\n", RSPOpC.Hex);
-    //ExitThread(0);
     exit(0);
 }
 

@@ -1360,7 +1360,6 @@ void RSPCondMoveNotEqual(int32_t Destination, int32_t Source)
     if (ConditionalMove == 0)
     {
         uint8_t * Jump;
-        // CPU_Message("   [*]cmovne %s, %s",x86_Name(Destination),x86_Name(Source));
 
         RSPJeLabel8(0);
         Jump = RSPRecompPos - 1;
@@ -1371,7 +1370,6 @@ void RSPCondMoveNotEqual(int32_t Destination, int32_t Source)
     else
     {
         uint8_t x86Command;
-        // CPU_Message("      cmovne %s, %s",x86_Name(Destination),x86_Name(Source));
 
         PUTDST16(RSPRecompPos,0x450F);
 
@@ -1438,7 +1436,6 @@ void RSPCondMoveNotEqual(int32_t Destination, int32_t Source)
 
 void RSPNegateX86reg(int32_t x86reg)
 {
-    // CPU_Message("      neg %s", x86_Name(x86reg));
     switch (x86reg&0xf)
     {
     case x86_EAX:
@@ -1474,8 +1471,6 @@ void RSPNegateX86reg(int32_t x86reg)
 void RSPImulX86RegToX86Reg(int32_t Destination, int32_t Source)
 {
     uint8_t x86Command;
-
-    // CPU_Message("      imul %s, %s",x86_Name(Destination), x86_Name(Source));
 
     switch (Source&0xf)
     {
@@ -1548,18 +1543,15 @@ void RSPCondMoveGreater(int32_t Destination, int32_t Source)
     if (ConditionalMove == 0)
     {
         uint8_t * Jump;
-        // CPU_Message("    [*]cmovg %s, %s",x86_Name(Destination),x86_Name(Source));
 
         RSPJleLabel8(0);
         Jump = RSPRecompPos - 1;
         RSPMoveX86RegToX86Reg(Source, Destination);
-        // CPU_Message("     label:");
         RSPx86_SetBranch8b(Jump, RSPRecompPos);
     }
     else
     {
         uint8_t x86Command;
-        // CPU_Message("      cmovg %s, %s",x86_Name(Destination),x86_Name(Source));
 
         PUTDST16(RSPRecompPos,0x4F0F);
 
@@ -1628,18 +1620,15 @@ void RSPCondMoveLess(int32_t Destination, int32_t Source)
     if (ConditionalMove == 0)
     {
         uint8_t * Jump;
-        // CPU_Message("   [*]cmovl %s, %s",x86_Name(Destination),x86_Name(Source));
 
         RSPJgeLabel8(0);
         Jump = RSPRecompPos - 1;
         RSPMoveX86RegToX86Reg(Source, Destination);
-        // CPU_Message("     label:");
         RSPx86_SetBranch8b(Jump, RSPRecompPos);
     }
     else
     {
         uint8_t x86Command;
-        // CPU_Message("      cmovl %s, %s",x86_Name(Destination),x86_Name(Source));
 
         PUTDST16(RSPRecompPos,0x4C0F);
 
@@ -1720,8 +1709,6 @@ void RSPMoveX86regHalfToX86regPointerDisp(int32_t Source, int32_t AddrReg, uint8
 {
     uint8_t x86Amb;
 
-    // CPU_Message("      mov word ptr [%s+%X], %s",x86_Name(AddrReg), Disp, x86Half_Name(Source));
-
     switch (AddrReg&0xf)
     {
     case x86_EAX:
@@ -1792,7 +1779,6 @@ void RSPCondMoveEqual(int32_t Destination, int32_t Source)
     if (ConditionalMove == 0)
     {
         uint8_t * Jump;
-        // CPU_Message("   [*]cmove %s, %s",x86_Name(Destination),x86_Name(Source));
 
         RSPJneLabel8(0);
         Jump = RSPRecompPos - 1;
@@ -1803,7 +1789,6 @@ void RSPCondMoveEqual(int32_t Destination, int32_t Source)
     else
     {
         uint8_t x86Command;
-        // CPU_Message("      cmove %s, %s",x86_Name(Destination),x86_Name(Source));
 
         PUTDST16(RSPRecompPos,0x440F);
 
@@ -1867,16 +1852,13 @@ void RSPCondMoveEqual(int32_t Destination, int32_t Source)
     }
 }
 
-
 void RSPCwd(void)
 {
-    // CPU_Message("      cwd");
     PUTDST16(RSPRecompPos, 0x9966);
 }
 
 void RSPCwde(void)
 {
-    // CPU_Message("      cwde");
     PUTDST8(RSPRecompPos, 0x98);
 }
 
@@ -1887,26 +1869,11 @@ void RSPSubX86regFromVariable(int32_t x86reg, void * Variable)
 
 void RSPJumpX86Reg( int32_t x86reg )
 {
-    // CPU_Message("      jmp %s",x86_Name(x86reg));
-    /*
-        switch (x86reg) {
-        case x86_EAX: PUTDST16(RSPRecompPos,0xe0ff); break;
-        case x86_EBX: PUTDST16(RSPRecompPos,0xe3ff); break;
-        case x86_ECX: PUTDST16(RSPRecompPos,0xe1ff); break;
-        case x86_EDX: PUTDST16(RSPRecompPos,0xe2ff); break;
-        case x86_ESI: PUTDST16(RSPRecompPos,0xe6ff); break;
-        case x86_EDI: PUTDST16(RSPRecompPos,0xe7ff); break;
-        default: DisplayError("JumpX86Reg: Unknown reg (%08x)", x86reg); Int3();
-        }*/
     OPCODE_REG_REG(8,0xFF,OP_D4,x86reg);
 }
-
-
-
 
 void RSPJgeLabel8(uint8_t Value)
 {
     PUTDST8(RSPRecompPos,0x7D);
     PUTDST8(RSPRecompPos,Value);
 }
-

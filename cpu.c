@@ -457,9 +457,7 @@ void DoSomething ( void )
 {
     if (CPU_Action->CloseCPU)
     {
-        //StopEmulation();
         cpu_running = 0;
-        //printf("Stopping?\n");
         if(!(fake_seek_stopping&3))
         {
             exit(0);
@@ -608,12 +606,6 @@ uint32_t Machine_LoadStateFromRAM(void * savestatespace)
 
 void StartEmulationFromSave ( void * savestate )
 {
-//  if(use_interpreter)
-//      CPU_Type = CPU_Interpreter;
-
-//  //printf("Starting generic Cpu\n");
-//
-//  //CloseCpu();
     memset(N64MEM, 0, RdramSize);
 
     memset(DMEM, 0, 0x1000);
@@ -677,7 +669,6 @@ void StartEmulationFromSave ( void * savestate )
 
     OLD_VI_V_SYNC_REG = ~VI_V_SYNC_REG;
 
-    cpu_stopped = 0;
     cpu_running = 1;
     fake_seek_stopping = 0;
 
@@ -794,7 +785,6 @@ void RunRsp (void)
             }
             break;
             default:
-
                 break;
             }
 
@@ -806,7 +796,6 @@ void RunRsp (void)
                 MI_INTR_REG |= 1;
                 CheckInterrupts();
             }
-
         }
     }
 }
@@ -843,11 +832,6 @@ void TimerDone (void)
 void Int3()
 {
     asm("int $3");
-}
-
-void _Emms()
-{
-    asm("emms");
 }
 
 void controlfp(uint32_t control)

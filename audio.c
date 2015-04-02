@@ -254,16 +254,6 @@ void AddBuffer(unsigned char *buf, unsigned int length)
         return;
     }
 
-//    if(is_seeking)
-//    {
-//        play_time += (((double)(length >> 2) / (double)SampleRate) * 1000.0);
-//        if(play_time > (double)seek_time)
-//        {
-//            is_seeking = 0;
-//        }
-//        return;
-//    }
-
     // fading
     if(!(track_time >> (sizeof(uint32_t)*8 -1)) && play_time > track_time)
     {
@@ -360,12 +350,6 @@ void AiLenChanged(void)
     uint32_t address = (AI_DRAM_ADDR_REG & 0x00FFFFF8);
 
     length = AI_LEN_REG & 0x3FFF8;
-
-    while(is_paused && cpu_running)
-    {
-        usleep(10000);
-    }
-
 
     AddBuffer(RDRAM+address, length);
 

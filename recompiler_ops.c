@@ -3110,8 +3110,6 @@ void Compile_R4300i_LL (BLOCK_SECTION * Section)
 {
     uint32_t TempReg1, TempReg2;
 
-
-
     if (Opcode.rt == 0)
     {
         return;
@@ -6472,7 +6470,6 @@ void Compile_R4300i_COP0_CO_ERET( BLOCK_SECTION * Section)
 /************************** Other functions **************************/
 void Compile_R4300i_UnknownOpcode (BLOCK_SECTION * Section)
 {
-
 //  Int3();
     FreeSection(Section->ContinueSection,Section);
     FreeSection(Section->JumpSection,Section);

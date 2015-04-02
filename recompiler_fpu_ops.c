@@ -530,8 +530,6 @@ void Compile_R4300i_COP1_DMT( BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_CT(BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fs != 31)
     {
@@ -592,8 +590,6 @@ void Compile_R4300i_COP1_S_SUB (BLOCK_SECTION * Section)
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
 
-
-
     CompileCop1Test(Section);
 
     if (Opcode.fd == Opcode.ft)
@@ -633,8 +629,6 @@ void Compile_R4300i_COP1_S_MUL (BLOCK_SECTION * Section)
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
 
-
-
     CompileCop1Test(Section);
 
     Load_FPR_ToTop(Section,Opcode.fd,Reg1, FPU_Float);
@@ -660,8 +654,6 @@ void Compile_R4300i_COP1_S_DIV (BLOCK_SECTION * Section)
     uint32_t Reg1 = Opcode.ft == Opcode.fd?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
-
-
 
     CompileCop1Test(Section);
 
@@ -699,7 +691,6 @@ void Compile_R4300i_COP1_S_DIV (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_ABS (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Float);
     fpuAbs();
     UnMap_FPR(Section,Opcode.fd,1);
@@ -707,7 +698,6 @@ void Compile_R4300i_COP1_S_ABS (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_NEG (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Float);
     fpuNeg();
     UnMap_FPR(Section,Opcode.fd,1);
@@ -715,7 +705,6 @@ void Compile_R4300i_COP1_S_NEG (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_SQRT (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Float);
     fpuSqrt();
     UnMap_FPR(Section,Opcode.fd,1);
@@ -723,14 +712,11 @@ void Compile_R4300i_COP1_S_SQRT (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_MOV (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Float);
 }
 
 void Compile_R4300i_COP1_S_TRUNC_L (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -741,8 +727,6 @@ void Compile_R4300i_COP1_S_TRUNC_L (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_CEIL_L (BLOCK_SECTION * Section)             //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -753,8 +737,6 @@ void Compile_R4300i_COP1_S_CEIL_L (BLOCK_SECTION * Section)             //added 
 
 void Compile_R4300i_COP1_S_FLOOR_L (BLOCK_SECTION * Section)            //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -765,8 +747,6 @@ void Compile_R4300i_COP1_S_FLOOR_L (BLOCK_SECTION * Section)            //added 
 
 void Compile_R4300i_COP1_S_ROUND_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -777,8 +757,6 @@ void Compile_R4300i_COP1_S_ROUND_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_TRUNC_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -789,8 +767,6 @@ void Compile_R4300i_COP1_S_TRUNC_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_CEIL_W (BLOCK_SECTION * Section)             // added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -801,8 +777,6 @@ void Compile_R4300i_COP1_S_CEIL_W (BLOCK_SECTION * Section)             // added
 
 void Compile_R4300i_COP1_S_FLOOR_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -813,8 +787,6 @@ void Compile_R4300i_COP1_S_FLOOR_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_CVT_D (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -825,8 +797,6 @@ void Compile_R4300i_COP1_S_CVT_D (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_CVT_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -837,8 +807,6 @@ void Compile_R4300i_COP1_S_CVT_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_S_CVT_L (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Float))
     {
@@ -852,9 +820,6 @@ void Compile_R4300i_COP1_S_CMP (BLOCK_SECTION * Section)
     uint32_t Reg1 = RegInStack(Section,Opcode.ft, FPU_Float)?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = RegInStack(Section,Opcode.ft, FPU_Float)?Opcode.fs:Opcode.ft;
     int x86reg, cmp = 0;
-
-
-
 
     CompileCop1Test(Section);
     //if ((Opcode.funct & 1) != 0) { Compile_R4300i_UnknownOpcode(Section); }
@@ -922,8 +887,6 @@ void Compile_R4300i_COP1_D_ADD (BLOCK_SECTION * Section)
     uint32_t Reg1 = Opcode.ft == Opcode.fd?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
 
-
-
     CompileCop1Test(Section);
 
     Load_FPR_ToTop(Section,Opcode.fd,Reg1, FPU_Double);
@@ -949,8 +912,6 @@ void Compile_R4300i_COP1_D_SUB (BLOCK_SECTION * Section)
     uint32_t Reg1 = Opcode.ft == Opcode.fd?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
-
-
 
     CompileCop1Test(Section);
 
@@ -989,8 +950,6 @@ void Compile_R4300i_COP1_D_MUL (BLOCK_SECTION * Section)
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
 
-
-
     CompileCop1Test(Section);
 
     Load_FPR_ToTop(Section,Opcode.fd,Reg1, FPU_Double);
@@ -1014,8 +973,6 @@ void Compile_R4300i_COP1_D_DIV (BLOCK_SECTION * Section)
     uint32_t Reg1 = Opcode.ft == Opcode.fd?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = Opcode.ft == Opcode.fd?Opcode.fs:Opcode.ft;
     uint32_t TempReg;
-
-
 
     CompileCop1Test(Section);
 
@@ -1049,35 +1006,29 @@ void Compile_R4300i_COP1_D_DIV (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_D_ABS (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Double);
     fpuAbs();
 }
 
 void Compile_R4300i_COP1_D_NEG (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Double);
     fpuNeg();
 }
 
 void Compile_R4300i_COP1_D_SQRT (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Double);
     fpuSqrt();
 }
 
 void Compile_R4300i_COP1_D_MOV (BLOCK_SECTION * Section)
 {
-
     Load_FPR_ToTop(Section,Opcode.fd,Opcode.fs,FPU_Double);
 }
 
 void Compile_R4300i_COP1_D_TRUNC_L (BLOCK_SECTION * Section)            //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1092,8 +1043,6 @@ void Compile_R4300i_COP1_D_TRUNC_L (BLOCK_SECTION * Section)            //added 
 
 void Compile_R4300i_COP1_D_CEIL_L (BLOCK_SECTION * Section)             //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1108,8 +1057,6 @@ void Compile_R4300i_COP1_D_CEIL_L (BLOCK_SECTION * Section)             //added 
 
 void Compile_R4300i_COP1_D_FLOOR_L (BLOCK_SECTION * Section)            //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1124,8 +1071,6 @@ void Compile_R4300i_COP1_D_FLOOR_L (BLOCK_SECTION * Section)            //added 
 
 void Compile_R4300i_COP1_D_ROUND_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1140,8 +1085,6 @@ void Compile_R4300i_COP1_D_ROUND_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_D_TRUNC_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1156,8 +1099,6 @@ void Compile_R4300i_COP1_D_TRUNC_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_D_CEIL_W (BLOCK_SECTION * Section)                 // added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1172,8 +1113,6 @@ void Compile_R4300i_COP1_D_CEIL_W (BLOCK_SECTION * Section)                 // a
 
 void Compile_R4300i_COP1_D_FLOOR_W (BLOCK_SECTION * Section)            //added by Witten
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1188,8 +1127,6 @@ void Compile_R4300i_COP1_D_FLOOR_W (BLOCK_SECTION * Section)            //added 
 
 void Compile_R4300i_COP1_D_CVT_S (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1204,8 +1141,6 @@ void Compile_R4300i_COP1_D_CVT_S (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_D_CVT_W (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1220,8 +1155,6 @@ void Compile_R4300i_COP1_D_CVT_W (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_D_CVT_L (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (RegInStack(Section,Opcode.fs,FPU_Double) || RegInStack(Section,Opcode.fs,FPU_Qword))
     {
@@ -1239,9 +1172,6 @@ void Compile_R4300i_COP1_D_CMP (BLOCK_SECTION * Section)
     uint32_t Reg1 = RegInStack(Section,Opcode.ft, FPU_Float)?Opcode.ft:Opcode.fs;
     uint32_t Reg2 = RegInStack(Section,Opcode.ft, FPU_Float)?Opcode.fs:Opcode.ft;
     int x86reg, cmp = 0;
-
-
-
 
     CompileCop1Test(Section);
     //if ((Opcode.funct & 1) != 0) { Compile_R4300i_UnknownOpcode(Section); }
@@ -1304,8 +1234,6 @@ void Compile_R4300i_COP1_D_CMP (BLOCK_SECTION * Section)
 /************************** COP1: W functions ************************/
 void Compile_R4300i_COP1_W_CVT_S (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Dword))
     {
@@ -1316,8 +1244,6 @@ void Compile_R4300i_COP1_W_CVT_S (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_W_CVT_D (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Dword))
     {
@@ -1329,8 +1255,6 @@ void Compile_R4300i_COP1_W_CVT_D (BLOCK_SECTION * Section)
 /************************** COP1: L functions ************************/
 void Compile_R4300i_COP1_L_CVT_S (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Qword))
     {
@@ -1341,8 +1265,6 @@ void Compile_R4300i_COP1_L_CVT_S (BLOCK_SECTION * Section)
 
 void Compile_R4300i_COP1_L_CVT_D (BLOCK_SECTION * Section)
 {
-
-
     CompileCop1Test(Section);
     if (Opcode.fd != Opcode.fs || !RegInStack(Section,Opcode.fd,FPU_Qword))
     {

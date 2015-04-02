@@ -32,10 +32,6 @@ char filename[PATH_MAX+1];
 
 void StopEmulation(void)
 {
-    //asm("int $3");
-    //printf("Arrivederci!\n\n");
-    //Release_Memory();
-    //exit(0);
     cpu_running = 0;
 }
 
@@ -101,8 +97,6 @@ void InitSigHandler(void)
     sigaddset(&sset, SIGINT);
 
     struct sigaction act;
-//    act.sa_flags = SA_SIGINFO;
-//    act.sa_sigaction = (void (*)(int, siginfo_t*, void*)) sig;
     act.sa_mask = sset;
     act.sa_handler = sig;
 
@@ -292,21 +286,6 @@ int main(int argc, char** argv)
         }
     }
 
-    /* Instead of reporting ‘--verbose’
-       and ‘--brief’ as they are encountered,
-       we report the final status resulting from them. */
-//    if (verbose_flag)
-//        puts ("verbose flag is set");
-
-    /* Print any remaining command line arguments (not options). */
-//    if (optind < argc)
-//    {
-//        printf ("non-option ARGV-elements: ");
-//        while (optind < argc)
-//            printf ("%s ", argv[optind++]);
-//        putchar ('\n');
-//    }
-
     do
     {
         if(!argv[optind])
@@ -362,11 +341,9 @@ int main(int argc, char** argv)
                 strcat(filename,".au");
             }
 
-
             puts("");
             printf("enablecompare: %d\n", enablecompare);
             printf("enableFIFOfull: %d\n\n", enableFIFOfull);
-
 
             if(!usf_play())
             {
@@ -377,8 +354,6 @@ int main(int argc, char** argv)
         {
             printf("An Error occured while init.\n");
         }
-
-
     }
     while(++optind < argc);
 

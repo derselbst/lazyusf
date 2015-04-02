@@ -87,13 +87,6 @@ void SetupTLB (void)
         SetupTLB_Entry(count);
     }
 }
-/*
-test=(BYTE *) VirtualAlloc( 0x10, 0x70000, MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if(test == 0) {
-        printf("FAIL!\n");
-        exit(0);
-    }
-*/
 
 void SetupTLB_Entry (int Entry)
 {
@@ -143,12 +136,6 @@ void SetupTLB_Entry (int Entry)
         {
             continue;
         }
-
-
-        //exit(0);
-        //"c:\music\xsf\usf\pdusf\03 - Carrington Institute.miniusf"
-        //"c:\music\xsf\usf\pdusf\03 - Carrington Institute.miniusf"
-
 
         //test if overlap
         FastTlb[FastIndx].ValidEntry = 1;

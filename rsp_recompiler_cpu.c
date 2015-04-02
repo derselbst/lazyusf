@@ -967,11 +967,6 @@ void RunRecompilerCPU ( uint32_t Cycles )
             BuildBranchLabels();
             DetectGPRConstants(&RspCode);
             CompilerRSPBlock();
-            /*} __except(EXCEPTION_EXECUTE_HANDLER) {
-                DisplayError("Error RSPCompilePC = %08X", RSPCompilePC);
-                ClearAllx86Code();
-                continue;
-            }*/
 
             Block = *(RSPJumpTable + (*PrgCount >> 2));
 
@@ -1024,13 +1019,7 @@ void RunRecompilerCPU ( uint32_t Cycles )
             __asm__ __volatile__("popa");
 #endif
         }
-
     }
 
-//  if (IsMmxEnabled == 1) {
-//      _Emms();
-//  }
-
-//  return Cycles;
     return;
 }

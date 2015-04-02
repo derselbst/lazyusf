@@ -7,7 +7,6 @@
 
 static int audio_ucode_detect ( OSTask_t *task )
 {
-
     if ( (*(uint8_t*) ( N64MEM + task->ucode_data )) != 0x1 )
     {
         if ( (*(uint8_t*) ( N64MEM + task->ucode_data )) == 0xF )
@@ -73,10 +72,7 @@ int audio_ucode ( OSTask_t *task )
         memcpy ( ABI, ABI1, sizeof ( ABI[0] ) *0x20 );
         break;
     default:
-    {
-
         return -1;
-    }
     }
 
     for ( i = 0; i < ( task->data_size/4 ); i += 2 )
@@ -85,7 +81,6 @@ int audio_ucode ( OSTask_t *task )
         inst2 = (*(uint32_t*) ( N64MEM + task->data_ptr + ( ( i+1 ) *4 ) ));
         //printf("%x\t%x\n",inst1 >> 24,inst1);
         ABI[inst1 >> 24]();
-
     }
 
     return 0;

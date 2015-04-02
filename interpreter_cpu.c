@@ -746,7 +746,7 @@ void ExecuteInterpreterOpCode (void)
     }
 }
 
-void StartInterpreterCPU (void )
+void StartInterpreterCPU (void)
 {
     NextInstruction = NORMAL;
 
@@ -754,9 +754,6 @@ void StartInterpreterCPU (void )
     {
         ExecuteInterpreterOpCode();
     }
-
-    cpu_stopped = 1;
-
 }
 
 void TestInterpreterJump (uint32_t PC, uint32_t TargetPC, int32_t Reg1, int32_t Reg2)

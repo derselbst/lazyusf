@@ -6,9 +6,9 @@
 #include <stdbool.h>
 
 extern int8_t round_frequency;
-extern uint32_t cpu_running, use_audiohle, is_paused, cpu_stopped, fake_seek_stopping;
-extern uint32_t is_fading, fade_type, fade_time /*time in miliseconds*/, is_seeking, seek_backwards, track_time /*time in miliseconds*/;
-extern double seek_time, play_time, rel_volume;
+extern uint8_t cpu_running, use_audiohle, fake_seek_stopping, fade_type;
+extern uint32_t fade_time /*time in miliseconds*/, track_time /*time in miliseconds*/;
+extern double play_time;
 
 extern int8_t enablecompare, enableFIFOfull;
 

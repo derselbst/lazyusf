@@ -576,26 +576,6 @@ struct PSFTAG
     char str[TAGMAX + 1];
 };
 
-/*void *psftag_create(void) {
-  struct PSFTAG *p = malloc(sizeof(struct PSFTAG));
-  if(!p) return NULL;
-  p->str[0] = 0;
-  //p->errorstring[0] = 0;
-  return p;
-}
-
-void psftag_delete(void *psftag) {
-  free(psftag);
-}*/
-
-/////////////////////////////////////////////////////////////////////////////
-
-/*const char *psftag_getlasterror(void *psftag) {
-  return ((struct PSFTAG*)psftag)->errorstring;
-}*/
-
-/////////////////////////////////////////////////////////////////////////////
-
 void psftag_getraw(void *psftag, char *raw_out, int raw_out_size)
 {
     if(raw_out_size < 1)

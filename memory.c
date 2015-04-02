@@ -63,12 +63,8 @@ void *malloc_exec(uint32_t bytes)
 
 int32_t Allocate_Memory ( void )
 {
-    //uint32_t i = 0;
-    //RdramSize = 0x800000;
-
     // Allocate the N64MEM and TLB_Map so that they are in each others 4GB range
     // Also put the registers there :)
-
 
     // the mmap technique works craptacular when the regions don't overlay
 
@@ -233,7 +229,6 @@ void Release_Memory ( void )
         free( JumpTable);
         JumpTable=NULL;
     }
-
 
     if(savestatespace)
     {
