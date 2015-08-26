@@ -20,6 +20,7 @@
 #include "cpu.h"
 #include "registers.h"
 
+// AU file header
 typedef struct
 {
     uint32_t    magic;
