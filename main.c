@@ -182,7 +182,7 @@ void usage(char progName[])
     printf("\tThe output is written to filename.au\n\n");
 
     printf("\tOptions:\n");
-    printf("\t-o\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", avialable placeholders listed below)\n");
+    printf("\t-o\t\t\t\t specifies output filename; you may use placeholders (e.g. \"%%game%% - %%title%%\", available placeholders listed below)\n");
     printf("\t-%c\t--%s\t changes sampling rate to a more standard value, rather than the odd values that games use\n",(char)long_options[5].val,long_options[5].name);
     printf("\t-%c NUM\t--%s NUM\t\t NUM specifies the fade type: 1 - Linear; 2 - Logarithmic; 3 - half of sinewave; default: no fading\n",(char)long_options[2].val,long_options[2].name);
 #ifdef FLAC_SUPPORT
