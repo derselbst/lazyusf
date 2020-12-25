@@ -1355,12 +1355,12 @@ void r4300i_COP1_BCTL (void)
     }
 }
 /************************** COP1: S functions ************************/
-__inline void Float_RoundToInteger32( int32_t * Dest, float * Source )
+void Float_RoundToInteger32( int32_t * Dest, float * Source )
 {
     *Dest = (int32_t)*Source;
 }
 
-__inline void Float_RoundToInteger64( int64_t * Dest, float * Source )
+void Float_RoundToInteger64( int64_t * Dest, float * Source )
 {
     *Dest = (int64_t)*Source;
 }
@@ -1533,12 +1533,12 @@ void r4300i_COP1_S_CMP (void)
 }
 
 /************************** COP1: D functions ************************/
-__inline void Double_RoundToInteger32( int32_t * Dest, double * Source )
+void Double_RoundToInteger32( int32_t * Dest, double * Source )
 {
     *Dest = (int32_t)*Source;
 }
 
-__inline void Double_RoundToInteger64( int64_t * Dest, double * Source )
+void Double_RoundToInteger64( int64_t * Dest, double * Source )
 {
     *Dest = (int64_t)*Source;
 }

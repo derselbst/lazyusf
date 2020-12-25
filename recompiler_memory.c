@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
+#include <signal.h>
 #include <sys/mman.h>
 
 #include "main.h"
