@@ -154,9 +154,9 @@ void formatOutFileName(char* path, const char *const format)
 static const struct option long_options[] =
 {
     /* These options set a flag. */
-    {"hle",             no_argument, &use_audiohle, 1},
+    {"hle",             no_argument, (int*)&use_audiohle, 1},
 //#ifdef FLAC_SUPPORT
-    {"flac",            no_argument, &useFlac, 1}, // set useFlac to 1 if flac specified
+    {"flac",            no_argument, (int*)&useFlac, 1}, // set useFlac to 1 if flac specified
 //#endif
     /* These options don’t set a flag.
        We distinguish them by their indices. */

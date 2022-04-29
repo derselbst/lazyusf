@@ -1,29 +1,37 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...3.22)
 
 project(lazyusf)
 
-set(CMAKE_C_FLAGS_DEBUG "-g3 -D_GNU_SOURCE -fPIC -fno-strict-aliasing -fmessage-length=0 -Wall -Wextra -fstack-protector -funwind-tables -fasynchronous-unwind-tables")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_DEBUG}")
+if(UNIX)
+    option(BUILD_STATIC "Build statically linked binary" OFF)
+    if(BUILD_STATIC)
+        set(BUILD_SHARED_LIBS OFF)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
+    endif()
+endif()
 
+set(CMAKE_C_FLAGS_DEBUG "-g3 -Wall -Wextra")
 # no compiler optimizations, since it breaks recompiler on i586
-set(CMAKE_C_FLAGS_RELEASE "-D_GNU_SOURCE -fPIC -fno-strict-aliasing -fmessage-length=0 -fstack-protector -funwind-tables -fasynchronous-unwind-tables")
+set(CMAKE_C_FLAGS "-D_GNU_SOURCE -fno-strict-aliasing -fstack-protector -funwind-tables -fasynchronous-unwind-tables -Wno-unused-result")
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_library(FLAC_LIBRARIES FLAC)
 find_library(AO_LIBRARIES ao)
 
 if(UNIX AND NOT AO_LIBRARIES)
     message(ERROR "Could not find libao. On-the-Fly playback won't be available. On Linux systems try installing: libao-devel (RPM based systems) or libao-dev (DEB based systems)")
-else()
+elseif(NOT BUILD_STATIC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPLAYBACK_SUPPORT")
-    set(LD_FLAGS ${LD_FLAGS} ${AO_LIBRARIES})
-endif(UNIX AND NOT AO_LIBRARIES)
+    set(LD_FLAGS ${LD_FLAGS} ao pthread)
+endif()
 
 if(UNIX AND NOT FLAC_LIBRARIES)
-    message(ERROR "Could not find libFLAC. Writing directly to FLAC won't be possible. On Linux systems try installing: flac-devel (RPM based systems) or flac-dev (DEB based systems)")
+    message(ERROR "Could not find libFLAC. Writing directly to FLAC won't be possible. On Linux systems try installing: flac-devel (RPM based systems) or libflac-dev (DEB based systems)")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFLAC_SUPPORT")
-    set(LD_FLAGS ${LD_FLAGS} ${FLAC_LIBRARIES})
-endif(UNIX AND NOT FLAC_LIBRARIES)
+    set(LD_FLAGS ${LD_FLAGS} FLAC ogg m)
+endif()
 
 
 set(LAZYUSF_SRC
@@ -65,3 +73,4 @@ set(LAZYUSF_SRC
 add_executable(lazyusf ${LAZYUSF_SRC})
 
 target_link_libraries(lazyusf ${LD_FLAGS})
+install(TARGETS lazyusf RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

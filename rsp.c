@@ -24,7 +24,6 @@ REGISTER EleSpec[32], Indx[32];
 RSPOPCODE RSPOpC;
 uint32_t *PrgCount = 0, RSPNextInstruction = 0;
 uint32_t RSP_NextInstruction = 0;
-REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 
 uint32_t RSP_NextInstruction, RSP_JumpTo;
 uint32_t RSP_Running = 0;

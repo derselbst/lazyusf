@@ -385,7 +385,7 @@ extern REGISTER EleSpec[32], Indx[32];
 extern RSPOPCODE RSPOpC;
 extern uint32_t *PrgCount, RSPNextInstruction;
 extern uint32_t RSP_NextInstruction;
-extern REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
+static REGISTER32 Recp, RecpResult, SQroot, SQrootResult;
 
 extern uint32_t RSP_NextInstruction, RSP_JumpTo;
 

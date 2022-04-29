@@ -33,7 +33,7 @@
 #include "main.h"
 
 
-MIPSUWORD Recp, RecpResult, SQroot, SQrootResult;
+static MIPSUWORD Recp, RecpResult, SQroot, SQrootResult;
 uint32_t ESP_RegSave = 0, EBP_RegSave = 0;
 uint32_t RSPBranchCompare = 0;
 extern int runcount;
