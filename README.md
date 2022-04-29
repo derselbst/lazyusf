@@ -7,9 +7,9 @@ This tool is based on JoshW's audacious plugin "lazyusf". It was rewritten to a 
 
 ## Build
 ```bash
-cmake .
-```
-```bash
+mkdir -p build
+cd build
+cmake ..
 make
 ```
 #### Build Dependencies

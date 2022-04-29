@@ -223,7 +223,7 @@ void CompX86RegToX86Reg(int32_t Destination, int32_t Source)
     OPCODE_REG_REG(8,0x3B,Destination,Source);
 }
 
-void DecX86reg(x86reg)
+void DecX86reg(int x86reg)
 {
     OPCODE_REG_REG(8,0xFF,OP_D1,x86reg);
 }

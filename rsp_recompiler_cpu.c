@@ -832,7 +832,7 @@ void CompilerRSPBlock ( void )
 
 
 #ifdef USEX64
-    RSPMoveConstQwordToX86reg(TLB_Map, x86_R15);
+    RSPMoveConstQwordToX86reg(*TLB_Map, x86_R15);
 #endif
 
     do
